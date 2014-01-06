@@ -1,8 +1,8 @@
 package main
 
 import (
-	"arch-o-matic/maestro"
 	"flag"
+	"github.com/marmelab/arch-o-matic/maestro"
 	"os"
 )
 

@@ -33,11 +33,26 @@ func (c *Container) init() {
 	}
 }
 
+func (c *Container) Clean(done chan bool) {
+	fmt.Println("Cleaning", c.Name, "...")
+
+	cmd, _ := exec.LookPath("docker")
+
+	killCmd := exec.Command(cmd, "kill", c.Name)
+	killCmd.Output()
+
+	removeCmd := exec.Command(cmd, "rm", c.Name)
+	removeCmd.Output()
+
+	done <- true
+}
+
 func (c *Container) Build(done chan bool) {
 	cmd, _ := exec.LookPath("docker")
-	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "templates/"+c.Type)
+	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "src/github.com/marmelab/arch-o-matic/templates/"+c.Type)
 
-	fmt.Println("Building", "arch_o_matic/"+c.Type, "...")
+	fmt.Println("Building", c.Name, "...")
+	fmt.Println(buildCmd)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {

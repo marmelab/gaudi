@@ -1,7 +1,7 @@
 package maestro
 
 import (
-	"arch-o-matic/container"
+	"github.com/marmelab/arch-o-matic/container"
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"path/filepath"
@@ -50,8 +50,15 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 }
 
 func (maestro *Maestro) Start() {
+	cleanChans := make(chan bool, len(maestro.Containers))
 	buildChans := make(chan bool, len(maestro.Containers))
 	startChans := make(map[string]chan bool)
+
+	// Clean all containers
+	for _, currentContainer := range maestro.Containers {
+		go currentContainer.Clean(cleanChans)
+	}
+	<-cleanChans
 
 	// Build all containers
 	for _, currentContainer := range maestro.Containers {
