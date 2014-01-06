@@ -1,7 +1,7 @@
 <?php
 $dbInfos = parse_url(getenv('DB_PORT'));
 
-$dsn = 'mysql:dbname=users;host='.$dbInfos['host'];
+$dsn = 'mysql:dbname=project;host='.$dbInfos['host'];
 
 $connection = new PDO($dsn, 'root', '');
 
