@@ -1,15 +1,15 @@
 package maestro
 
 import (
-	"launchpad.net/goyaml"
 	"arch-o-matic/container"
 	"io/ioutil"
+	"launchpad.net/goyaml"
 	"path/filepath"
 )
 
 type Maestro struct {
-	Containers map[string] *container.Container
-	listeners map[string]func()
+	Containers map[string]*container.Container
+	listeners  map[string]func()
 }
 
 func (m *Maestro) InitFromFile(file string) {
@@ -21,7 +21,7 @@ func (m *Maestro) InitFromFile(file string) {
 	m.InitFromString(string(content), filepath.Dir(file))
 }
 
-func (maestro *Maestro) InitFromString (content, relativePath string) {
+func (maestro *Maestro) InitFromString(content, relativePath string) {
 	err := goyaml.Unmarshal([]byte(content), &maestro)
 	if err != nil {
 		panic(err)
@@ -41,7 +41,7 @@ func (maestro *Maestro) InitFromString (content, relativePath string) {
 			if string(volumeHost[0]) != "/" {
 				delete(currentContainer.Volumes, volumeHost)
 
-				currentContainer.Volumes[relativePath + "/" + volumeHost] = volumeContainer
+				currentContainer.Volumes[relativePath+"/"+volumeHost] = volumeContainer
 			}
 		}
 	}
@@ -51,14 +51,13 @@ func (maestro *Maestro) InitFromString (content, relativePath string) {
 
 func (maestro *Maestro) Start() {
 	buildChans := make(chan bool, len(maestro.Containers))
-	startChans := make(map[string] chan bool)
+	startChans := make(map[string]chan bool)
 
 	// Build all containers
 	for _, currentContainer := range maestro.Containers {
 		go currentContainer.Build(buildChans)
 	}
-	<- buildChans
-
+	<-buildChans
 
 	// Start all containers
 	for name, currentContainer := range maestro.Containers {
@@ -69,11 +68,11 @@ func (maestro *Maestro) Start() {
 
 	// Waiting for all containers to start
 	for containerName, _ := range maestro.Containers {
-		<- startChans[containerName]
+		<-startChans[containerName]
 	}
 }
 
-func (maestro *Maestro) startContainer (currentContainer *container.Container, done map[string] chan bool) {
+func (maestro *Maestro) startContainer(currentContainer *container.Container, done map[string]chan bool) {
 	// Waiting for dependencies to start
 	for _, dependency := range currentContainer.Dependencies {
 		<-done[dependency.Name]

@@ -1,40 +1,40 @@
 package container
 
 import (
+	"fmt"
 	"os/exec"
 	"reflect"
 	"strings"
-	"fmt"
 
 	"time"
 )
 
 type Container struct {
-	Name string
-	Type string
+	Name         string
+	Type         string
 	InstanceType string
-	Running bool
-	Id string
-	Ip string
-	Links []string
+	Running      bool
+	Id           string
+	Ip           string
+	Links        []string
 	Dependencies []*Container
-	Ports map[string]string
-	Volumes map[string]string
+	Ports        map[string]string
+	Volumes      map[string]string
 }
 
 func (c *Container) init() {
-	if (c.Ports == nil) {
+	if c.Ports == nil {
 		c.Ports = make(map[string]string)
 	}
-	if (c.Links == nil) {
+	if c.Links == nil {
 		c.Links = make([]string, 0)
 	}
-	if (c.Dependencies == nil) {
+	if c.Dependencies == nil {
 		c.Dependencies = make([]*Container, 0)
 	}
 }
 
-func (c *Container) Build (done chan bool) {
+func (c *Container) Build(done chan bool) {
 	cmd, _ := exec.LookPath("docker")
 	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "templates/"+c.Type)
 
@@ -49,7 +49,7 @@ func (c *Container) Build (done chan bool) {
 	done <- true
 }
 
-func (c *Container) IsRunning () bool {
+func (c *Container) IsRunning() bool {
 	return c.Running
 }
 
@@ -63,11 +63,11 @@ func (c *Container) IsReady() bool {
 	return ready
 }
 
-func (c *Container) AddDependency (container *Container) {
+func (c *Container) AddDependency(container *Container) {
 	c.Dependencies = append(c.Dependencies, container)
 }
 
-func (c *Container) Start () {
+func (c *Container) Start() {
 	c.init()
 
 	cmd, _ := exec.LookPath("docker")
@@ -113,12 +113,12 @@ func buildArguments(rawArgs []string) []reflect.Value {
 	for _, arg := range rawArgs {
 		args = append(args, reflect.ValueOf(arg))
 	}
-	
+
 	return args
 }
 
-func (c *Container) Stop () {
-	cmd, _:=exec.LookPath("docker")
+func (c *Container) Stop() {
+	cmd, _ := exec.LookPath("docker")
 
 	killCmd := exec.Command(cmd, "kill", c.Id)
 

@@ -1,0 +1,19 @@
+containers:
+    front1:
+        type: apache
+        links: [app]
+        volumes:
+            php: /var/www
+
+    app:
+        type: php-fpm
+        links: [db]
+        ports:
+            9000: 9000
+        volumes:
+            php: /var/www
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306

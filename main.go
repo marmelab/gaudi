@@ -2,14 +2,11 @@ package main
 
 import (
 	"arch-o-matic/maestro"
-	"os"
 	"flag"
+	"os"
 )
 
-/*
-docker ps | grep 'ago' | awk '{print $1}' | xargs docker kill || docker ps -a | grep 'ago' | awk '{print $1}' | xargs docker rm
- */
-func main(){
+func main() {
 	m := maestro.Maestro{}
 	dir, err := os.Getwd()
 	if err != nil {
