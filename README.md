@@ -41,7 +41,7 @@ docker inspect db
 
 Create a database on it :
 ```sh
-mysql -u root -p -h [IP of db container]
+mysql -u root -p -h [IP of db container] # The password is root by default
 
 CREATE DATABASE project CHARACTER SET utf8 COLLATE utf8_general_ci;
 
