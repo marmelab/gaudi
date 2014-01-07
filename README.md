@@ -79,7 +79,7 @@ containers:
 			80:8080
 ```
 
-Here the port 80 will be mapped to the 8080
+Here the port 80 will be mapped to the 8080 in the container.
 
 ### Volumes
 You can add you own files by mounting volumes :
@@ -91,7 +91,7 @@ containers:
 			php:/app/php
 ```
 
-The the php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the container.
+The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the container.
 
 ## Types
 ### Apache
