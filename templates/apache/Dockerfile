@@ -17,8 +17,7 @@ RUN service apache2 reload
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
-RUN echo '<IfModule mod_fastcgi.c>\n\tAddHandler php5-fcgi .php\n\tAction php5-fcgi /cgi-bin/php5.external\n\n\t<Location "/cgi-bin/php5.external">\n\t\tOrder Deny,Allow\n\t\tDeny from All\n\t\tAllow from env=REDIRECT_STATUS\n\t</Location>\n</IfModule>' > /etc/apache2/mods-enabled/fastcgi.conf
-RUN sed -i 's|</VirtualHost>|\tFastCgiExternalServer /var/www/cgi-bin/php5.external -host ${APP_PORT_9000_TCP_ADDR}:${APP_PORT_9000_TCP_PORT}\n\tAlias /cgi-bin/ /var/www/cgi-bin/\n</VirtualHost>|g' /etc/apache2/sites-enabled/000-default
-RUN sed -i 's|ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/||g' /etc/apache2/sites-enabled/000-default
+ADD fastcgi.conf /etc/apache2/mods-enabled/fastcgi.conf
+ADD 000-default /etc/apache2/sites-enabled/000-default
 
 CMD /bin/bash /root/setup.sh && /usr/sbin/apache2ctl -D FOREGROUND

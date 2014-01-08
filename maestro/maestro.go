@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"path/filepath"
+	"os"
+	"text/template"
+	"bytes"
 )
 
 type Maestro struct {
@@ -49,7 +52,56 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 	maestro.listeners = make(map[string]func(), 0)
 }
 
+func (maestro *Maestro) parseTemplates() {
+	templateDir := os.Getenv("GOPATH") + "/src/github.com/marmelab/arch-o-matic/templates/"
+	parsedTemplateDir := "/tmp/arch-o-matic/"
+
+	err := os.MkdirAll(parsedTemplateDir, 0700)
+	if err != nil {
+		panic(err)
+	}
+
+
+	for _, currentContainer := range maestro.Containers {
+		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.MkdirAll(parsedTemplateDir + currentContainer.Name, 0755)
+		if err != nil {
+			panic(err)
+		}
+
+		// Parse & copy files
+		for _, file := range files {
+			destination := parsedTemplateDir + currentContainer.Name + "/" + file.Name()
+			if file.IsDir() {
+				err := os.MkdirAll(destination, 0755)
+				if err != nil {
+					panic(err)
+				}
+
+				continue
+			}
+
+			filePath := templateDir + file.Name()
+			content, _ := ioutil.ReadFile(filePath)
+			tmpl, err := template.New(filePath).Parse(string(content))
+			if err != nil {
+				panic(err)
+			}
+
+			var result bytes.Buffer
+			err = tmpl.Execute(&result, currentContainer)
+			ioutil.WriteFile(destination, []byte(result.String()), 0644)
+		}
+	}
+}
+
 func (maestro *Maestro) Start() {
+	maestro.parseTemplates()
+
 	cleanChans := make(chan bool, len(maestro.Containers))
 	buildChans := make(chan bool, len(maestro.Containers))
 	startChans := make(map[string]chan bool)

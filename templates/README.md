@@ -29,7 +29,7 @@ docker build -t arch_o_matic/apache src/github.com/marmelab/arch-o-matic/templat
 
 docker run -d -v=/vagrant/go/example/php:/var/www -link app:app -link db:db -name front1 arch_o_matic/apache
 OR
-docker run -i -t -v=/vagrant/go/example/php:/var/www -link app:app -name front1 arch_o_matic/apache /bin/bash
+docker run -i -t -v=/vagrant/go/src/github.com/marmelab/arch-o-matic/example/php:/var/www -link app:app -name front1 arch_o_matic/apache /bin/bash
 ```
 
 ## Php FPM
