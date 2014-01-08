@@ -48,6 +48,13 @@ docker build -t arch_o_matic/nodejs src/github.com/marmelab/arch-o-matic/templat
 docker run -t -i arch_o_matic/nodejs /bin/bash
 ```
 
+## Varnish
+```sh
+docker build -t arch_o_matic/varnish src/github.com/marmelab/arch-o-matic/templates/varnish
+
+docker run -t -i -p 80:80 -name varnish -link db:db arch_o_matic/varnish /bin/bash
+```
+
 ## All
 List env variables
 
