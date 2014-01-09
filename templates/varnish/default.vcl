@@ -1,4 +1,6 @@
-backend default {
-    .host = "127.0.0.1";
-    .port = "8080";
+[[range (.Container.GetCustomValue "backends")]]
+backend [[.]] {
+    .host = ${[[ . | ToUpper ]]_PORT_[[ ($.Maestro.GetContainer . ).GetFirstPort ]]_TCP_ADDR};
+    .port = ${[[ . | ToUpper ]]_PORT_[[ ($.Maestro.GetContainer . ).GetFirstPort ]]_TCP_PORT};
 }
+[[end]]

@@ -19,7 +19,7 @@ type Container struct {
 	Dependencies []*Container
 	Ports        map[string]string
 	Volumes      map[string]string
-	Custom       map[string]string
+	Custom       map[string]interface{}
 }
 
 func (c *Container) init() {
@@ -122,8 +122,12 @@ func (c *Container) Start() {
 	time.Sleep(1 * time.Second)
 }
 
-func (c *Container) GetCustomValue(name string) string {
+func (c *Container) GetCustomValue(name string) interface{} {
 	return c.Custom[name]
+}
+
+func (c *Container) GetCustomValueAsString(name string) string {
+	return c.Custom[name].(string)
 }
 
 func (c *Container) GetFirstPort() string {

@@ -64,6 +64,7 @@ func (maestro *Maestro) parseTemplates() {
 	templateData := TemplateData{maestro, nil}
 	funcMap := template.FuncMap{
 		"ToUpper": strings.ToUpper,
+		"ToLower": strings.ToLower,
 	}
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
