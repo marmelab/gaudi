@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
+	"strings"
 )
 
 type Maestro struct {
@@ -61,6 +62,9 @@ func (maestro *Maestro) parseTemplates() {
 	templateDir := os.Getenv("GOPATH") + "/src/github.com/marmelab/arch-o-matic/templates/"
 	parsedTemplateDir := "/tmp/arch-o-matic/"
 	templateData := TemplateData{maestro, nil}
+	funcMap := template.FuncMap{
+		"ToUpper": strings.ToUpper,
+	}
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
 	if err != nil {
@@ -99,7 +103,7 @@ func (maestro *Maestro) parseTemplates() {
 
 			// Parse it (we need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}}
 			// which cause an error)
-			tmpl, err := template.New(filePath).Delims("[[", "]]").Parse(string(content))
+			tmpl, err := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(string(content))
 			if err != nil {
 				panic(err)
 			}

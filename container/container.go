@@ -126,10 +126,6 @@ func (c *Container) GetCustomValue(name string) string {
 	return c.Custom[name]
 }
 
-func (c *Container) GetUpperCustomValue(name string) string {
-	return strings.ToUpper(c.Custom[name])
-}
-
 func (c *Container) GetFirstPort() string {
 	keys := make([]string, 0)
 	for _, key := range c.Ports {
