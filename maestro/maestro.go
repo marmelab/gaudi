@@ -60,6 +60,7 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 func (maestro *Maestro) parseTemplates() {
 	templateDir := os.Getenv("GOPATH") + "/src/github.com/marmelab/arch-o-matic/templates/"
 	parsedTemplateDir := "/tmp/arch-o-matic/"
+	templateData := TemplateData{maestro, nil}
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
 	if err != nil {
@@ -103,9 +104,9 @@ func (maestro *Maestro) parseTemplates() {
 				panic(err)
 			}
 
-			templateDate := TemplateData{maestro, currentContainer}
+			templateData.Container = currentContainer
 			var result bytes.Buffer
-			err = tmpl.Execute(&result, templateDate)
+			err = tmpl.Execute(&result, templateData)
 			if err != nil {
 				panic(err)
 			}

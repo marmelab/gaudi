@@ -12,9 +12,9 @@ docker build -t arch_o_matic/mysql src/github.com/marmelab/arch-o-matic/template
 
 docker run -d -p 3306 -name db arch_o_matic/mysql
 
-CREATE DATABASE users CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE project CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-USE users;
+USE project;
 CREATE TABLE users (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	username VARCHAR(100)
