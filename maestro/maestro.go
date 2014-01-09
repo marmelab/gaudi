@@ -1,15 +1,24 @@
 package maestro
 
 import (
+	"bytes"
 	"github.com/marmelab/arch-o-matic/container"
 	"io/ioutil"
 	"launchpad.net/goyaml"
+	"os"
 	"path/filepath"
+	"text/template"
+	"strings"
 )
 
 type Maestro struct {
 	Containers map[string]*container.Container
 	listeners  map[string]func()
+}
+
+type TemplateData struct {
+	Maestro   *Maestro
+	Container *container.Container
 }
 
 func (m *Maestro) InitFromFile(file string) {
@@ -49,7 +58,72 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 	maestro.listeners = make(map[string]func(), 0)
 }
 
+func (maestro *Maestro) parseTemplates() {
+	templateDir := os.Getenv("GOPATH") + "/src/github.com/marmelab/arch-o-matic/templates/"
+	parsedTemplateDir := "/tmp/arch-o-matic/"
+	templateData := TemplateData{maestro, nil}
+	funcMap := template.FuncMap{
+		"ToUpper": strings.ToUpper,
+	}
+
+	err := os.MkdirAll(parsedTemplateDir, 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, currentContainer := range maestro.Containers {
+		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
+		if err != nil {
+			panic(err)
+		}
+
+		// Parse & copy files
+		for _, file := range files {
+			destination := parsedTemplateDir + currentContainer.Name + "/" + file.Name()
+			if file.IsDir() {
+				err := os.MkdirAll(destination, 0755)
+				if err != nil {
+					panic(err)
+				}
+
+				continue
+			}
+
+			// Read the template
+			filePath := templateDir + currentContainer.Type + "/" + file.Name()
+			content, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				panic(err)
+			}
+
+			// Parse it (we need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}}
+			// which cause an error)
+			tmpl, err := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(string(content))
+			if err != nil {
+				panic(err)
+			}
+
+			templateData.Container = currentContainer
+			var result bytes.Buffer
+			err = tmpl.Execute(&result, templateData)
+			if err != nil {
+				panic(err)
+			}
+
+			// Create new file
+			ioutil.WriteFile(destination, []byte(result.String()), 0644)
+		}
+	}
+}
+
 func (maestro *Maestro) Start() {
+	maestro.parseTemplates()
+
 	cleanChans := make(chan bool, len(maestro.Containers))
 	buildChans := make(chan bool, len(maestro.Containers))
 	startChans := make(map[string]chan bool)
@@ -88,4 +162,8 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	currentContainer.Start()
 
 	close(done[currentContainer.Name])
+}
+
+func (maestro *Maestro) GetContainer(name string) *container.Container {
+	return maestro.Containers[name]
 }

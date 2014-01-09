@@ -4,6 +4,8 @@ containers:
         links: [app]
         volumes:
             php: /var/www
+        custom:
+            fastCgi: app
 
     app:
         type: php-fpm

@@ -12,9 +12,9 @@ docker build -t arch_o_matic/mysql src/github.com/marmelab/arch-o-matic/template
 
 docker run -d -p 3306 -name db arch_o_matic/mysql
 
-CREATE DATABASE users CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE project CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-USE users;
+USE project;
 CREATE TABLE users (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	username VARCHAR(100)
@@ -29,7 +29,7 @@ docker build -t arch_o_matic/apache src/github.com/marmelab/arch-o-matic/templat
 
 docker run -d -v=/vagrant/go/example/php:/var/www -link app:app -link db:db -name front1 arch_o_matic/apache
 OR
-docker run -i -t -v=/vagrant/go/example/php:/var/www -link app:app -name front1 arch_o_matic/apache /bin/bash
+docker run -i -t -v=/vagrant/go/src/github.com/marmelab/arch-o-matic/example/php:/var/www -link app:app -name front1 arch_o_matic/apache /bin/bash
 ```
 
 ## Php FPM
