@@ -19,6 +19,7 @@ type Container struct {
 	Dependencies []*Container
 	Ports        map[string]string
 	Volumes      map[string]string
+	Custom       map[string]string
 }
 
 func (c *Container) init() {
@@ -49,7 +50,7 @@ func (c *Container) Clean(done chan bool) {
 
 func (c *Container) Build(done chan bool) {
 	cmd, _ := exec.LookPath("docker")
-	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "src/github.com/marmelab/arch-o-matic/templates/"+c.Type)
+	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "/tmp/arch-o-matic/"+c.Name)
 
 	fmt.Println("Building", c.Name, "...")
 	fmt.Println(buildCmd)
@@ -119,6 +120,23 @@ func (c *Container) Start() {
 
 	fmt.Println("Container", c.Name, "started", c.Id)
 	time.Sleep(1 * time.Second)
+}
+
+func (c *Container) GetCustomValue(name string) string {
+	return c.Custom[name]
+}
+
+func (c *Container) GetUpperCustomValue(name string) string {
+	return strings.ToUpper(c.Custom[name])
+}
+
+func (c *Container) GetFirstPort() string {
+	keys := make([]string, 0)
+	for _, key := range c.Ports {
+		keys = append(keys, key)
+	}
+
+	return c.Ports[keys[0]]
 }
 
 func buildArguments(rawArgs []string) []reflect.Value {

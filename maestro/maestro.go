@@ -1,18 +1,23 @@
 package maestro
 
 import (
+	"bytes"
 	"github.com/marmelab/arch-o-matic/container"
 	"io/ioutil"
 	"launchpad.net/goyaml"
-	"path/filepath"
 	"os"
+	"path/filepath"
 	"text/template"
-	"bytes"
 )
 
 type Maestro struct {
 	Containers map[string]*container.Container
 	listeners  map[string]func()
+}
+
+type TemplateData struct {
+	Maestro   *Maestro
+	Container *container.Container
 }
 
 func (m *Maestro) InitFromFile(file string) {
@@ -61,14 +66,13 @@ func (maestro *Maestro) parseTemplates() {
 		panic(err)
 	}
 
-
 	for _, currentContainer := range maestro.Containers {
 		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
 		if err != nil {
 			panic(err)
 		}
 
-		err = os.MkdirAll(parsedTemplateDir + currentContainer.Name, 0755)
+		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
 		if err != nil {
 			panic(err)
 		}
@@ -85,15 +89,27 @@ func (maestro *Maestro) parseTemplates() {
 				continue
 			}
 
-			filePath := templateDir + file.Name()
-			content, _ := ioutil.ReadFile(filePath)
-			tmpl, err := template.New(filePath).Parse(string(content))
+			// Read the template
+			filePath := templateDir + currentContainer.Type + "/" + file.Name()
+			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
 				panic(err)
 			}
 
+			// Parse it
+			tmpl, err := template.New(filePath).Delims("[[", "]]").Parse(string(content))
+			if err != nil {
+				panic(err)
+			}
+
+			templateDate := TemplateData{maestro, currentContainer}
 			var result bytes.Buffer
-			err = tmpl.Execute(&result, currentContainer)
+			err = tmpl.Execute(&result, templateDate)
+			if err != nil {
+				panic(err)
+			}
+
+			// Create new file
 			ioutil.WriteFile(destination, []byte(result.String()), 0644)
 		}
 	}
@@ -140,4 +156,8 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	currentContainer.Start()
 
 	close(done[currentContainer.Name])
+}
+
+func (maestro *Maestro) GetContainer(name string) *container.Container {
+	return maestro.Containers[name]
 }

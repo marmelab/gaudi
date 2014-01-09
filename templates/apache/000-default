@@ -6,13 +6,13 @@
 		Options FollowSymLinks
 		AllowOverride None
 	</Directory>
+
 	<Directory /var/www/>
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride None
 		Order allow,deny
 		allow from all
 	</Directory>
-
 
 	<Directory "/usr/lib/cgi-bin">
 		AllowOverride None
@@ -28,6 +28,7 @@
 	LogLevel warn
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
-	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${ {{.FAST_CGI_ADDR_NAME}} }:${ {{.FAST_CGI_PORT_NAME}} }
+	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ (.Container.GetUpperCustomValue "fastCgi") ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetUpperCustomValue "fastCgi") ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT}
 	Alias /cgi-bin/ /var/www/cgi-bin/
 </VirtualHost>
+
