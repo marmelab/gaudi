@@ -10,6 +10,8 @@ containers:
         links: [app]
         volumes:
             php: /var/www
+        custom:
+            fastCgi: app
 
     app:
         type: php-fpm
@@ -99,4 +101,8 @@ The php folder (absolute or relative to the yml files) will be mounted in the /a
 containers:
     [name]:
         type: apache
+    custom:
+        fastCgi: app
 ```
+
+`fastCgi` custom param is used to point out an application to forward Fast-CGI scripts.

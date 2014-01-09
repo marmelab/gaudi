@@ -96,7 +96,8 @@ func (maestro *Maestro) parseTemplates() {
 				panic(err)
 			}
 
-			// Parse it
+			// Parse it (we need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}}
+			// which cause an error)
 			tmpl, err := template.New(filePath).Delims("[[", "]]").Parse(string(content))
 			if err != nil {
 				panic(err)
