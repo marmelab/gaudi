@@ -1,4 +1,4 @@
-<VirtualHost *:80>
+<VirtualHost *:[[ .Container.GetFirstPort ]]>
 	ServerAdmin webmaster@localhost
 
 	DocumentRoot /var/www

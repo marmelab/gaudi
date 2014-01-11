@@ -19,5 +19,6 @@ RUN chmod +x /root/setup.sh
 
 ADD fastcgi.conf /etc/apache2/mods-enabled/fastcgi.conf
 ADD 000-default /etc/apache2/sites-enabled/000-default
+ADD ports.conf /etc/apache2/ports.conf
 
 CMD /bin/bash /root/setup.sh && /usr/sbin/apache2ctl -D FOREGROUND

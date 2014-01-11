@@ -13,5 +13,10 @@ RUN apt-get update
 RUN apt-get -y install varnish
 
 ADD varnish.conf /etc/default/varnish
+ADD default.vcl /etc/varnish/default.vcl
+
+# Add setup script
+ADD setup.sh /root/setup.sh
+RUN chmod +x /root/setup.sh
 
 CMD /bin/bash

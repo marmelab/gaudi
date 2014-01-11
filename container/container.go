@@ -53,7 +53,6 @@ func (c *Container) Build(done chan bool) {
 	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Type, "/tmp/arch-o-matic/"+c.Name)
 
 	fmt.Println("Building", c.Name, "...")
-	fmt.Println(buildCmd)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
@@ -108,6 +107,7 @@ func (c *Container) Start() {
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	fmt.Println(runCmd)
 
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
