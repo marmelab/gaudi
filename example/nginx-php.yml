@@ -1,0 +1,7 @@
+containers:
+    front:
+        type: nginx
+        ports:
+            80: 80
+        volumes:
+            static: /var/www
