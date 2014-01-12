@@ -1,23 +1,5 @@
 containers:
-    lb:
-        type: varnish
-        links: [front1, front2]
-        ports:
-            80: 80
-        custom:
-            backends: [front1, front2]
-
-    front1:
-        type: apache
-        links: [app]
-        ports:
-            8080: 8080
-        volumes:
-            php: /var/www
-        custom:
-            fastCgi: app
-
-    front2:
+    front:
         type: apache
         links: [app]
         ports:
