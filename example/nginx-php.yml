@@ -3,8 +3,9 @@ containers:
         type: nginx
         ports:
             80: 80
+        links: [app]
         volumes:
-            static: /var/www
+            php: /var/www
         custom:
             fastCgi: app
 
