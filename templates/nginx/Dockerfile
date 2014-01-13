@@ -11,4 +11,8 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 ADD default /etc/nginx/sites-enabled/default
 
-CMD nginx
+# Add setup script
+ADD setup.sh /root/setup.sh
+RUN chmod +x /root/setup.sh
+
+CMD /bin/bash /root/setup.sh && nginx

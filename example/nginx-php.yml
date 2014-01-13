@@ -5,3 +5,12 @@ containers:
             80: 80
         volumes:
             static: /var/www
+        custom:
+            fastCgi: app
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            php: /var/www
