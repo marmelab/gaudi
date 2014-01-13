@@ -96,6 +96,18 @@ containers:
 The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the container.
 
 ## Types
+### Varnish
+```yml
+containers:
+    [name]:
+        type: varnish
+        links: [front1, front2]
+    custom:
+        backends: [front1, front2]
+```
+
+`backends` custom param is used to defines which containers are load balanced by Varnish. Theses containers have to be linked with `links`.
+
 ### Apache
 ```yml
 containers:

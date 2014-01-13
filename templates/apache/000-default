@@ -1,4 +1,4 @@
-<VirtualHost *:80>
+<VirtualHost *:[[ .Container.GetFirstPort ]]>
 	ServerAdmin webmaster@localhost
 
 	DocumentRoot /var/www
@@ -28,7 +28,7 @@
 	LogLevel warn
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
-	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT}
+	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT}
 	Alias /cgi-bin/ /var/www/cgi-bin/
 </VirtualHost>
 

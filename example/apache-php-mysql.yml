@@ -1,7 +1,9 @@
 containers:
-    front1:
+    front:
         type: apache
         links: [app]
+        ports:
+            8081: 8081
         volumes:
             php: /var/www
         custom:
