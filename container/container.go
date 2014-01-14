@@ -2,11 +2,10 @@ package container
 
 import (
 	"fmt"
-	"os/exec"
-	"reflect"
 	"strings"
 	"time"
 	"launchpad.net/goyaml"
+	"github.com/marmelab/arch-o-matic/docker"
 )
 
 type Container struct {
@@ -41,29 +40,15 @@ func (c *Container) init() {
 
 func (c *Container) Clean(done chan bool) {
 	fmt.Println("Cleaning", c.Name, "...")
-
-	cmd, _ := exec.LookPath("docker")
-
-	killCmd := exec.Command(cmd, "kill", c.Name)
-	killCmd.Output()
-
-	removeCmd := exec.Command(cmd, "rm", c.Name)
-	removeCmd.Output()
+	docker.Clean(c.Name)
+	c.Running = false
 
 	done <- true
 }
 
 func (c *Container) Build(done chan bool) {
-	cmd, _ := exec.LookPath("docker")
-	buildCmd := exec.Command(cmd, "build", "-rm", "-t", "arch_o_matic/"+c.Name, "/tmp/arch-o-matic/"+c.Name)
-
 	fmt.Println("Building", c.Name, "...")
-
-	out, err := buildCmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
-	}
+	docker.Build(c.Name)
 
 	done <- true
 }
@@ -89,37 +74,8 @@ func (c *Container) AddDependency(container *Container) {
 func (c *Container) Start() {
 	c.init()
 
-	cmd, _ := exec.LookPath("docker")
-	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{cmd, "run", "-d", "-name", c.Name}
-
-	// Add links
-	for _, link := range c.Links {
-		rawArgs = append(rawArgs, "--link="+link+":"+link)
-	}
-
-	// Add ports
-	for portIn, portOut := range c.Ports {
-		rawArgs = append(rawArgs, "-p="+string(portIn)+":"+string(portOut))
-	}
-
-	// Add volumes
-	for volumeHost, volumeContainer := range c.Volumes {
-		rawArgs = append(rawArgs, "-v="+volumeHost+":"+volumeContainer)
-	}
-
-	rawArgs = append(rawArgs, "arch_o_matic/"+c.Name)
-
-	// Initiate the command with several arguments
-	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
-
-	out, err := runCmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
-	}
-
-	c.Id = strings.TrimSpace(string(out))
+	startResult := docker.Start(c.Name, c.Links, c.Ports, c.Volumes)
+	c.Id = strings.TrimSpace(startResult)
 	c.Running = true
 
 	time.Sleep(2 * time.Second)
@@ -145,38 +101,11 @@ func (c *Container) GetFirstPort() string {
 	return c.Ports[keys[0]]
 }
 
-func (c *Container) Stop() {
-	cmd, _ := exec.LookPath("docker")
-
-	killCmd := exec.Command(cmd, "kill", c.Id)
-	killCmd.Run()
-
-	c.Running = false
-}
-
 func (c *Container) retrieveIp () {
-	cmd, _ := exec.LookPath("docker")
-
-	inspectCmd := exec.Command(cmd, "inspect", c.Id)
-	out, err := inspectCmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
-	}
+	inspect := docker.Inspect(c.Id)
 
 	var results []inspection
-	goyaml.Unmarshal(out, &results)
+	goyaml.Unmarshal(inspect, &results)
 
 	c.Ip = results[0].NetworkSettings["IPAddress"]
 }
-
-func buildArguments(rawArgs []string) []reflect.Value {
-	args := make([]reflect.Value, 0)
-
-	for _, arg := range rawArgs {
-		args = append(args, reflect.ValueOf(arg))
-	}
-
-	return args
-}
-
