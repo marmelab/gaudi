@@ -108,6 +108,31 @@ containers:
 
 `backends` custom param is used to defines which containers are load balanced by Varnish. Theses containers have to be linked with `links`.
 
+### Nginx
+
+#### As a webserver:
+```yml
+containers:
+    [name]:
+        type: nginx
+        links: [app]
+    custom:
+        fastCgi: app
+```
+
+#### As a load balancer:
+```yml
+containers:
+    [name]:
+        type: nginx
+        links: [front1, front2]
+    custom:
+        backends: [front1, front2]
+```
+
+`backends` custom param is used to defines which containers are load balanced by Nginx. Theses containers have to be linked with `links`.
+
+
 ### Apache
 ```yml
 containers:

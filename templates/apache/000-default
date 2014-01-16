@@ -28,7 +28,10 @@
 	LogLevel warn
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+	[[ if (.Container.GetCustomValue "fastCgi")]]
 	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT}
 	Alias /cgi-bin/ /var/www/cgi-bin/
+	[[end]]
 </VirtualHost>
 

@@ -1,0 +1,17 @@
+containers:
+    front:
+        type: nginx
+        ports:
+            80: 80
+        links: [app]
+        volumes:
+            php: /var/www
+        custom:
+            fastCgi: app
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            php: /var/www

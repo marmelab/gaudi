@@ -1,0 +1,55 @@
+[[ if (.Container.GetCustomValue "backends")]]
+upstream loadBalancing {
+    [[range (.Container.GetCustomValue "backends")]]
+    server ${[[ . | ToUpper ]]_PORT_[[ ($.Maestro.GetContainer . ).GetFirstPort ]]_TCP_ADDR}:${[[ . | ToUpper ]]_PORT_[[ ($.Maestro.GetContainer . ).GetFirstPort ]]_TCP_PORT};
+    [[end]]
+}
+
+server {
+    listen [[ .Container.GetFirstPort ]];
+    server_name localhost;
+
+    location / {
+        proxy_pass http://loadBalancing;
+    }
+}
+[[else]]
+server {
+    listen [[ .Container.GetFirstPort ]];
+
+    root /var/www;
+    index index.html index.htm;
+
+    # Make site accessible from http://localhost/
+    server_name localhost;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    #error_page 404 /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+           root /var/www;
+    }
+
+    [[ if (.Container.GetCustomValue "fastCgi")]]
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    location ~ \.php$ {
+           fastcgi_split_path_info ^(.+\.php)(/.+)$;
+
+           fastcgi_pass ${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Maestro.GetContainer .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT};
+           fastcgi_index index.php;
+           include fastcgi_params;
+    }
+    [[end]]
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    location ~ /\.ht {
+           deny all;
+    }
+}
+[[end]]
