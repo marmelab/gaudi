@@ -2,15 +2,22 @@ package container_test
 
 import (
 	"testing"
-	"github.com/marmelab/arch-o-matic/container"
-
 	"code.google.com/p/gomock/gomock"
+	. "launchpad.net/gocheck"
+
+	"github.com/marmelab/arch-o-matic/container"
 	"github.com/marmelab/arch-o-matic/docker" // mock
 )
 
-func TestStartedContainerShouldRetrieveItsIp(t *testing.T) {
+// Hook up gocheck into the "go test" runner.
+func Test(t *testing.T) { TestingT(t) }
+
+type ContainerTestSuite struct{}
+var _ = Suite(&ContainerTestSuite{})
+
+func (s *ContainerTestSuite) TestStartedContainerShouldRetrieveItsIp(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
-	ctrl := gomock.NewController(t)
+	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
 	// Setup the docker mock package
@@ -19,38 +26,28 @@ func TestStartedContainerShouldRetrieveItsIp(t *testing.T) {
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"))
 
 	// @TODO : find a way to mock time.Sleep
-
 	container := container.Container{Name: "Test"}
 	container.Start()
 
-	if !container.IsRunning() {
-		t.Error("Started container should be marked as running")
-	}
-
-	if container.Ip != "172.17.0.10" {
-		t.Error("Started container IP not retrieved correctly")
-	}
+	c.Check(container.IsRunning(), Equals, true)
+	c.Check(container.Ip, Equals, "172.17.0.10")
 }
 
-func TestGetFirstPortShouldReturnTheFirstDeclaredPort (t *testing.T) {
+func (s *ContainerTestSuite) TestGetFirstPortShouldReturnTheFirstDeclaredPort (c *C) {
 	container := container.Container{Name: "Test"}
 
-	if container.GetFirstPort() != "" {
-		t.Error("Container without port should return empty value when calling GetFirstPort")
-	}
+	c.Check(container.GetFirstPort(), Equals, "")
 
 	container.Ports = make(map[string]string)
 	container.Ports["80"] = "8080"
 	container.Ports["9000"] = "9000"
 
-	if container.GetFirstPort() != "80" {
-		t.Error("Container with at least a port should returns the first when calling GetFirstPort")
-	}
+	c.Check(container.GetFirstPort(), Equals, "80")
 }
 
-func TestCallCleanShouldStopTheContainer(t *testing.T) {
+func (s *ContainerTestSuite) TestCallCleanShouldStopTheContainer(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
-	ctrl := gomock.NewController(t)
+	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
 	// Setup the docker mock package
@@ -63,30 +60,24 @@ func TestCallCleanShouldStopTheContainer(t *testing.T) {
 	container.Clean(done)
 	<-done
 
-	if container.IsRunning() {
-		t.Error("Cleaned container should not be marked as running")
-	}
+	c.Check(container.IsRunning(), Equals, false)
 }
 
-func TestContainerWithReadyDependenciesShouldBeReady(t *testing.T) {
+func (s *ContainerTestSuite) TestContainerWithReadyDependenciesShouldBeReady(c *C) {
 	dep1 := container.Container{Name: "abc"}
 	dep1.Running = false
 
 	dep2 := container.Container{Name: "abc"}
 	dep2.Running = true
 
-	c := container.Container{Name: "Test"}
-	c.Dependencies = make([]*container.Container, 0)
+	mainContainer := container.Container{Name: "Test"}
+	mainContainer.Dependencies = make([]*container.Container, 0)
 
-	c.AddDependency(&dep1)
-	c.AddDependency(&dep2)
+	mainContainer.AddDependency(&dep1)
+	mainContainer.AddDependency(&dep2)
 
-	if c.IsReady() {
-		t.Error("Container with non running dependencies should not be ready")
-	}
+	c.Check(mainContainer.IsReady(), Equals, false)
 
 	dep1.Running = true
-	if !c.IsReady() {
-		t.Error("Container with running dependencies should be ready")
-	}
+	c.Check(mainContainer.IsReady(), Equals, true)
 }

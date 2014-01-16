@@ -7,5 +7,5 @@ script:
     - go get launchpad.net/gocheck
     - go get github.com/qur/withmock
     - go get github.com/qur/withmock/mocktest
-    
+
     - cd build/marmelab/arch-o-match && withmock go test -v
