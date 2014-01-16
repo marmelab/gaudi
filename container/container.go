@@ -98,6 +98,10 @@ func (c *Container) GetFirstPort() string {
 		keys = append(keys, key)
 	}
 
+	if len(keys) == 0 {
+		return ""
+	}
+
 	return c.Ports[keys[0]]
 }
 
