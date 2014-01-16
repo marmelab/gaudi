@@ -93,16 +93,11 @@ func (c *Container) GetCustomValueAsString(name string) string {
 }
 
 func (c *Container) GetFirstPort() string {
-	keys := make([]string, 0)
-	for _, key := range c.Ports {
-		keys = append(keys, key)
+	for key, _ := range c.Ports {
+		return key
 	}
 
-	if len(keys) == 0 {
-		return ""
-	}
-
-	return c.Ports[keys[0]]
+	return ""
 }
 
 func (c *Container) retrieveIp () {
