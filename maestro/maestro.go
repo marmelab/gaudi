@@ -13,7 +13,6 @@ import (
 
 type Maestro struct {
 	Containers map[string]*container.Container
-	listeners  map[string]func()
 }
 
 type TemplateData struct {
@@ -35,6 +34,9 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 	if err != nil {
 		panic(err)
 	}
+	if maestro.Containers == nil {
+		panic("No container to start")
+	}
 
 	// Fill name & dependencies
 	for name := range maestro.Containers {
@@ -54,8 +56,6 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 			}
 		}
 	}
-
-	maestro.listeners = make(map[string]func(), 0)
 }
 
 func (maestro *Maestro) parseTemplates() {
@@ -75,7 +75,7 @@ func (maestro *Maestro) parseTemplates() {
 	for _, currentContainer := range maestro.Containers {
 		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
 		if err != nil {
-			panic(err)
+			continue
 		}
 
 		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
