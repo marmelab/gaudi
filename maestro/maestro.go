@@ -59,7 +59,14 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 }
 
 func (maestro *Maestro) parseTemplates() {
-	templateDir := os.Getenv("GOPATH") + "/src/github.com/marmelab/arch-o-matic/templates/"
+	// Running withmock doesn't include templates files in withmock's temporary dir
+	path := os.Getenv("GOPATH")
+	testPath := os.Getenv("ORIG_GOPATH")
+	if len(testPath) > 0 {
+		path = testPath
+	}
+
+	templateDir := path + "/src/github.com/marmelab/arch-o-matic/templates/"
 	parsedTemplateDir := "/tmp/arch-o-matic/"
 	templateData := TemplateData{maestro, nil}
 	funcMap := template.FuncMap{

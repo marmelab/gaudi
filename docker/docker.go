@@ -3,6 +3,7 @@ package docker
 import (
 	"os/exec"
 	"reflect"
+	"time"
 	"fmt"
 )
 
@@ -14,12 +15,14 @@ func Clean (name string) {
 	if killErr != nil {
 		panic (killErr)
 	}
+	time.Sleep(1 * time.Second)
 
 	removeCmd := exec.Command(docker, "rm", name)
 	removeErr := removeCmd.Start()
 	if removeErr != nil {
 		panic (removeErr)
 	}
+	time.Sleep(1 * time.Second)
 }
 
 func Build (name string) {

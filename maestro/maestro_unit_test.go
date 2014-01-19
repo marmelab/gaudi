@@ -90,7 +90,6 @@ func (s *MaestroTestSuite) TestStartContainerShouldStartThemByOrderOfDependencie
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 
-
 	m := maestro.Maestro{}
 	m.InitFromString(`
 containers:
