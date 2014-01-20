@@ -23,6 +23,7 @@ type Container struct {
 }
 
 type inspection struct {
+	ID string "ID,omitempty"
 	NetworkSettings map[string]string "NetworkSettings,omitempty"
 }
 
@@ -54,7 +55,18 @@ func (c *Container) Build(done chan bool) {
 }
 
 func (c *Container) IsRunning() bool {
-	return c.Running
+	if c.Running {
+		return true
+	}
+
+	// Check if a container with the same name is already running
+	inspect, err := docker.Inspect(c.Name)
+	if err != nil {
+		return false
+	}
+
+	c.retrieveInfoFromInspection(inspect)
+	return true
 }
 
 func (c *Container) IsReady() bool {
@@ -74,6 +86,11 @@ func (c *Container) AddDependency(container *Container) {
 func (c *Container) Start() {
 	c.init()
 
+	if c.IsRunning() {
+		fmt.Println("Application", c.Name, "already running", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+		return
+	}
+
 	startResult := docker.Start(c.Name, c.Links, c.Ports, c.Volumes)
 	c.Id = strings.TrimSpace(startResult)
 	c.Running = true
@@ -81,7 +98,7 @@ func (c *Container) Start() {
 	time.Sleep(2 * time.Second)
 	c.retrieveIp()
 
-	fmt.Println("Container", c.Name, "started", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+	fmt.Println("Application", c.Name, "started", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
 }
 
 func (c *Container) GetCustomValue(name string) interface{} {
@@ -100,11 +117,27 @@ func (c *Container) GetFirstPort() string {
 	return ""
 }
 
-func (c *Container) retrieveIp () {
-	inspect := docker.Inspect(c.Id)
+func (c *Container) CheckIfRunning() {
+	if c.IsRunning() {
+		fmt.Println("Application", c.Name, "is running", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+	} else {
+		fmt.Println("Application", c.Name, "Not running")
+	}
+}
 
+func (c *Container) retrieveIp () {
+	inspect, err := docker.Inspect(c.Id)
+	if err != nil {
+		panic(err)
+	}
+
+	c.retrieveInfoFromInspection(inspect)
+}
+
+func (c *Container) retrieveInfoFromInspection (inspect []byte) {
 	var results []inspection
 	goyaml.Unmarshal(inspect, &results)
 
 	c.Ip = results[0].NetworkSettings["IPAddress"]
+	c.Id = results[0].ID
 }

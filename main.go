@@ -6,6 +6,12 @@ import (
 	"os"
 )
 
+var (
+	config 	= flag.String("config", ".arch-o-matic.yml", "File describing the architecture")
+	rebuild = flag.Bool("rebuild", false, "Rebuild all containers ( data not stored in volumes will be lost)")
+	check = flag.Bool("check", false, "Check if all containers are running")
+)
+
 func main() {
 	m := maestro.Maestro{}
 	dir, err := os.Getwd()
@@ -13,17 +19,18 @@ func main() {
 		panic(err)
 	}
 
-	file := flag.String("config", "", "File describing the architecture")
 	flag.Parse()
 
-	if len(*file) > 0 {
-		filePath := *file
+	configPath := *config
+	if string(configPath[0]) != "/" {
+		configPath = dir + "/" + configPath
+	}
 
-		if string((*file)[0]) != "/" {
-			filePath = dir + "/" + *file
-		}
+	m.InitFromFile(configPath)
 
-		m.InitFromFile(filePath)
-		m.Start()
+	if *check {
+		m.Start(*rebuild)
+	} else {
+		m.Check()
 	}
 }

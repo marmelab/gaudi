@@ -129,11 +129,10 @@ func (maestro *Maestro) parseTemplates() {
 	}
 }
 
-func (maestro *Maestro) Start() {
+func (maestro *Maestro) Start(rebuild bool) {
 	maestro.parseTemplates()
 
 	cleanChans := make(chan bool, len(maestro.Containers))
-	buildChans := make(chan bool, len(maestro.Containers))
 	startChans := make(map[string]chan bool)
 
 	// Clean all containers
@@ -142,11 +141,15 @@ func (maestro *Maestro) Start() {
 	}
 	<-cleanChans
 
-	// Build all containers
-	for _, currentContainer := range maestro.Containers {
-		go currentContainer.Build(buildChans)
+	if rebuild {
+		buildChans := make(chan bool, len(maestro.Containers))
+
+		// Build all containers
+		for _, currentContainer := range maestro.Containers {
+			go currentContainer.Build(buildChans)
+		}
+		<-buildChans
 	}
-	<-buildChans
 
 	// Start all containers
 	for name, currentContainer := range maestro.Containers {
@@ -161,6 +164,17 @@ func (maestro *Maestro) Start() {
 	}
 }
 
+func (maestro *Maestro) GetContainer(name string) *container.Container {
+	return maestro.Containers[name]
+}
+
+func (maestro *Maestro) Check () {
+	for _, currentContainer := range maestro.Containers {
+		currentContainer.CheckIfRunning()
+	}
+}
+
+
 func (maestro *Maestro) startContainer(currentContainer *container.Container, done map[string]chan bool) {
 	// Waiting for dependencies to start
 	for _, dependency := range currentContainer.Dependencies {
@@ -170,8 +184,4 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	currentContainer.Start()
 
 	close(done[currentContainer.Name])
-}
-
-func (maestro *Maestro) GetContainer(name string) *container.Container {
-	return maestro.Containers[name]
 }
