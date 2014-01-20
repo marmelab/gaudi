@@ -1,0 +1,17 @@
+containers:
+    front:
+        type: apache
+        links: [app]
+        ports:
+            80: 80
+        volumes:
+            /tmp/php: /var/www
+        custom:
+            fastCgi: app
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            /tmp/php: /var/www
