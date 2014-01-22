@@ -1,13 +1,21 @@
 <VirtualHost *:[[ .Container.GetFirstPort ]]>
 	ServerAdmin webmaster@localhost
 
-	DocumentRoot /var/www
+	[[ if (.Container.GetCustomValue "documentRoot") ]]
+		DocumentRoot [[ (.Container.GetCustomValue "documentRoot") ]]
+	[[ else ]]
+		DocumentRoot /var/www
+	[[ end ]]
 	<Directory />
 		Options FollowSymLinks
 		AllowOverride None
 	</Directory>
 
-	<Directory /var/www/>
+	[[ if (.Container.GetCustomValue "documentRoot") ]]
+        <Directory [[ (.Container.GetCustomValue "documentRoot") ]]>
+    [[ else ]]
+        <Directory /var/www/>
+    [[ end ]]
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride None
 		Order allow,deny
