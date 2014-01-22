@@ -8,4 +8,4 @@ script:
     - go get github.com/qur/withmock
     - go get github.com/qur/withmock/mocktest
 
-    - cd build/marmelab/arch-o-match && withmock go test -v
+    - cd build/marmelab/gaudi && withmock go test -v

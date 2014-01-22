@@ -4,7 +4,7 @@ import (
 	"testing"
 	. "launchpad.net/gocheck"
 
-	"github.com/marmelab/arch-o-matic/maestro"
+	"github.com/marmelab/gaudi/maestro"
 	"net/http"
 	"io/ioutil"
 	"os"
@@ -28,7 +28,7 @@ containers:
 `, "")
 
 	c.Assert(len(m.Containers), Equals, 1)
-	m.Start()
+	m.Start(true)
 
 	// Test apache is running
 	resp, err := http.Get("http://" + m.GetContainer("front").Ip)
@@ -65,7 +65,7 @@ containers:
 `, "")
 
 	c.Assert(len(m.Containers), Equals, 2)
-	m.Start()
+	m.Start(true)
 	time.Sleep(2 * time.Second)
 
 	// Test apache is running

@@ -1,15 +1,16 @@
-# Arch-o-matic
-Builduing your architectures from a single file.
+# Gaudi
+Gaudi is a generator of architecture written in Go and using [Docker](http://www.docker.io).
+You can use it to start any types of applications and link them together without knowledge of Docker and system configuration.
 
-# Starting an Architecture
-With a simple `apache-php-mysql.yml` :
+# Basic usage
+The architecture can be described with a single file (called `.gaudi.yml`) :
 ```yml
 containers:
     front1:
         type: apache
         links: [app]
         volumes:
-            php: /var/www
+            .: /var/www
         custom:
             fastCgi: app
 
@@ -19,20 +20,43 @@ containers:
         ports:
             9000: 9000
         volumes:
-            php: /var/www
+            .: /var/www
 
     db:
         type: mysql
         ports:
             3306: 3306
-
 ```
 
-An architecture can be started with :
+This environment can be started with :
 
 ```sh
-go run src/github.com/marmelab/arch-o-matic/main.go --config="src/github.com/marmelab/arch-o-matic/example/apache-php-mysql.yml"
+gaudi
 ```
+
+Gaudi will try to find a `.gaudi.yml` file in the current folder and start each application simultaneously according to their dependencies.
+
+# Installation
+```sh
+go get github.com/marmelab/gaudi
+```
+
+Check that yout PATH includes `$GOPATH/bin`
+```sh
+export PATH=$GOPATH/bin:/$PATH
+```
+
+# Options
+- `--config=""` Specify the location of the configuration file
+- `--rebuild` Rebuild all applications (with this option, data not stored in volumes will be lost)
+- `--stop` Stop all applications
+- `--check` Check if all applications are running
+
+# How does it work
+
+Gaudi uses [Docker](http://www.docker.io) to start all applications in a specific container.
+It builds a Docker files and specific configuration files from different templates.
+Each templates are listed in the `templates` folder, one for each application type.
 
 # Configuration
 
@@ -47,6 +71,8 @@ containers:
 	[Application name]:
 		type: [one of the listed type below]
 ```
+
+Application types are listed below.
 
 ### Links
 When an applications depends on another, you can link them :
@@ -81,7 +107,7 @@ containers:
 			80:8080
 ```
 
-Here the port 80 will be mapped to the 8080 in the container.
+The port 80 inb the host machine will be mapped to the 8080 in the container.
 
 ### Volumes
 You can add you own files by mounting volumes :
@@ -93,9 +119,12 @@ containers:
 			php:/app/php
 ```
 
-The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the container.
+The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the application.
 
 ## Types
+
+Each application uses a `custom` section in the configuration to defines them own aspect.
+
 ### Varnish
 ```yml
 containers:
@@ -143,3 +172,13 @@ containers:
 ```
 
 `fastCgi` custom param is used to point out an application to forward Fast-CGI scripts.
+
+## Contributing
+
+Your feedback about the usage of gaudi in your specific context is valuable, don't hesitate to [open GitHub Issues](https://github.com/marmelab/gaudi/issues) for any problem or question you may have.
+
+All contributions are welcome. New applications or options should be tested  with go unit test tool.
+
+## License
+
+Gaudi is licensed under the [MIT Licence](LICENSE), courtesy of [marmelab](http://marmelab.com).

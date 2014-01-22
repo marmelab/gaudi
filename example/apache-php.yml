@@ -5,7 +5,7 @@ containers:
         ports:
             80: 80
         volumes:
-            /tmp/php: /var/www
+            php: /var/www
         custom:
             fastCgi: app
 
@@ -14,4 +14,4 @@ containers:
         ports:
             9000: 9000
         volumes:
-            /tmp/php: /var/www
+            php: /var/www

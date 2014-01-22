@@ -5,8 +5,8 @@ import (
 	"code.google.com/p/gomock/gomock"
 	. "launchpad.net/gocheck"
 
-	"github.com/marmelab/arch-o-matic/container"
-	"github.com/marmelab/arch-o-matic/docker" // mock
+	"github.com/marmelab/gaudi/container"
+	"github.com/marmelab/gaudi/docker" // mock
 )
 
 // Hook up gocheck into the "go test" runner.
@@ -23,7 +23,8 @@ func (s *ContainerTestSuite) TestStartedContainerShouldRetrieveItsIp(c *C) {
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123")
-	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"))
+	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
+	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil)
 
 	// @TODO : find a way to mock time.Sleep
 	container := container.Container{Name: "Test"}
@@ -52,11 +53,12 @@ func (s *ContainerTestSuite) TestCallCleanShouldStopTheContainer(c *C) {
 
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
-	docker.EXPECT().Clean(gomock.Any()).Return()
+	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil)
+	docker.EXPECT().Kill(gomock.Any()).Return()
+	docker.EXPECT().Remove(gomock.Any()).Return()
 
 	done := make(chan bool, 1)
 	container := container.Container{Name: "Test"}
-	container.Running = true
 	container.Clean(done)
 	<-done
 
