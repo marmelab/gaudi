@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 	"launchpad.net/goyaml"
-	"github.com/marmelab/arch-o-matic/docker"
+	"github.com/marmelab/gaudi/docker"
 )
 
 type Container struct {
@@ -25,6 +25,7 @@ type Container struct {
 type inspection struct {
 	ID string "ID,omitempty"
 	NetworkSettings map[string]string "NetworkSettings,omitempty"
+	State map[string]interface{} "State,omitempty"
 }
 
 func (c *Container) init() {
@@ -39,13 +40,35 @@ func (c *Container) init() {
 	}
 }
 
-func (c *Container) Clean(done chan bool) {
-	fmt.Println("Cleaning", c.Name, "...")
-	docker.Clean(c.Name)
+func (c *Container) Remove(done chan bool) {
+	docker.Remove(c.Name)
 	c.Running = false
 
 	done <- true
 }
+
+func (c *Container) Kill(done chan bool, silent bool) {
+	if !silent {
+		fmt.Println("Stopping", c.Name, "...")
+	}
+	docker.Kill(c.Name)
+	c.Running = false
+
+	done <- true
+}
+
+func (c *Container) Clean(done chan bool) {
+	fmt.Println("Cleaning", c.Name, "...")
+
+	cleaning := make(chan bool, 2)
+	c.Kill(cleaning, true)
+	c.Remove(cleaning)
+
+	<-cleaning
+
+	done <- true
+}
+
 
 func (c *Container) Build(done chan bool) {
 	fmt.Println("Building", c.Name, "...")
@@ -66,8 +89,9 @@ func (c *Container) IsRunning() bool {
 	}
 
 	c.retrieveInfoFromInspection(inspect)
-	return true
+	return c.Running
 }
+
 
 func (c *Container) IsReady() bool {
 	ready := true
@@ -87,18 +111,18 @@ func (c *Container) Start() {
 	c.init()
 
 	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "already running", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+		fmt.Println("Application", c.Name, "already running", "(" +c.Ip+":"+c.GetFirstPort()+")")
 		return
 	}
 
 	startResult := docker.Start(c.Name, c.Links, c.Ports, c.Volumes)
 	c.Id = strings.TrimSpace(startResult)
+
+	time.Sleep(time.Second)
+	c.retrieveIp()
 	c.Running = true
 
-	time.Sleep(2 * time.Second)
-	c.retrieveIp()
-
-	fmt.Println("Application", c.Name, "started", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+	fmt.Println("Application", c.Name, "started", "(" +c.Ip+":"+c.GetFirstPort()+")")
 }
 
 func (c *Container) GetCustomValue(name string) interface{} {
@@ -119,9 +143,9 @@ func (c *Container) GetFirstPort() string {
 
 func (c *Container) CheckIfRunning() {
 	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "is running", "(" +c.Ip+":"+c.GetFirstPort()+") :", c.Id)
+		fmt.Println("Application", c.Name, "is running", "(" +c.Ip+":"+c.GetFirstPort()+")")
 	} else {
-		fmt.Println("Application", c.Name, "Not running")
+		fmt.Println("Application", c.Name, "is not running")
 	}
 }
 
@@ -138,6 +162,8 @@ func (c *Container) retrieveInfoFromInspection (inspect []byte) {
 	var results []inspection
 	goyaml.Unmarshal(inspect, &results)
 
+	c.Running = results[0].State["Running"].(bool)
 	c.Ip = results[0].NetworkSettings["IPAddress"]
 	c.Id = results[0].ID
 }
+

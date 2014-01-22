@@ -2,7 +2,8 @@ package maestro
 
 import (
 	"bytes"
-	"github.com/marmelab/arch-o-matic/container"
+	"github.com/marmelab/gaudi/container"
+	"github.com/marmelab/gaudi/util"
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"os"
@@ -52,7 +53,13 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 			if string(volumeHost[0]) != "/" {
 				delete(currentContainer.Volumes, volumeHost)
 
+				if !util.IsDir(relativePath+"/"+volumeHost) {
+					panic(relativePath+"/"+volumeHost+" should be a directory")
+				}
+
 				currentContainer.Volumes[relativePath+"/"+volumeHost] = volumeContainer
+			} else if !util.IsDir(volumeHost) {
+				panic(volumeHost+" should be a directory")
 			}
 		}
 	}
@@ -66,8 +73,8 @@ func (maestro *Maestro) parseTemplates() {
 		path = testPath
 	}
 
-	templateDir := path + "/src/github.com/marmelab/arch-o-matic/templates/"
-	parsedTemplateDir := "/tmp/arch-o-matic/"
+	templateDir := path + "/src/github.com/marmelab/gaudi/templates/"
+	parsedTemplateDir := "/tmp/gaudi/"
 	templateData := TemplateData{maestro, nil}
 	funcMap := template.FuncMap{
 		"ToUpper": strings.ToUpper,
@@ -130,18 +137,19 @@ func (maestro *Maestro) parseTemplates() {
 }
 
 func (maestro *Maestro) Start(rebuild bool) {
-	maestro.parseTemplates()
-
-	cleanChans := make(chan bool, len(maestro.Containers))
-	startChans := make(map[string]chan bool)
-
-	// Clean all containers
-	for _, currentContainer := range maestro.Containers {
-		go currentContainer.Clean(cleanChans)
-	}
-	<-cleanChans
+	rebuild = rebuild || !maestro.HasParsedTemplates()
 
 	if rebuild {
+		maestro.parseTemplates()
+
+		cleanChans := make(chan bool, len(maestro.Containers))
+		// Clean all containers
+		for _, currentContainer := range maestro.Containers {
+			go currentContainer.Clean(cleanChans)
+		}
+		<-cleanChans
+
+
 		buildChans := make(chan bool, len(maestro.Containers))
 
 		// Build all containers
@@ -150,6 +158,8 @@ func (maestro *Maestro) Start(rebuild bool) {
 		}
 		<-buildChans
 	}
+
+	startChans := make(map[string]chan bool)
 
 	// Start all containers
 	for name, currentContainer := range maestro.Containers {
@@ -174,6 +184,15 @@ func (maestro *Maestro) Check () {
 	}
 }
 
+func (maestro *Maestro) Stop() {
+	killChans := make(chan bool, len(maestro.Containers))
+
+	for _, currentContainer := range maestro.Containers {
+		go currentContainer.Kill(killChans, false)
+	}
+
+	<-killChans
+}
 
 func (maestro *Maestro) startContainer(currentContainer *container.Container, done map[string]chan bool) {
 	// Waiting for dependencies to start
@@ -184,4 +203,16 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	currentContainer.Start()
 
 	close(done[currentContainer.Name])
+}
+
+func (maestro *Maestro) HasParsedTemplates () bool {
+	parsedTemplateDir := "/tmp/gaudi/"
+
+	for containerName := range maestro.Containers {
+		if !util.IsDir(parsedTemplateDir+containerName) {
+			return false
+		}
+	}
+
+	return true
 }

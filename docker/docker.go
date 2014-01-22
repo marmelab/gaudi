@@ -9,14 +9,7 @@ import (
 
 var docker, _ = exec.LookPath("docker")
 
-func Clean (name string) {
-	killCommand := exec.Command(docker, "kill", name)
-	killErr := killCommand.Start()
-	if killErr != nil {
-		panic (killErr)
-	}
-	time.Sleep(1 * time.Second)
-
+func Remove (name string) {
 	removeCmd := exec.Command(docker, "rm", name)
 	removeErr := removeCmd.Start()
 	if removeErr != nil {
@@ -25,8 +18,17 @@ func Clean (name string) {
 	time.Sleep(1 * time.Second)
 }
 
+func Kill (name string) {
+	killCommand := exec.Command(docker, "kill", name)
+	killErr := killCommand.Start()
+	if killErr != nil {
+		panic (killErr)
+	}
+	time.Sleep(1 * time.Second)
+}
+
 func Build (name string) {
-	buildCmd := exec.Command(docker, "build", "-rm", "-t", "arch_o_matic/"+name, "/tmp/arch-o-matic/"+name)
+	buildCmd := exec.Command(docker, "build", "-rm", "-t", "gaudi/"+name, "/tmp/gaudi/"+name)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
@@ -54,7 +56,7 @@ func Start (name string, links []string, ports, volumes map[string]string) strin
 		rawArgs = append(rawArgs, "-v="+volumeHost+":"+volumeContainer)
 	}
 
-	rawArgs = append(rawArgs, "arch_o_matic/"+name)
+	rawArgs = append(rawArgs, "gaudi/"+name)
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
@@ -68,15 +70,15 @@ func Start (name string, links []string, ports, volumes map[string]string) strin
 	return string(out)
 }
 
-func Inspect (id string) []byte {
+func Inspect (id string) ([]byte, error) {
 	inspectCmd := exec.Command(docker, "inspect", id)
 
 	out, err := inspectCmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return out
+	return out, nil
 }
 
 func buildArguments(rawArgs []string) []reflect.Value {

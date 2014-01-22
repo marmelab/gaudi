@@ -1,9 +1,9 @@
-# Arch-o-matic
-Arch-o-matic is a generator of architecture written in Go and using [Docker](http://www.docker.io).
+# Gaudi
+Gaudi is a generator of architecture written in Go and using [Docker](http://www.docker.io).
 You can use it to start any types of applications and link them together without knowledge of Docker and system configuration.
 
 # Basic usage
-The architecture can be described with a single file (called `.arch-o-matic.yml`) :
+The architecture can be described with a single file (called `.gaudi.yml`) :
 ```yml
 containers:
     front1:
@@ -31,14 +31,14 @@ containers:
 This environment can be started with :
 
 ```sh
-arch-o-matic
+gaudi
 ```
 
-Arch-o-matic will try to find a `.arch-o-matic.yml` file in the current folder and start each application simultaneously according to their dependencies.
+Gaudi will try to find a `.gaudi.yml` file in the current folder and start each application simultaneously according to their dependencies.
 
 # Installation
 ```sh
-go get github.com/marmelab/arch-o-matic
+go get github.com/marmelab/gaudi
 ```
 
 Check that yout PATH includes `$GOPATH/bin`
@@ -49,12 +49,13 @@ export PATH=$GOPATH/bin:/$PATH
 # Options
 - `--config=""` Specify the location of the configuration file
 - `--rebuild` Rebuild all applications (with this option, data not stored in volumes will be lost)
+- `--stop` Stop all applications
 - `--check` Check if all applications are running
 
 # How does it work
 
-Arch-o-matic uses Docker containers to start all applications in a specific container.
-It builds a Docker file and specific configuration files with templates.
+Gaudi uses [Docker](http://www.docker.io) to start all applications in a specific container.
+It builds a Docker files and specific configuration files from different templates.
 Each templates are listed in the `templates` folder, one for each application type.
 
 # Configuration
@@ -174,10 +175,10 @@ containers:
 
 ## Contributing
 
-Your feedback about the usage of arch-o-matic in your specific context is valuable, don't hesitate to [open GitHub Issues](https://github.com/marmelab/arch-o-matic/issues) for any problem or question you may have.
+Your feedback about the usage of gaudi in your specific context is valuable, don't hesitate to [open GitHub Issues](https://github.com/marmelab/gaudi/issues) for any problem or question you may have.
 
 All contributions are welcome. New applications or options should be tested  with go unit test tool.
 
 ## License
 
-arch-o-matic is licensed under the [MIT Licence](LICENSE), courtesy of [marmelab](http://marmelab.com).
+Gaudi is licensed under the [MIT Licence](LICENSE), courtesy of [marmelab](http://marmelab.com).
