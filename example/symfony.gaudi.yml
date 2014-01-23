@@ -25,5 +25,3 @@ containers:
         type: mysql
         ports:
             3306: 3306
-
-# export SYMFONY__DB_PORT_3306_TCP_ADDR=$DB_PORT_3306_TCP_ADDR

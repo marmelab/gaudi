@@ -65,6 +65,14 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 	}
 }
 
+func (maestro *Maestro) createHiddenDir() {
+	currentDir, _ := os.Getwd()
+	err := os.MkdirAll(currentDir+"/.gaudi", 0755)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (maestro *Maestro) parseTemplates() {
 	// Running withmock doesn't include templates files in withmock's temporary dir
 	path := os.Getenv("GOPATH")
@@ -137,6 +145,7 @@ func (maestro *Maestro) parseTemplates() {
 }
 
 func (maestro *Maestro) Start(rebuild bool) {
+	maestro.createHiddenDir()
 	rebuild = rebuild || !maestro.HasParsedTemplates()
 
 	if rebuild {

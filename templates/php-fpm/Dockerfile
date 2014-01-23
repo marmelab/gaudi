@@ -13,5 +13,4 @@ RUN sed -i 's|;cgi.fix_pathinfo=0|cgi.fix_pathinfo=0|g' /etc/php5/fpm/pool.d/www
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
-# Little hack to start a process in a container without supervisor
 CMD /bin/bash /root/setup.sh && service php5-fpm start && /bin/bash
