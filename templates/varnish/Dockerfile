@@ -19,4 +19,4 @@ ADD default.vcl /etc/varnish/default.vcl
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
-CMD /bin/bash /root/setup.sh && /etc/init.d/varnish start && varnishlog
+CMD /bin/bash /root/setup.sh && /etc/init.d/varnish start && /bin/bash

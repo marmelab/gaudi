@@ -1,0 +1,27 @@
+containers:
+    front:
+        type: apache
+        links: [app]
+        ports:
+            80: 80
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app
+            documentRoot: /var/www/web
+            modules: [rewrite]
+
+    app:
+        type: php-fpm
+        links: [db]
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www
+        custom:
+            modules: []
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306

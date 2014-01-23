@@ -15,4 +15,4 @@ ADD default /etc/nginx/sites-enabled/default
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
-CMD /bin/bash /root/setup.sh && nginx
+CMD /bin/bash /root/setup.sh && /etc/init.d/nginx start && /bin/bash

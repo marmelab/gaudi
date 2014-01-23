@@ -12,15 +12,9 @@ docker build -t gaudi/mysql src/github.com/marmelab/gaudi/templates/mysql/
 
 docker run -d -p 3306 -name db gaudi/mysql
 
-CREATE DATABASE project CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-USE project;
-CREATE TABLE users (
-	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	username VARCHAR(100)
-);
-
-INSERT INTO users (id, username) VALUES (NULL, 'manu');
+INSERT INTO symfony.user (username) VALUES ("Manu");
 ```
 
 ## Apache
