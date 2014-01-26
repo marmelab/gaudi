@@ -1,0 +1,18 @@
+containers:
+    server:
+        type: nodejs
+        links: [redis]
+        ports:
+            80: 80
+        volumes:
+            nodejs-redis: /app
+        before_script: node /app/server.js
+        custom:
+            modules: [redis]
+
+    redis:
+        type: remote
+        image: gary/redis
+        path: github.com/manuquentin/docker-redis
+        ports:
+            6379: 6379

@@ -8,8 +8,8 @@ import (
 	"launchpad.net/goyaml"
 	"os"
 	"path/filepath"
-	"text/template"
 	"strings"
+	"text/template"
 )
 
 type Maestro struct {
@@ -44,8 +44,16 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 		currentContainer := maestro.Containers[name]
 		currentContainer.Name = name
 
+		if currentContainer.IsGaudiManaged() {
+			currentContainer.Image = "gaudi/" + name
+		}
+
 		for _, dependency := range currentContainer.Links {
-			currentContainer.AddDependency(maestro.Containers[dependency])
+			if depContainer, exists := maestro.Containers[dependency]; exists {
+				currentContainer.AddDependency(depContainer)
+			} else {
+				panic(name + " references a non existing application : " + dependency)
+			}
 		}
 
 		// Add relative path to volumes
@@ -53,13 +61,23 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 			if string(volumeHost[0]) != "/" {
 				delete(currentContainer.Volumes, volumeHost)
 
-				if !util.IsDir(relativePath+"/"+volumeHost) {
-					panic(relativePath+"/"+volumeHost+" should be a directory")
+				if !util.IsDir(relativePath + "/" + volumeHost) {
+					panic(relativePath + "/" + volumeHost + " should be a directory")
 				}
 
 				currentContainer.Volumes[relativePath+"/"+volumeHost] = volumeContainer
 			} else if !util.IsDir(volumeHost) {
-				panic(volumeHost+" should be a directory")
+				panic(volumeHost + " should be a directory")
+			}
+		}
+
+		// Check if the beforeScript is a file
+		beforeScript := currentContainer.BeforeScript
+		if len(beforeScript) != 0 {
+			if util.IsFile(beforeScript) {
+				currentContainer.BeforeScript = beforeScript
+			} else if util.IsFile(relativePath + "/" + beforeScript) {
+				currentContainer.BeforeScript = relativePath + "/" + beforeScript
 			}
 		}
 	}
@@ -95,9 +113,13 @@ func (maestro *Maestro) parseTemplates() {
 	}
 
 	for _, currentContainer := range maestro.Containers {
+		if !currentContainer.IsGaudiManaged() {
+			continue
+		}
+
 		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
 		if err != nil {
-			continue
+			panic("Template not found for application : " + currentContainer.Type)
 		}
 
 		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
@@ -151,21 +173,29 @@ func (maestro *Maestro) Start(rebuild bool) {
 	if rebuild {
 		maestro.parseTemplates()
 
-		cleanChans := make(chan bool, len(maestro.Containers))
+		nbContainers := len(maestro.Containers)
+		cleanChans := make(chan bool, nbContainers)
 		// Clean all containers
 		for _, currentContainer := range maestro.Containers {
 			go currentContainer.Clean(cleanChans)
 		}
 		<-cleanChans
 
-
 		buildChans := make(chan bool, len(maestro.Containers))
 
 		// Build all containers
 		for _, currentContainer := range maestro.Containers {
-			go currentContainer.Build(buildChans)
+			if currentContainer.IsPreBuild() {
+				go currentContainer.Pull(buildChans)
+			} else {
+				go currentContainer.Build(buildChans)
+			}
+
 		}
-		<-buildChans
+
+		for i := 0; i < nbContainers; i++ {
+			<-buildChans
+		}
 	}
 
 	startChans := make(map[string]chan bool)
@@ -187,7 +217,7 @@ func (maestro *Maestro) GetContainer(name string) *container.Container {
 	return maestro.Containers[name]
 }
 
-func (maestro *Maestro) Check () {
+func (maestro *Maestro) Check() {
 	for _, currentContainer := range maestro.Containers {
 		currentContainer.CheckIfRunning()
 	}
@@ -214,11 +244,11 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	close(done[currentContainer.Name])
 }
 
-func (maestro *Maestro) HasParsedTemplates () bool {
+func (maestro *Maestro) HasParsedTemplates() bool {
 	parsedTemplateDir := "/tmp/gaudi/"
 
 	for containerName := range maestro.Containers {
-		if !util.IsDir(parsedTemplateDir+containerName) {
+		if !util.IsDir(parsedTemplateDir + containerName) {
 			return false
 		}
 	}

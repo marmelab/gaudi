@@ -25,3 +25,4 @@ containers:
         type: mysql
         ports:
             3306: 3306
+        before_script: mysql -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot

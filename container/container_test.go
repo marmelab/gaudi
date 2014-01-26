@@ -1,9 +1,9 @@
 package container_test
 
 import (
-	"testing"
 	"code.google.com/p/gomock/gomock"
 	. "launchpad.net/gocheck"
+	"testing"
 
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/docker" // mock
@@ -13,6 +13,7 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type ContainerTestSuite struct{}
+
 var _ = Suite(&ContainerTestSuite{})
 
 func (s *ContainerTestSuite) TestStartedContainerShouldRetrieveItsIp(c *C) {
@@ -34,7 +35,7 @@ func (s *ContainerTestSuite) TestStartedContainerShouldRetrieveItsIp(c *C) {
 	c.Check(container.Ip, Equals, "172.17.0.10")
 }
 
-func (s *ContainerTestSuite) TestGetFirstPortShouldReturnTheFirstDeclaredPort (c *C) {
+func (s *ContainerTestSuite) TestGetFirstPortShouldReturnTheFirstDeclaredPort(c *C) {
 	container := container.Container{Name: "Test"}
 
 	c.Check(container.GetFirstPort(), Equals, "")

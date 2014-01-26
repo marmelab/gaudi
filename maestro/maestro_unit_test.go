@@ -1,9 +1,9 @@
 package maestro_test
 
 import (
-	"testing"
 	"code.google.com/p/gomock/gomock"
 	. "launchpad.net/gocheck"
+	"testing"
 
 	"github.com/marmelab/gaudi/docker" // mock
 	"github.com/marmelab/gaudi/maestro"
@@ -12,16 +12,19 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type MaestroTestSuite struct{}
+
 var _ = Suite(&MaestroTestSuite{})
 
 func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnMalformedYmlContent(c *C) {
 	m := maestro.Maestro{}
 
-	c.Assert(func() { m.InitFromString(`
+	c.Assert(func() {
+		m.InitFromString(`
 		containers:
 			tabulated:
 				type: varnish
-`, "") }, PanicMatches, "YAML error: line 1: found character that cannot start any token")
+`, "")
+	}, PanicMatches, "YAML error: line 1: found character that cannot start any token")
 }
 
 func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnWrongContent(c *C) {
@@ -30,7 +33,7 @@ func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnWrongContent(c 
 	c.Assert(func() { m.InitFromString("<oldFormat>Skrew you, i'm not yml</oldFormat>", "") }, PanicMatches, "No container to start")
 }
 
-func (s *MaestroTestSuite) TestInitFromStringShouldCreateAMaestro (c *C) {
+func (s *MaestroTestSuite) TestInitFromStringShouldCreateAMaestro(c *C) {
 	m := maestro.Maestro{}
 	m.InitFromString(`
 containers:
@@ -57,7 +60,7 @@ containers:
 	c.Assert(m.GetContainer("db").IsRunning(), Equals, false)
 }
 
-func (s *MaestroTestSuite) TestStartContainerShouldCleanAndBuildThem (c *C) {
+func (s *MaestroTestSuite) TestStartContainerShouldCleanAndBuildThem(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()

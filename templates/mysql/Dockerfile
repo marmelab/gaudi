@@ -14,4 +14,15 @@ RUN sed -i -e "s/^bind-address\s*=\s*127.0.0.1/bind-address\t\t= 0.0.0.0/" /etc/
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
-CMD /bin/bash /root/setup.sh && /etc/init.d/mysql start && /bin/bash
+# Add custom setup script
+[[ if (.Container.HasBeforeScript) ]]
+	[[ if (.Container.HasBeforeScriptFile) ]]
+		ADD [[.Container.BeforeScript]] /root/custom-setup.sh
+	[[ else ]]
+		RUN echo [[.Container.BeforeScript]] > /root/custom-setup.sh
+	[[ end ]]
+
+	RUN chmod +x /root/custom-setup.sh
+[[ end ]]
+
+CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/custom-setup.sh && [[end]] /bin/bash /root/setup.sh && /etc/init.d/mysql start && /bin/bash

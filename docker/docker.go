@@ -4,42 +4,52 @@ import (
 	"os/exec"
 	"reflect"
 	"time"
-	"fmt"
 )
 
 var docker, _ = exec.LookPath("docker")
 
-func Remove (name string) {
+func Remove(name string) {
 	removeCmd := exec.Command(docker, "rm", name)
 	removeErr := removeCmd.Start()
 	if removeErr != nil {
-		panic (removeErr)
+		panic(removeErr)
 	}
 	time.Sleep(1 * time.Second)
 }
 
-func Kill (name string) {
+func Kill(name string) {
 	killCommand := exec.Command(docker, "kill", name)
 	killErr := killCommand.Start()
 	if killErr != nil {
-		panic (killErr)
+		panic(killErr)
 	}
+
 	time.Sleep(1 * time.Second)
 }
 
-func Build (name string) {
-	buildCmd := exec.Command(docker, "build", "-rm", "-t", "gaudi/"+name, "/tmp/gaudi/"+name)
+func Build(name, path string) {
+	var buildCmd *exec.Cmd
+
+	buildCmd = exec.Command(docker, "build", "-t", name, path)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
+		panic(out)
 	}
 }
 
-func Start (name string, links []string, ports, volumes map[string]string) string {
+func Pull(name string) {
+	pullCmd := exec.Command(docker, "pull", name)
+
+	out, err := pullCmd.CombinedOutput()
+	if err != nil {
+		panic(out)
+	}
+}
+
+func Start(name, image string, links []string, ports, volumes map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "run", "-d", "-name", name}
+	rawArgs := []string{docker, "run", "-d", "-i", "-t", "-name", name}
 
 	// Add links
 	for _, link := range links {
@@ -56,21 +66,20 @@ func Start (name string, links []string, ports, volumes map[string]string) strin
 		rawArgs = append(rawArgs, "-v="+volumeHost+":"+volumeContainer)
 	}
 
-	rawArgs = append(rawArgs, "gaudi/"+name)
+	rawArgs = append(rawArgs, image)
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
+		panic(out)
 	}
 
 	return string(out)
 }
 
-func Inspect (id string) ([]byte, error) {
+func Inspect(id string) ([]byte, error) {
 	inspectCmd := exec.Command(docker, "inspect", id)
 
 	out, err := inspectCmd.CombinedOutput()
