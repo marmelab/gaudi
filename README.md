@@ -1,11 +1,12 @@
 # Gaudi
 Gaudi is a generator of architecture written in Go and using [Docker](http://www.docker.io).
 You can use it to start any types of applications and link them together without knowledge of Docker and system configuration.
+Using Go, Gaudi can build and start your applications in parallel depending of they dependencies.
 
 # Basic usage
 The architecture can be described with a single file (called `.gaudi.yml`) :
 ```yml
-containers:
+applications:
     front1:
         type: apache
         links: [app]
@@ -62,12 +63,12 @@ Each templates are listed in the `templates` folder, one for each application ty
 
 ## Common Configuration
 
-The YML file describing the architecture should have a section called `containers`.
+The YML file describing the architecture should have a section called `applications`.
 
 ### Type
 You can specify what king a application you want to run :
 ```yml
-containers:
+applications:
 	[Application name]:
 		type: [one of the listed type below]
 ```
@@ -77,7 +78,7 @@ Application types are listed below.
 ### Links
 When an applications depends on another, you can link them :
 ```yml
-containers:
+applications:
 	app1:
 		type: varnish
 		links: [front1, front2]
@@ -100,7 +101,7 @@ FRONT1_PORT_3306_TCP=tcp://172.17.0.215:80
 ### Ports
 To open some ports on an applications :
 ```yml
-containers:
+applications:
 	front1:
 		type: apache
 		ports:
@@ -112,7 +113,7 @@ The port 80 inb the host machine will be mapped to the 8080 in the container.
 ### Volumes
 You can add you own files by mounting volumes :
 ```yml
-containers:
+applications:
 	front1:
 		type: apache
 		volumes:
@@ -121,13 +122,18 @@ containers:
 
 The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the application.
 
+## Examples
+
+You can find an example of [how starting a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
+
+
 ## Types
 
 Each application uses a `custom` section in the configuration to defines them own aspect.
 
 ### Varnish
 ```yml
-containers:
+applications:
     [name]:
         type: varnish
         links: [front1, front2]
@@ -135,13 +141,13 @@ containers:
         backends: [front1, front2]
 ```
 
-`backends` custom param is used to defines which containers are load balanced by Varnish. Theses containers have to be linked with `links`.
+`backends` custom param is used to defines which applications are load balanced by Varnish. Theses applications have to be linked with `links`.
 
 ### Nginx
 
 #### As a webserver:
 ```yml
-containers:
+applications:
     [name]:
         type: nginx
         links: [app]
@@ -151,7 +157,7 @@ containers:
 
 #### As a load balancer:
 ```yml
-containers:
+applications:
     [name]:
         type: nginx
         links: [front1, front2]
@@ -159,12 +165,12 @@ containers:
         backends: [front1, front2]
 ```
 
-`backends` custom param is used to defines which containers are load balanced by Nginx. Theses containers have to be linked with `links`.
+`backends` custom param is used to defines which applications are load balanced by Nginx. Theses applications have to be linked with `links`.
 
 
 ### Apache
 ```yml
-containers:
+applications:
     [name]:
         type: apache
     custom:

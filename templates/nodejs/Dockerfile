@@ -10,6 +10,17 @@ RUN cd /tmp/node && ./configure --openssl-libpath=/usr/lib/ssl && make && make i
 
 # Install NPM
 RUN git clone git://github.com/isaacs/npm.git /tmp/npm
-RUN cd /tmp/node && make install
+RUN cd /tmp/npm && make install
 
-ENTRYPOINT ["/usr/local/bin/node"]
+# Install modules
+[[range (.Container.GetCustomValue "modules")]]
+	RUN npm install -g [[.]]
+[[end]]
+
+ENV NODE_PATH /usr/local/lib/node_modules
+
+[[ if (.Container.HasBeforeScript) ]]
+	CMD [[.Container.BeforeScript]] && /bin/bash
+[[ else ]]
+	CMD ["/usr/local/bin/node"] && /bin/bash
+[[ end]]

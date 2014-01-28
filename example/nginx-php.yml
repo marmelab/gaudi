@@ -1,4 +1,4 @@
-containers:
+applications:
     front:
         type: nginx
         ports:

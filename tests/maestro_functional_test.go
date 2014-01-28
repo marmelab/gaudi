@@ -1,12 +1,12 @@
 package maestro_funcitonal_test
 
 import (
-	"testing"
 	. "launchpad.net/gocheck"
+	"testing"
 
 	"github.com/marmelab/gaudi/maestro"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"time"
 )
@@ -14,20 +14,21 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type MaestroTestSuite struct{}
+
 var _ = Suite(&MaestroTestSuite{})
 
 // Apache
 func (s *MaestroTestSuite) TestStartApacheShouldStartedItCorrectly(c *C) {
 	m := maestro.Maestro{}
 	m.InitFromString(`
-containers:
+applications:
     front:
         type: apache
         ports:
             80: 80
 `, "")
 
-	c.Assert(len(m.Containers), Equals, 1)
+	c.Assert(len(m.Applications), Equals, 1)
 	m.Start(true)
 
 	// Test apache is running
@@ -45,7 +46,7 @@ func (s *MaestroTestSuite) TestStartPhpAndApacheShouldStartedThemCorrectly(c *C)
 
 	m := maestro.Maestro{}
 	m.InitFromString(`
-containers:
+applications:
     front:
         type: apache
         links: [app]
@@ -64,12 +65,12 @@ containers:
             /tmp/php: /var/www
 `, "")
 
-	c.Assert(len(m.Containers), Equals, 2)
+	c.Assert(len(m.Applications), Equals, 2)
 	m.Start(true)
 	time.Sleep(2 * time.Second)
 
 	// Test apache is running
-	resp, err := http.Get("http://" + m.GetContainer("front").Ip+"/ok.php")
+	resp, err := http.Get("http://" + m.GetContainer("front").Ip + "/ok.php")
 	defer resp.Body.Close()
 
 	content, _ := ioutil.ReadAll(resp.Body)

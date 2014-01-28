@@ -2,19 +2,22 @@ package container
 
 import (
 	"fmt"
+	"github.com/marmelab/gaudi/docker"
+	"launchpad.net/goyaml"
 	"strings"
 	"time"
-	"launchpad.net/goyaml"
-	"github.com/marmelab/gaudi/docker"
 )
 
 type Container struct {
 	Name         string
 	Type         string
-	InstanceType string
+	Image        string
+	Path         string
 	Running      bool
 	Id           string
 	Ip           string
+	BeforeScript string "before_script"
+	AfterScript  string "after_script"
 	Links        []string
 	Dependencies []*Container
 	Ports        map[string]string
@@ -23,9 +26,9 @@ type Container struct {
 }
 
 type inspection struct {
-	ID string "ID,omitempty"
-	NetworkSettings map[string]string "NetworkSettings,omitempty"
-	State map[string]interface{} "State,omitempty"
+	ID              string                 "ID,omitempty"
+	NetworkSettings map[string]string      "NetworkSettings,omitempty"
+	State           map[string]interface{} "State,omitempty"
 }
 
 func (c *Container) init() {
@@ -49,8 +52,9 @@ func (c *Container) Remove(done chan bool) {
 
 func (c *Container) Kill(done chan bool, silent bool) {
 	if !silent {
-		fmt.Println("Stopping", c.Name, "...")
+		fmt.Println("Killing", c.Name, "...")
 	}
+
 	docker.Kill(c.Name)
 	c.Running = false
 
@@ -69,10 +73,24 @@ func (c *Container) Clean(done chan bool) {
 	done <- true
 }
 
-
 func (c *Container) Build(done chan bool) {
-	fmt.Println("Building", c.Name, "...")
-	docker.Build(c.Name)
+	buildName := "gaudi/" + c.Name
+	buildPath := "/tmp/gaudi/" + c.Name
+
+	if c.IsRemote() {
+		buildName = c.Image
+		buildPath = c.Path
+	}
+
+	fmt.Println("Building", buildName, "...")
+	docker.Build(buildName, buildPath)
+
+	done <- true
+}
+
+func (c *Container) Pull(done chan bool) {
+	fmt.Println("Pulling", c.Image, "...")
+	docker.Pull(c.Image)
 
 	done <- true
 }
@@ -92,7 +110,6 @@ func (c *Container) IsRunning() bool {
 	return c.Running
 }
 
-
 func (c *Container) IsReady() bool {
 	ready := true
 
@@ -110,19 +127,21 @@ func (c *Container) AddDependency(container *Container) {
 func (c *Container) Start() {
 	c.init()
 
+	fmt.Println("Starting", c.Name, "...")
+
 	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "already running", "(" +c.Ip+":"+c.GetFirstPort()+")")
+		fmt.Println("Application", c.Name, "already running", "("+c.Ip+":"+c.GetFirstPort()+")")
 		return
 	}
 
-	startResult := docker.Start(c.Name, c.Links, c.Ports, c.Volumes)
+	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes)
 	c.Id = strings.TrimSpace(startResult)
 
-	time.Sleep(time.Second)
+	time.Sleep(3 * time.Second)
 	c.retrieveIp()
 	c.Running = true
 
-	fmt.Println("Application", c.Name, "started", "(" +c.Ip+":"+c.GetFirstPort()+")")
+	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
 }
 
 func (c *Container) GetCustomValue(name string) interface{} {
@@ -143,13 +162,41 @@ func (c *Container) GetFirstPort() string {
 
 func (c *Container) CheckIfRunning() {
 	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "is running", "(" +c.Ip+":"+c.GetFirstPort()+")")
+		fmt.Println("Application", c.Name, "is running", "("+c.Ip+":"+c.GetFirstPort()+")")
 	} else {
 		fmt.Println("Application", c.Name, "is not running")
 	}
 }
 
-func (c *Container) retrieveIp () {
+func (c *Container) IsGaudiManaged() bool {
+	return !c.IsPreBuild() && !c.IsRemote()
+}
+
+func (c *Container) IsPreBuild() bool {
+	return c.Type == "prebuild"
+}
+
+func (c *Container) IsRemote() bool {
+	return c.Type == "remote"
+}
+
+func (c *Container) HasBeforeScript() bool {
+	return len(c.BeforeScript) != 0
+}
+
+func (c *Container) HasBeforeScriptFile() bool {
+	return c.HasBeforeScript() && (c.BeforeScript[0] == '.' || c.BeforeScript[0] == '/')
+}
+
+func (c *Container) HasAfterScript() bool {
+	return len(c.AfterScript) != 0
+}
+
+func (c *Container) HasAfterScriptFile() bool {
+	return c.HasAfterScript() && (c.AfterScript[0] == '.' || c.AfterScript[0] == '/')
+}
+
+func (c *Container) retrieveIp() {
 	inspect, err := docker.Inspect(c.Id)
 	if err != nil {
 		panic(err)
@@ -158,12 +205,19 @@ func (c *Container) retrieveIp () {
 	c.retrieveInfoFromInspection(inspect)
 }
 
-func (c *Container) retrieveInfoFromInspection (inspect []byte) {
+func (c *Container) retrieveInfoFromInspection(inspect []byte) {
 	var results []inspection
 	goyaml.Unmarshal(inspect, &results)
 
-	c.Running = results[0].State["Running"].(bool)
+	var isRunning bool
+	rawRunning := results[0].State["Running"]
+	if rawRunning != nil {
+		isRunning = rawRunning.(bool)
+	} else {
+		isRunning = false
+	}
+
+	c.Running = isRunning
 	c.Ip = results[0].NetworkSettings["IPAddress"]
 	c.Id = results[0].ID
 }
-
