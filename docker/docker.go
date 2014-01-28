@@ -4,6 +4,8 @@ import (
 	"os/exec"
 	"reflect"
 	"time"
+
+	"fmt"
 )
 
 var docker, _ = exec.LookPath("docker")
@@ -32,6 +34,8 @@ func Build(name, path string) {
 
 	buildCmd = exec.Command(docker, "build", "-t", name, path)
 
+	fmt.Println(buildCmd)
+
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
 		panic(out)
@@ -43,7 +47,7 @@ func Pull(name string) {
 
 	out, err := pullCmd.CombinedOutput()
 	if err != nil {
-		panic(out)
+		panic(string(out))
 	}
 }
 
@@ -71,9 +75,11 @@ func Start(name, image string, links []string, ports, volumes map[string]string)
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 
+	fmt.Println(runCmd)
+
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
-		panic(out)
+		panic(string(out))
 	}
 
 	return string(out)

@@ -21,3 +21,5 @@ containers:
         type: mysql
         ports:
             3306: 3306
+        volumes:
+            .gaudi/mysql: /var/lib/mysql

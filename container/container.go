@@ -17,6 +17,7 @@ type Container struct {
 	Id           string
 	Ip           string
 	BeforeScript string "before_script"
+	AfterScript  string "after_script"
 	Links        []string
 	Dependencies []*Container
 	Ports        map[string]string
@@ -136,7 +137,7 @@ func (c *Container) Start() {
 	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes)
 	c.Id = strings.TrimSpace(startResult)
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 	c.retrieveIp()
 	c.Running = true
 
@@ -183,8 +184,16 @@ func (c *Container) HasBeforeScript() bool {
 	return len(c.BeforeScript) != 0
 }
 
-func (c *Container) HasBeforeScriptFfile() bool {
+func (c *Container) HasBeforeScriptFile() bool {
 	return c.HasBeforeScript() && (c.BeforeScript[0] == '.' || c.BeforeScript[0] == '/')
+}
+
+func (c *Container) HasAfterScript() bool {
+	return len(c.AfterScript) != 0
+}
+
+func (c *Container) HasAfterScriptFile() bool {
+	return c.HasAfterScript() && (c.AfterScript[0] == '.' || c.AfterScript[0] == '/')
 }
 
 func (c *Container) retrieveIp() {
