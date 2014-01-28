@@ -1,4 +1,4 @@
-containers:
+applications:
     server:
         type: nodejs
         links: [redis]

@@ -20,7 +20,7 @@ func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnMalformedYmlCon
 
 	c.Assert(func() {
 		m.InitFromString(`
-		containers:
+		applications:
 			tabulated:
 				type: varnish
 `, "")
@@ -30,13 +30,13 @@ func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnMalformedYmlCon
 func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnWrongContent(c *C) {
 	m := maestro.Maestro{}
 
-	c.Assert(func() { m.InitFromString("<oldFormat>Skrew you, i'm not yml</oldFormat>", "") }, PanicMatches, "No container to start")
+	c.Assert(func() { m.InitFromString("<oldFormat>Skrew you, i'm not yml</oldFormat>", "") }, PanicMatches, "No application to start")
 }
 
 func (s *MaestroTestSuite) TestInitFromStringShouldCreateAMaestro(c *C) {
 	m := maestro.Maestro{}
 	m.InitFromString(`
-containers:
+applications:
     app:
         type: php-fpm
         links: [db]
@@ -52,7 +52,7 @@ containers:
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
 
-	c.Assert(len(m.Containers), Equals, 2)
+	c.Assert(len(m.Applications), Equals, 2)
 	c.Assert(m.GetContainer("app").Name, Equals, "app")
 	c.Assert(m.GetContainer("app").Type, Equals, "php-fpm")
 	c.Assert(m.GetContainer("app").Dependencies[0].Name, Equals, "db")
@@ -60,7 +60,7 @@ containers:
 	c.Assert(m.GetContainer("db").IsRunning(), Equals, false)
 }
 
-func (s *MaestroTestSuite) TestStartContainerShouldCleanAndBuildThem(c *C) {
+func (s *MaestroTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -69,13 +69,13 @@ func (s *MaestroTestSuite) TestStartContainerShouldCleanAndBuildThem(c *C) {
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(2)
-	docker.EXPECT().Build(gomock.Any()).Return().Times(2)
-	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123").Times(2)
+	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(2)
+	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123").Times(2)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil).Times(4)
 
 	m := maestro.Maestro{}
 	m.InitFromString(`
-containers:
+applications:
     app:
         type: php-fpm
         links: [db]
@@ -85,14 +85,14 @@ containers:
             3306: 9000
 `, "")
 
-	c.Assert(len(m.Containers), Equals, 2)
+	c.Assert(len(m.Applications), Equals, 2)
 
 	m.Start(true)
 	c.Assert(m.GetContainer("db").IsRunning(), Equals, true)
 	c.Assert(m.GetContainer("app").IsRunning(), Equals, true)
 }
 
-func (s *MaestroTestSuite) TestStartContainerShouldStartThemByOrderOfDependencies(c *C) {
+func (s *MaestroTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencies(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -102,7 +102,7 @@ func (s *MaestroTestSuite) TestStartContainerShouldStartThemByOrderOfDependencie
 
 	m := maestro.Maestro{}
 	m.InitFromString(`
-containers:
+applications:
     lb:
         links: [front1, front2]
         type: varnish
@@ -123,32 +123,32 @@ containers:
       type: mysql
 `, "")
 
-	c.Assert(len(m.Containers), Equals, 5)
+	c.Assert(len(m.Applications), Equals, 5)
 
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(5)
-	docker.EXPECT().Build(gomock.Any()).Return().Times(5)
+	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(5)
 
 	gomock.InOrder(
 		docker.EXPECT().Inspect("db").Return([]byte("[{\"ID\": \"100\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
-		docker.EXPECT().Start("db", gomock.Any(), gomock.Any(), gomock.Any()).Return("100"),
+		docker.EXPECT().Start("db", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("100"),
 		docker.EXPECT().Inspect("100").Return([]byte("[{\"ID\": \"100\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
 		docker.EXPECT().Inspect("app").Return([]byte("[{\"ID\": \"101\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
-		docker.EXPECT().Start("app", gomock.Any(), gomock.Any(), gomock.Any()).Return("101"),
+		docker.EXPECT().Start("app", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("101"),
 		docker.EXPECT().Inspect("101").Return([]byte("[{\"ID\": \"101\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
 		docker.EXPECT().Inspect("front1").Return([]byte("[{\"ID\": \"102\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
-		docker.EXPECT().Start("front1", gomock.Any(), gomock.Any(), gomock.Any()).Return("102"),
+		docker.EXPECT().Start("front1", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("102"),
 
 		docker.EXPECT().Inspect("front2").Return([]byte("[{\"ID\": \"103\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
-		docker.EXPECT().Start("front2", gomock.Any(), gomock.Any(), gomock.Any()).Return("103"),
+		docker.EXPECT().Start("front2", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("103"),
 
 		docker.EXPECT().Inspect("102").Return([]byte("[{\"ID\": \"102\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Inspect("103").Return([]byte("[{\"ID\": \"103\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
 		docker.EXPECT().Inspect("lb").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
-		docker.EXPECT().Start("lb", gomock.Any(), gomock.Any(), gomock.Any()).Return("104"),
+		docker.EXPECT().Start("lb", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("104"),
 		docker.EXPECT().Inspect("104").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 	)
 

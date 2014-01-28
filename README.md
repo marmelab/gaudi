@@ -6,7 +6,7 @@ Using Go, Gaudi can build and start your applications in parallel depending of t
 # Basic usage
 The architecture can be described with a single file (called `.gaudi.yml`) :
 ```yml
-containers:
+applications:
     front1:
         type: apache
         links: [app]
@@ -63,12 +63,12 @@ Each templates are listed in the `templates` folder, one for each application ty
 
 ## Common Configuration
 
-The YML file describing the architecture should have a section called `containers`.
+The YML file describing the architecture should have a section called `applications`.
 
 ### Type
 You can specify what king a application you want to run :
 ```yml
-containers:
+applications:
 	[Application name]:
 		type: [one of the listed type below]
 ```
@@ -78,7 +78,7 @@ Application types are listed below.
 ### Links
 When an applications depends on another, you can link them :
 ```yml
-containers:
+applications:
 	app1:
 		type: varnish
 		links: [front1, front2]
@@ -101,7 +101,7 @@ FRONT1_PORT_3306_TCP=tcp://172.17.0.215:80
 ### Ports
 To open some ports on an applications :
 ```yml
-containers:
+applications:
 	front1:
 		type: apache
 		ports:
@@ -113,7 +113,7 @@ The port 80 inb the host machine will be mapped to the 8080 in the container.
 ### Volumes
 You can add you own files by mounting volumes :
 ```yml
-containers:
+applications:
 	front1:
 		type: apache
 		volumes:
@@ -122,60 +122,10 @@ containers:
 
 The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the application.
 
-## Example : Running a Symfony Application
+## Examples
 
-To run a Symfony app, we need an Apache server, PHP-FPM & MySQL. So we create a `.gaudi.yml` in a new folder :
-```yml
-containers:
-    front:
-        type: apache
-        links: [app]
-        ports:
-            80: 80
-        volumes:
-            .: /var/www
-        custom:
-            fastCgi: app
-            documentRoot: /var/www/web
-            modules: [rewrite]
+You can find an example of [how starting a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
 
-    app:
-        type: php-fpm
-        links: [db]
-        ports:
-            9000: 9000
-        volumes:
-            .: /var/www
-
-    db:
-        type: mysql
-        ports:
-            3306: 3306
-        after_script: mysql -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
-        volumes:
-            .gaudi/mysql: /var/lib/mysql
-```
-
-Here the current folder in mounter in `/var/www` (the default DocumentRoot of Apache), we enable the m`od_rewrite` module for Apache, link it to PHP-FPM which is linked to a MySQL app.
-We also mount a `.gaudi/mysql`folder to allow MySQL storage persistence outside of the container.
-
-To start the Symfony app, run in the current folder :
-```sh
-mkdir -p .gaudi/mysql
-gaudi
-
-Cleaning front ...
-Cleaning app ...
-Cleaning db ...
-Building gaudi/front ...
-Building gaudi/app ...
-Building gaudi/db ...
-Application db started (172.17.0.79:3306)
-Application app started (172.17.0.80:9000)
-Application front started (172.17.0.81:80)
-```
-
-The building process can take a few minutes the first time. The next time Docker will find the difference between the last build and run only we it need.
 
 ## Types
 
@@ -183,7 +133,7 @@ Each application uses a `custom` section in the configuration to defines them ow
 
 ### Varnish
 ```yml
-containers:
+applications:
     [name]:
         type: varnish
         links: [front1, front2]
@@ -191,13 +141,13 @@ containers:
         backends: [front1, front2]
 ```
 
-`backends` custom param is used to defines which containers are load balanced by Varnish. Theses containers have to be linked with `links`.
+`backends` custom param is used to defines which applications are load balanced by Varnish. Theses applications have to be linked with `links`.
 
 ### Nginx
 
 #### As a webserver:
 ```yml
-containers:
+applications:
     [name]:
         type: nginx
         links: [app]
@@ -207,7 +157,7 @@ containers:
 
 #### As a load balancer:
 ```yml
-containers:
+applications:
     [name]:
         type: nginx
         links: [front1, front2]
@@ -215,12 +165,12 @@ containers:
         backends: [front1, front2]
 ```
 
-`backends` custom param is used to defines which containers are load balanced by Nginx. Theses containers have to be linked with `links`.
+`backends` custom param is used to defines which applications are load balanced by Nginx. Theses applications have to be linked with `links`.
 
 
 ### Apache
 ```yml
-containers:
+applications:
     [name]:
         type: apache
     custom:

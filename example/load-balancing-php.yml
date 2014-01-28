@@ -1,4 +1,4 @@
-containers:
+applications:
     lb:
         type: varnish
         links: [front1, front2]

@@ -16,14 +16,14 @@ type ContainerTestSuite struct{}
 
 var _ = Suite(&ContainerTestSuite{})
 
-func (s *ContainerTestSuite) TestStartedContainerShouldRetrieveItsIp(c *C) {
+func (s *ContainerTestSuite) TestStartedApplicationShouldRetrieveItsIp(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
-	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123")
+	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123")
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil)
 

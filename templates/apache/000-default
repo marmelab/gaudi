@@ -8,7 +8,7 @@
 	[[ end ]]
 	<Directory />
 		Options FollowSymLinks
-		AllowOverride None
+		AllowOverride All
 	</Directory>
 
 	[[ if (.Container.GetCustomValue "documentRoot") ]]

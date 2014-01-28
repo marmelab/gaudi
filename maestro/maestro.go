@@ -13,7 +13,7 @@ import (
 )
 
 type Maestro struct {
-	Containers map[string]*container.Container
+	Applications map[string]*container.Container
 }
 
 type TemplateData struct {
@@ -35,13 +35,13 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 	if err != nil {
 		panic(err)
 	}
-	if maestro.Containers == nil {
-		panic("No container to start")
+	if maestro.Applications == nil {
+		panic("No application to start")
 	}
 
 	// Fill name & dependencies
-	for name := range maestro.Containers {
-		currentContainer := maestro.Containers[name]
+	for name := range maestro.Applications {
+		currentContainer := maestro.Applications[name]
 		currentContainer.Name = name
 
 		if currentContainer.IsGaudiManaged() {
@@ -49,7 +49,7 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 		}
 
 		for _, dependency := range currentContainer.Links {
-			if depContainer, exists := maestro.Containers[dependency]; exists {
+			if depContainer, exists := maestro.Applications[dependency]; exists {
 				currentContainer.AddDependency(depContainer)
 			} else {
 				panic(name + " references a non existing application : " + dependency)
@@ -112,7 +112,7 @@ func (maestro *Maestro) parseTemplates() {
 		panic(err)
 	}
 
-	for _, currentContainer := range maestro.Containers {
+	for _, currentContainer := range maestro.Applications {
 		if !currentContainer.IsGaudiManaged() {
 			continue
 		}
@@ -173,18 +173,18 @@ func (maestro *Maestro) Start(rebuild bool) {
 	if rebuild {
 		maestro.parseTemplates()
 
-		nbContainers := len(maestro.Containers)
-		cleanChans := make(chan bool, nbContainers)
-		// Clean all containers
-		for _, currentContainer := range maestro.Containers {
+		nbApplicationss := len(maestro.Applications)
+		cleanChans := make(chan bool, nbApplicationss)
+		// Clean all applications
+		for _, currentContainer := range maestro.Applications {
 			go currentContainer.Clean(cleanChans)
 		}
 		<-cleanChans
 
-		buildChans := make(chan bool, len(maestro.Containers))
+		buildChans := make(chan bool, len(maestro.Applications))
 
-		// Build all containers
-		for _, currentContainer := range maestro.Containers {
+		// Build all applications
+		for _, currentContainer := range maestro.Applications {
 			if currentContainer.IsPreBuild() {
 				go currentContainer.Pull(buildChans)
 			} else {
@@ -193,40 +193,40 @@ func (maestro *Maestro) Start(rebuild bool) {
 
 		}
 
-		for i := 0; i < nbContainers; i++ {
+		for i := 0; i < nbApplicationss; i++ {
 			<-buildChans
 		}
 	}
 
 	startChans := make(map[string]chan bool)
 
-	// Start all containers
-	for name, currentContainer := range maestro.Containers {
+	// Start all applications
+	for name, currentContainer := range maestro.Applications {
 		startChans[name] = make(chan bool)
 
 		go maestro.startContainer(currentContainer, startChans)
 	}
 
-	// Waiting for all containers to start
-	for containerName, _ := range maestro.Containers {
+	// Waiting for all applications to start
+	for containerName, _ := range maestro.Applications {
 		<-startChans[containerName]
 	}
 }
 
 func (maestro *Maestro) GetContainer(name string) *container.Container {
-	return maestro.Containers[name]
+	return maestro.Applications[name]
 }
 
 func (maestro *Maestro) Check() {
-	for _, currentContainer := range maestro.Containers {
+	for _, currentContainer := range maestro.Applications {
 		currentContainer.CheckIfRunning()
 	}
 }
 
 func (maestro *Maestro) Stop() {
-	killChans := make(chan bool, len(maestro.Containers))
+	killChans := make(chan bool, len(maestro.Applications))
 
-	for _, currentContainer := range maestro.Containers {
+	for _, currentContainer := range maestro.Applications {
 		go currentContainer.Kill(killChans, false)
 	}
 
@@ -247,7 +247,7 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 func (maestro *Maestro) HasParsedTemplates() bool {
 	parsedTemplateDir := "/tmp/gaudi/"
 
-	for containerName := range maestro.Containers {
+	for containerName := range maestro.Applications {
 		if !util.IsDir(parsedTemplateDir + containerName) {
 			return false
 		}
