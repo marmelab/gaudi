@@ -8,7 +8,7 @@
 	[[ end ]]
 	<Directory />
 		Options FollowSymLinks
-		AllowOverride All
+		AllowOverride None
 	</Directory>
 
 	[[ if (.Container.GetCustomValue "documentRoot") ]]
@@ -17,7 +17,7 @@
         <Directory /var/www/>
     [[ end ]]
 		Options Indexes FollowSymLinks MultiViews
-		AllowOverride None
+		AllowOverride All
 		Order allow,deny
 		allow from all
 	</Directory>
