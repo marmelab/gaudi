@@ -3,6 +3,8 @@ Gaudi is a generator of architecture written in Go and using [Docker](http://www
 You can use it to start any types of applications and link them together without knowledge of Docker and system configuration.
 Using Go, Gaudi can build and start your applications in parallel depending of they dependencies.
 
+[![Gaudi screencast](http://marmelab.com/gaudi/img/gaudi-video.jpg)](http://showterm.io/83b5d24c67cd39a73de23)
+
 # Basic usage
 The architecture can be described with a single file (called `.gaudi.yml`) :
 ```yml
