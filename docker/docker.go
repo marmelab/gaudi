@@ -34,7 +34,7 @@ func Build(name, path string) {
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
-		panic(out)
+		panic(string(out))
 	}
 }
 

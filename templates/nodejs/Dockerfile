@@ -19,8 +19,8 @@ RUN cd /tmp/npm && make install
 
 ENV NODE_PATH /usr/local/lib/node_modules
 
-[[ if (.Container.HasBeforeScript) ]]
-	CMD [[.Container.BeforeScript]] && /bin/bash
+[[ if (.Container.HasAfterScript) ]]
+	CMD [[.Container.AfterScript]] && /bin/bash
 [[ else ]]
 	CMD ["/usr/local/bin/node"] && /bin/bash
 [[ end]]

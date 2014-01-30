@@ -59,6 +59,10 @@ Gaudi uses [Docker](http://www.docker.io) to start all applications in a specifi
 It builds a Docker files and specific configuration files from different templates.
 Each templates are listed in the `templates` folder, one for each application type.
 
+## Examples
+
+You can find an example of [how starting a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
+
 # Configuration
 
 ## Common Configuration
@@ -122,10 +126,27 @@ applications:
 
 The php folder (absolute or relative to the yml files) will be mounted in the /app/php folder in the application.
 
-## Examples
+### Remote containers
 
-You can find an example of [how starting a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
+If you want to run an application not yet supported by Gaudi, you can use a prebuild image or an image from the [Docker index](https://index.docker.io/) :
+```yml
+applications:
+    server:
+        type: nodejs
+        links: [redis]
+        ports:
+            80: 80
+        volumes:
+            nodejs-redis: /app
 
+    redis:
+        type: remote
+        image: gary/redis
+        path: github.com/manuquentin/docker-redis
+        ports:
+            6379: 6379
+
+```
 
 ## Types
 
