@@ -166,36 +166,31 @@ func (maestro *Maestro) parseTemplates() {
 	}
 }
 
-func (maestro *Maestro) Start(rebuild bool) {
+func (maestro *Maestro) Start() {
 	maestro.createHiddenDir()
-	rebuild = rebuild || !maestro.HasParsedTemplates()
+	maestro.parseTemplates()
 
-	if rebuild {
-		maestro.parseTemplates()
+	nbApplicationss := len(maestro.Applications)
+	cleanChans := make(chan bool, nbApplicationss)
+	// Clean all applications
+	for _, currentContainer := range maestro.Applications {
+		go currentContainer.Clean(cleanChans)
+	}
+	<-cleanChans
 
-		nbApplicationss := len(maestro.Applications)
-		cleanChans := make(chan bool, nbApplicationss)
-		// Clean all applications
-		for _, currentContainer := range maestro.Applications {
-			go currentContainer.Clean(cleanChans)
+	buildChans := make(chan bool, len(maestro.Applications))
+
+	// Build all applications
+	for _, currentContainer := range maestro.Applications {
+		if currentContainer.IsPreBuild() {
+			go currentContainer.Pull(buildChans)
+		} else {
+			go currentContainer.Build(buildChans)
 		}
-		<-cleanChans
+	}
 
-		buildChans := make(chan bool, len(maestro.Applications))
-
-		// Build all applications
-		for _, currentContainer := range maestro.Applications {
-			if currentContainer.IsPreBuild() {
-				go currentContainer.Pull(buildChans)
-			} else {
-				go currentContainer.Build(buildChans)
-			}
-
-		}
-
-		for i := 0; i < nbApplicationss; i++ {
-			<-buildChans
-		}
+	for i := 0; i < nbApplicationss; i++ {
+		<-buildChans
 	}
 
 	startChans := make(map[string]chan bool)
@@ -242,16 +237,4 @@ func (maestro *Maestro) startContainer(currentContainer *container.Container, do
 	currentContainer.Start()
 
 	close(done[currentContainer.Name])
-}
-
-func (maestro *Maestro) HasParsedTemplates() bool {
-	parsedTemplateDir := "/tmp/gaudi/"
-
-	for containerName := range maestro.Applications {
-		if !util.IsDir(parsedTemplateDir + containerName) {
-			return false
-		}
-	}
-
-	return true
 }

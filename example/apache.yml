@@ -2,4 +2,4 @@ applications:
     front:
         type: apache
         ports:
-            80: 80
+            8080: 80

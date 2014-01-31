@@ -3,7 +3,7 @@ applications:
         type: nodejs
         links: [redis]
         ports:
-            80: 80
+            8080: 80
         volumes:
             nodejs-redis: /app
         before_script: node /app/server.js

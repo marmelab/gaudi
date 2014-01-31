@@ -2,7 +2,7 @@ applications:
     front:
         type: nginx
         ports:
-            80: 80
+            8080: 80
         links: [app]
         volumes:
             php: /var/www

@@ -29,7 +29,7 @@ applications:
 `, "")
 
 	c.Assert(len(m.Applications), Equals, 1)
-	m.Start(true)
+	m.Start()
 
 	// Test apache is running
 	resp, err := http.Get("http://" + m.GetContainer("front").Ip)
@@ -66,7 +66,7 @@ applications:
 `, "")
 
 	c.Assert(len(m.Applications), Equals, 2)
-	m.Start(true)
+	m.Start()
 	time.Sleep(2 * time.Second)
 
 	// Test apache is running
