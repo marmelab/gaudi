@@ -152,5 +152,5 @@ applications:
 		docker.EXPECT().Inspect("104").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 	)
 
-	m.Start(true)
+	m.Start()
 }
