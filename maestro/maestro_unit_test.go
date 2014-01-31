@@ -87,7 +87,7 @@ applications:
 
 	c.Assert(len(m.Applications), Equals, 2)
 
-	m.Start(true)
+	m.Start()
 	c.Assert(m.GetContainer("db").IsRunning(), Equals, true)
 	c.Assert(m.GetContainer("app").IsRunning(), Equals, true)
 }

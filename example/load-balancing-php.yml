@@ -3,7 +3,7 @@ applications:
         type: varnish
         links: [front1, front2]
         ports:
-            80: 80
+            8080: 80
         custom:
             backends: [front1, front2]
 
@@ -11,7 +11,7 @@ applications:
         type: apache
         links: [app]
         ports:
-            8080: 8080
+            8081: 8081
         volumes:
             load-balancing-php: /var/www
         custom:
@@ -21,7 +21,7 @@ applications:
         type: apache
         links: [app]
         ports:
-            8081: 8081
+            8082: 8082
         volumes:
             load-balancing-php: /var/www
         custom:

@@ -30,7 +30,7 @@ func Kill(name string) {
 func Build(name, path string) {
 	var buildCmd *exec.Cmd
 
-	buildCmd = exec.Command(docker, "build", "-t", name, path)
+	buildCmd = exec.Command(docker, "build", "-rm", "-t", name, path)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {

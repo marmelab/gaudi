@@ -2,7 +2,7 @@ applications:
     lb:
         type: nginx
         ports:
-            80: 80
+            8080: 80
         links: [front1, front2]
         volumes:
             load-balancing: /var/www
@@ -12,7 +12,7 @@ applications:
         type: apache
         links: [app]
         ports:
-            8080: 8080
+            8081: 8081
         volumes:
             load-balancing-php: /var/www
         custom:
@@ -22,7 +22,7 @@ applications:
         type: apache
         links: [app]
         ports:
-            8081: 8081
+            8082: 8082
         volumes:
             load-balancing-php: /var/www
         custom:
