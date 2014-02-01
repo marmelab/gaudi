@@ -170,8 +170,8 @@ func (maestro *Maestro) Start() {
 	maestro.createHiddenDir()
 	maestro.parseTemplates()
 
-	nbApplicationss := len(maestro.Applications)
-	cleanChans := make(chan bool, nbApplicationss)
+	nbApplications := len(maestro.Applications)
+	cleanChans := make(chan bool, nbApplications)
 	// Clean all applications
 	for _, currentContainer := range maestro.Applications {
 		go currentContainer.Clean(cleanChans)
@@ -189,7 +189,7 @@ func (maestro *Maestro) Start() {
 		}
 	}
 
-	for i := 0; i < nbApplicationss; i++ {
+	for i := 0; i < nbApplications; i++ {
 		<-buildChans
 	}
 
