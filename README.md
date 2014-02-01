@@ -48,7 +48,7 @@ Gaudi will try to find a `.gaudi.yml` file in the current folder, and start each
 go get github.com/marmelab/gaudi
 ```
 
-Check that yout `PATH` includes `$GOPATH/bin`:
+Check that your `PATH` includes `$GOPATH/bin`:
 
 ```sh
 export PATH=$GOPATH/bin:/$PATH

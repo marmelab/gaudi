@@ -1,4 +1,4 @@
-package maestro_funcitonal_test
+package maestro_functional_test
 
 import (
 	. "launchpad.net/gocheck"
