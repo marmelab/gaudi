@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-
 	"fmt"
 )
 
@@ -231,7 +230,6 @@ func (maestro *Maestro) Check() {
 			fmt.Println("Application", currentContainer.Name, "is not running")
 		}
 	}
-
 }
 
 func (maestro *Maestro) Stop() {
