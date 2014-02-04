@@ -5,6 +5,7 @@ import (
 	. "launchpad.net/gocheck"
 	"testing"
 
+	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
 	"github.com/marmelab/gaudi/maestro"
 )
@@ -153,4 +154,48 @@ applications:
 	)
 
 	m.Start()
+}
+
+func (s *MaestroTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+
+	// Setup the docker mock package
+	docker.MOCK().SetController(ctrl)
+
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	psResult := make(map[string]string)
+	psResult["gaudi/lb"] = "123"
+	psResult["gaudi/front1"] = "124"
+	psResult["gaudi/db"] = "125"
+
+	docker.EXPECT().SnapshotProcesses().Return(psResult, nil)
+	docker.EXPECT().Inspect("123").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.126\"}}]"), nil)
+	docker.EXPECT().Inspect("124").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.127\"}}]"), nil)
+	docker.EXPECT().Inspect("125").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.128\"}}]"), nil)
+
+	mockfmt.EXPECT().Println("Application", "lb", "is running", "(123.124.125.126:)")
+	mockfmt.EXPECT().Println("Application", "front1", "is running", "(123.124.125.127:)")
+	mockfmt.EXPECT().Println("Application", "db", "is running", "(123.124.125.128:3306)")
+
+	m := maestro.Maestro{}
+	m.InitFromString(`
+applications:
+    lb:
+        links: [front1]
+        type: varnish
+
+    front1:
+        type: apache
+
+    db:
+        type: mysql
+        ports:
+            3306: 9000
+`, "")
+
+	m.Check()
 }
