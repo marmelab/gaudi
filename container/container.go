@@ -138,7 +138,7 @@ func (c *Container) Start() {
 	c.Id = strings.TrimSpace(startResult)
 
 	time.Sleep(3 * time.Second)
-	c.retrieveIp()
+	c.RetrieveIp()
 	c.Running = true
 
 	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
@@ -158,14 +158,6 @@ func (c *Container) GetFirstPort() string {
 	}
 
 	return ""
-}
-
-func (c *Container) CheckIfRunning() {
-	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "is running", "("+c.Ip+":"+c.GetFirstPort()+")")
-	} else {
-		fmt.Println("Application", c.Name, "is not running")
-	}
 }
 
 func (c *Container) IsGaudiManaged() bool {
@@ -196,7 +188,7 @@ func (c *Container) HasAfterScriptFile() bool {
 	return c.HasAfterScript() && (c.AfterScript[0] == '.' || c.AfterScript[0] == '/')
 }
 
-func (c *Container) retrieveIp() {
+func (c *Container) RetrieveIp() {
 	inspect, err := docker.Inspect(c.Id)
 	if err != nil {
 		panic(err)

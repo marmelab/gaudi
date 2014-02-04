@@ -4,6 +4,10 @@ import (
 	"os/exec"
 	"reflect"
 	"time"
+	"strings"
+	"errors"
+
+	//"fmt"
 )
 
 var docker, _ = exec.LookPath("docker")
@@ -87,6 +91,29 @@ func Inspect(id string) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+func SnapshotProcesses () (map[string]string, error) {
+	images := make(map[string]string)
+
+	psCommand := exec.Command(docker, "ps")
+	out, err := psCommand.CombinedOutput()
+	if err != nil {
+		return nil, errors.New(string(out))
+	}
+
+	// Retrieve lines & remove first and last one
+	lines := strings.Split(string(out), "\n")
+	lines = lines[1:len(lines)-1]
+
+	for _, line := range(lines) {
+		fields := strings.Fields(line)
+		nameParts := strings.Split(fields[1], ":")
+
+		images[nameParts[0]] = fields[0]
+	}
+
+	return images, nil
 }
 
 func buildArguments(rawArgs []string) []reflect.Value {

@@ -3,6 +3,7 @@ package maestro
 import (
 	"bytes"
 	"github.com/marmelab/gaudi/container"
+	"github.com/marmelab/gaudi/docker"
 	"github.com/marmelab/gaudi/util"
 	"io/ioutil"
 	"launchpad.net/goyaml"
@@ -10,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"fmt"
 )
 
 type Maestro struct {
@@ -213,9 +216,22 @@ func (maestro *Maestro) GetContainer(name string) *container.Container {
 }
 
 func (maestro *Maestro) Check() {
-	for _, currentContainer := range maestro.Applications {
-		currentContainer.CheckIfRunning()
+	images, err := docker.SnapshotProcesses()
+	if err != nil {
+		panic(err)
 	}
+
+	for _, currentContainer := range maestro.Applications {
+		if containerId, ok := images[currentContainer.Image]; ok {
+			currentContainer.Id = containerId
+			currentContainer.RetrieveIp()
+
+			fmt.Println("Application", currentContainer.Name, "is running", "("+currentContainer.Ip+":"+currentContainer.GetFirstPort()+")")
+		} else {
+			fmt.Println("Application", currentContainer.Name, "is not running")
+		}
+	}
+
 }
 
 func (maestro *Maestro) Stop() {
