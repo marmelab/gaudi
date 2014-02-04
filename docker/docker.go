@@ -10,6 +10,21 @@ import (
 
 var docker, _ = exec.LookPath("docker")
 
+func ImageExists(name string) bool {
+	imagesCmd := exec.Command(docker, "images", name)
+
+	out, err := imagesCmd.CombinedOutput()
+	if err != nil {
+		return false
+	}
+
+	// Retrieve lines & remove first and last one
+	lines := strings.Split(string(out), "\n")
+	lines = lines[1 : len(lines)-1]
+
+	return len(lines) > 0
+}
+
 func Remove(name string) {
 	removeCmd := exec.Command(docker, "rm", name)
 	removeErr := removeCmd.Start()

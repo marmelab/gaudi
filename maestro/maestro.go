@@ -14,6 +14,9 @@ import (
 	"text/template"
 )
 
+const DEFAULT_BASE_IMAGE = "stackbrew/debian"
+const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
+
 type Maestro struct {
 	Applications map[string]*container.Container
 }
@@ -174,13 +177,26 @@ func (maestro *Maestro) Start() {
 
 	nbApplications := len(maestro.Applications)
 	cleanChans := make(chan bool, nbApplications)
+	hasGaudiManagedContainer := false
+
 	// Clean all applications
 	for _, currentContainer := range maestro.Applications {
+		if currentContainer.IsGaudiManaged() {
+			hasGaudiManagedContainer = true
+		}
+
 		go currentContainer.Clean(cleanChans)
 	}
 	<-cleanChans
 
 	buildChans := make(chan bool, len(maestro.Applications))
+
+	// Check if base image is pulled
+	if hasGaudiManagedContainer && !docker.ImageExists(DEFAULT_BASE_IMAGE) {
+		fmt.Println("Pulling base image (this may take a few minutes)  ...")
+
+		docker.Pull(DEFAULT_BASE_IMAGE_WITH_TAG)
+	}
 
 	// Build all applications
 	for _, currentContainer := range maestro.Applications {

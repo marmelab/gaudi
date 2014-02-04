@@ -1,4 +1,4 @@
-FROM stackbrew/debian
+FROM stackbrew/debian:wheezy
 
 RUN echo "deb http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sources.list
 RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sources.list
