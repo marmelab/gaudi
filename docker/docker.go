@@ -1,13 +1,11 @@
 package docker
 
 import (
+	"errors"
 	"os/exec"
 	"reflect"
-	"time"
 	"strings"
-	"errors"
-
-	//"fmt"
+	"time"
 )
 
 var docker, _ = exec.LookPath("docker")
@@ -93,7 +91,7 @@ func Inspect(id string) ([]byte, error) {
 	return out, nil
 }
 
-func SnapshotProcesses () (map[string]string, error) {
+func SnapshotProcesses() (map[string]string, error) {
 	images := make(map[string]string)
 
 	psCommand := exec.Command(docker, "ps")
@@ -104,9 +102,9 @@ func SnapshotProcesses () (map[string]string, error) {
 
 	// Retrieve lines & remove first and last one
 	lines := strings.Split(string(out), "\n")
-	lines = lines[1:len(lines)-1]
+	lines = lines[1 : len(lines)-1]
 
-	for _, line := range(lines) {
+	for _, line := range lines {
 		fields := strings.Fields(line)
 		nameParts := strings.Split(fields[1], ":")
 

@@ -5,7 +5,7 @@ import (
 	. "launchpad.net/gocheck"
 	"testing"
 
-	mockfmt "fmt" // mock
+	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
 	"github.com/marmelab/gaudi/maestro"
 )

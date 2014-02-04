@@ -2,6 +2,7 @@ package maestro
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/docker"
 	"github.com/marmelab/gaudi/util"
@@ -11,7 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-	"fmt"
 )
 
 type Maestro struct {
