@@ -1,4 +1,4 @@
-FROM stackbrew/debian
+FROM stackbrew/debian:wheezy
 
 # Update apt-get
 RUN apt-get -y update

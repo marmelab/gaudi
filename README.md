@@ -57,13 +57,6 @@ export PATH=$GOPATH/bin:/$PATH
 The `gaudi` application starts containers with Docker's commands which [requires sudo privileges](http://docs.docker.io/en/latest/use/basics/#dockergroup).
 Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set for the `root` user (or other user with root privileges).
 
-## Optional Build Time Improvement
-All containers uses the same base image, to speed up the first build run:
-
-```sh
-docker pull stackbrew/debian
-```
-
 # Options
 
 - `--config=""` Specify the location of the configuration file
