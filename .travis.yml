@@ -8,4 +8,6 @@ script:
     - go get github.com/qur/withmock
     - go get github.com/qur/withmock/mocktest
 
-    - cd build/marmelab/gaudi && withmock go test -v
+    - cd builds/marmelab/gaudi/container && withmock go test -v
+    - cd builds/marmelab/gaudi/maestro && withmock go test -v
+    - cd builds/marmelab/gaudi/tests && withmock go test -v

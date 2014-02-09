@@ -4,8 +4,11 @@ FROM stackbrew/debian
 RUN apt-get -y update
 RUN apt-get -y install python-software-properties gcc g++ make vim
 
-RUN apt-get install -y -f
 RUN apt-get install -y -f nginx
+
+# User defined apt packets
+[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
+
 
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 

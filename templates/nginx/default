@@ -6,7 +6,7 @@ upstream loadBalancing {
 }
 
 server {
-    listen [[ .Container.GetFirstPort ]];
+    listen [[ .Container.GetFirstLocalPort ]];
     server_name localhost;
 
     location / {
@@ -15,7 +15,7 @@ server {
 }
 [[else]]
 server {
-    listen [[ .Container.GetFirstPort ]];
+    listen [[ .Container.GetFirstLocalPort ]];
 
     root /var/www;
     index index.html index.htm;

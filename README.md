@@ -150,6 +150,17 @@ applications:
 
 The `php/` folder (absolute or relative to the yml file) will be mounted in the `/app/php` folder in the application.
 
+### Apt packets
+
+If you want to install other apt packets, use the `apt_get` parameter:
+
+```yaml
+applications:
+    app:
+        type: apache
+        apt_get: [php5-gd, php5-intl]
+```
+
 ### Remote Containers
 
 If you want to run an application not yet supported by Gaudi, you can use a prebuilt image, or an image from the [Docker index](https://index.docker.io/):
@@ -227,6 +238,54 @@ applications:
 ```
 
 The `fastCgi` custom parameter points out an application where to forward Fast-CGI scripts.
+
+### MySQL
+
+```yaml
+applications:
+    [name]:
+        type: mysql
+    custom:
+        fastCgi: app
+```
+
+### PHP
+
+This application is a simple php5 service, if you want to use it with `Apache` or `Nginx`, use the `PHP-FPM` one.
+
+```yaml
+applications:
+    [name]:
+        type: php
+```
+
+### PHP-FPM
+
+```yaml
+applications:
+    [name]:
+        type: php-fpm
+```
+
+### Nodejs
+
+To start a Node.js application, use the `after_script` parameter. If the `after_script` is not set, Node.js will run without arguments.
+
+```yaml
+applications:
+    [name]:
+        type: nodejs
+        after_script: node /app/server.js
+```
+
+### Jackrabbit
+
+```yaml
+applications:
+    [name]:
+        type: jackrabbit
+```
+
 
 ## Contributing
 

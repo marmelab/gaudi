@@ -1,4 +1,4 @@
-<VirtualHost *:[[ .Container.GetFirstPort ]]>
+<VirtualHost *:[[ .Container.GetFirstLocalPort ]]>
 	ServerAdmin webmaster@localhost
 
 	[[ if (.Container.GetCustomValue "documentRoot") ]]

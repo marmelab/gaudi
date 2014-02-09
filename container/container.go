@@ -18,6 +18,7 @@ type Container struct {
 	Ip           string
 	BeforeScript string "before_script"
 	AfterScript  string "after_script"
+	AptPackets   []string "apt_get"
 	Links        []string
 	Dependencies []*Container
 	Ports        map[string]string
@@ -37,6 +38,9 @@ func (c *Container) init() {
 	}
 	if c.Links == nil {
 		c.Links = make([]string, 0)
+	}
+	if c.AptPackets == nil {
+		c.AptPackets = make([]string, 0)
 	}
 	if c.Dependencies == nil {
 		c.Dependencies = make([]*Container, 0)
@@ -155,6 +159,14 @@ func (c *Container) GetCustomValueAsString(name string) string {
 func (c *Container) GetFirstPort() string {
 	for key, _ := range c.Ports {
 		return key
+	}
+
+	return ""
+}
+
+func (c *Container) GetFirstLocalPort() string {
+	for _, localPort := range c.Ports {
+		return localPort
 	}
 
 	return ""

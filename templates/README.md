@@ -53,7 +53,7 @@ docker run -t -i -p 80:80 -name varnish -link db:db gaudi/varnish /bin/bash
 ```sh
 docker build -t gaudi/jackrabbit src/github.com/marmelab/gaudi/templates/jackrabbit
 
-docker run -t -i -p 80:80 -name jackrabbit gaudi/jackrabbit /bin/bash
+docker run -t -i -p 8080:8080 -name jackrabbit gaudi/jackrabbit /bin/bash
 ```
 
 ## All
