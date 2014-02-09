@@ -76,6 +76,8 @@ Gaudi uses [Docker](http://www.docker.io) to start all applications in a specifi
 It builds Docker files and specific configuration files from different templates.
 All templates are listed in [the `templates/` folder](https://github.com/marmelab/gaudi/tree/master/templates), one for each application type.
 
+# Examples
+
 You can find an example of [how to start a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
 
 # Configuration
