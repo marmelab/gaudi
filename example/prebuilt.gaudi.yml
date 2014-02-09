@@ -6,7 +6,7 @@ applications:
             8080: 80
         volumes:
             nodejs-redis: /app
-        before_script: node /app/server.js
+        after_script: node /app/server.js
         custom:
             modules: [redis]
 

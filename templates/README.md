@@ -49,6 +49,13 @@ docker build -t gaudi/varnish src/github.com/marmelab/gaudi/templates/varnish
 docker run -t -i -p 80:80 -name varnish -link db:db gaudi/varnish /bin/bash
 ```
 
+## Jackrabbit
+```sh
+docker build -t gaudi/jackrabbit src/github.com/marmelab/gaudi/templates/jackrabbit
+
+docker run -t -i -p 8080:8080 -name jackrabbit gaudi/jackrabbit /bin/bash
+```
+
 ## All
 List env variables
 

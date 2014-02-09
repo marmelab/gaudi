@@ -6,6 +6,9 @@ RUN apt-get -y --force-yes install python-software-properties gcc g++ make
 
 RUN apt-get -y --force-yes install mysql-server
 
+# User defined apt packets
+[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
+
 # Edit mysql config (use root as user to be able to write in docker mounted volumes)
 RUN sed -i -e "s/^user\s*=\s*mysql/user = root/" /etc/mysql/my.cnf
 RUN sed -i -e "s/^bind-address\s*=\s*127.0.0.1/bind-address\t\t= 0.0.0.0/" /etc/mysql/my.cnf

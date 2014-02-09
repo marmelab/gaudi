@@ -8,6 +8,9 @@ RUN apt-get -y install python-software-properties gcc g++ make vim git-core curl
 RUN git clone https://github.com/joyent/node.git /tmp/node
 RUN cd /tmp/node && ./configure --openssl-libpath=/usr/lib/ssl && make && make install
 
+# User defined apt packets
+[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
+
 # Install NPM
 RUN git clone git://github.com/isaacs/npm.git /tmp/npm
 RUN cd /tmp/npm && make install

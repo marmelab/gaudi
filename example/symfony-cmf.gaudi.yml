@@ -13,7 +13,8 @@ applications:
 
     app:
         type: php-fpm
-        links: [db]
+        links: [jackrabbit]
+        apt_get: [php5-gd, php5-intl]
         ports:
             9000: 9000
         volumes:
@@ -21,10 +22,9 @@ applications:
         custom:
             modules: []
 
-    db:
-        type: mysql
+    jackrabbit:
+        type: jackrabbit
         ports:
-            3306: 3306
-        after_script: mysql -e "CREATE DATABASE symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
+            8082: 8082
         volumes:
-            .gaudi/mysql: /var/lib/mysql
+            .gaudi/jackrabbit: /opt/jackrabbit/jackrabbit
