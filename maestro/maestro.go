@@ -63,16 +63,20 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 
 		// Add relative path to volumes
 		for volumeHost, volumeContainer := range currentContainer.Volumes {
+			// Relative volume host
 			if string(volumeHost[0]) != "/" {
 				delete(currentContainer.Volumes, volumeHost)
+				volumeHost = relativePath+"/"+volumeHost
 
-				if !util.IsDir(relativePath + "/" + volumeHost) {
-					panic(relativePath + "/" + volumeHost + " should be a directory")
+				currentContainer.Volumes[volumeHost] = volumeContainer
+			}
+
+			// Check if directory exists
+			if !util.IsDir(volumeHost) {
+				err := os.MkdirAll(volumeHost, 0755)
+				if err != nil {
+					panic(err)
 				}
-
-				currentContainer.Volumes[relativePath+"/"+volumeHost] = volumeContainer
-			} else if !util.IsDir(volumeHost) {
-				panic(volumeHost + " should be a directory")
 			}
 		}
 
@@ -85,14 +89,6 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 				currentContainer.BeforeScript = relativePath + "/" + beforeScript
 			}
 		}
-	}
-}
-
-func (maestro *Maestro) createHiddenDir() {
-	currentDir, _ := os.Getwd()
-	err := os.MkdirAll(currentDir+"/.gaudi", 0755)
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -172,7 +168,6 @@ func (maestro *Maestro) parseTemplates() {
 }
 
 func (maestro *Maestro) Start() {
-	maestro.createHiddenDir()
 	maestro.parseTemplates()
 
 	nbApplications := len(maestro.Applications)
