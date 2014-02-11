@@ -5,10 +5,11 @@ go:
 script:
     - go get code.google.com/p/go.tools/cmd/goimports
     - go get launchpad.net/gocheck
+    - go get code.google.com/p/gomock/gomock
     - go get github.com/qur/withmock
     - go get github.com/qur/withmock/mocktest
-    - export PATH=$GOPATH/bin:$PATH
+    - export GOPATH=/home/travis/gopath
+    - export PATH=$PATH:/home/travis/gopath/bin
 
-    - cd $HOME/gopath/src/github.com/marmelab/gaudi/container && withmock go test -v
-    - cd $HOME/gopath/src/github.com/marmelab/gaudi/maestro && withmock go test -v
-    - cd $HOME/gopath/src/github.com/marmelab/gaudi/tests && withmock go test -v
+    - cd $TRAVIS_BUILD_DIR/container && withmock go test -v
+    - cd $TRAVIS_BUILD_DIR/maestro && withmock go test -v
