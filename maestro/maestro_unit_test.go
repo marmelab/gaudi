@@ -68,6 +68,7 @@ func (s *MaestroTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(2)
@@ -126,6 +127,7 @@ applications:
 
 	c.Assert(len(m.Applications), Equals, 5)
 
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(5)
