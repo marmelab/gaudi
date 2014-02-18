@@ -64,6 +64,9 @@ func Pull(name string) {
 	}
 }
 
+/**
+ * Start a container as a server
+ */
 func Start(name, image string, links []string, ports, volumes map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
 	rawArgs := []string{docker, "run", "-d", "-i", "-t", "-name", name}
@@ -86,6 +89,26 @@ func Start(name, image string, links []string, ports, volumes map[string]string)
 	rawArgs = append(rawArgs, image)
 
 	// Initiate the command with several arguments
+	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	out, err := runCmd.CombinedOutput()
+	if err != nil {
+		panic(string(out))
+	}
+
+	return string(out)
+}
+
+/**
+ * Start a container as binary
+ */
+func Run(name, currentPath string, arguments []string) string {
+	runFunc := reflect.ValueOf(exec.Command)
+	rawArgs := []string{docker, "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
+
+	for _, argument := range arguments {
+		rawArgs = append(rawArgs, argument)
+	}
+
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	out, err := runCmd.CombinedOutput()
 	if err != nil {

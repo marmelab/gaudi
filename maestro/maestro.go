@@ -19,6 +19,7 @@ const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
 
 type Maestro struct {
 	Applications map[string]*container.Container
+	Path         string
 }
 
 type TemplateData struct {
@@ -36,6 +37,8 @@ func (m *Maestro) InitFromFile(file string) {
 }
 
 func (maestro *Maestro) InitFromString(content, relativePath string) {
+	maestro.Path = relativePath
+
 	err := goyaml.Unmarshal([]byte(content), &maestro)
 	if err != nil {
 		panic(err)
@@ -66,7 +69,7 @@ func (maestro *Maestro) InitFromString(content, relativePath string) {
 			// Relative volume host
 			if string(volumeHost[0]) != "/" {
 				delete(currentContainer.Volumes, volumeHost)
-				volumeHost = relativePath+"/"+volumeHost
+				volumeHost = relativePath + "/" + volumeHost
 
 				currentContainer.Volumes[volumeHost] = volumeContainer
 			}
@@ -212,6 +215,12 @@ func (maestro *Maestro) Start() {
 	for name, currentContainer := range maestro.Applications {
 		startChans[name] = make(chan bool)
 
+		if currentContainer.Binary {
+			fmt.Println("Binary", currentContainer.Name, "ready")
+			close(startChans[name])
+			continue
+		}
+
 		go maestro.startContainer(currentContainer, startChans)
 	}
 
@@ -251,6 +260,13 @@ func (maestro *Maestro) Stop() {
 	}
 
 	<-killChans
+}
+
+/**
+ * Runs a container as a binary
+ */
+func (maestro *Maestro) Run(name string, arguments []string) {
+	maestro.Applications[name].Run(maestro.Path, arguments)
 }
 
 func (maestro *Maestro) startContainer(currentContainer *container.Container, done map[string]chan bool) {

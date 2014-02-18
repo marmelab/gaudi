@@ -22,14 +22,4 @@ RUN curl https://www.npmjs.org/install.sh | clean=no sh
 
 ENV NODE_PATH /usr/local/lib/node_modules
 
-[[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
-[[ else ]]
-	CMD ["/usr/local/bin/node"] && /bin/bash
-[[ end]]
-
-[[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
-[[ else ]]
-	CMD ["/usr/local/bin/node"] && /bin/bash
-[[ end]]
+ENTRYPOINT ["npm"]

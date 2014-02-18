@@ -16,8 +16,9 @@ type Container struct {
 	Running      bool
 	Id           string
 	Ip           string
-	BeforeScript string "before_script"
-	AfterScript  string "after_script"
+	Binary       bool
+	BeforeScript string   "before_script"
+	AfterScript  string   "after_script"
 	AptPackets   []string "apt_get"
 	Links        []string
 	Dependencies []*Container
@@ -41,9 +42,6 @@ func (c *Container) init() {
 	}
 	if c.AptPackets == nil {
 		c.AptPackets = make([]string, 0)
-	}
-	if c.Dependencies == nil {
-		c.Dependencies = make([]*Container, 0)
 	}
 }
 
@@ -128,6 +126,9 @@ func (c *Container) AddDependency(container *Container) {
 	c.Dependencies = append(c.Dependencies, container)
 }
 
+/**
+ * Starts a container as a server
+ */
 func (c *Container) Start() {
 	c.init()
 
@@ -146,6 +147,18 @@ func (c *Container) Start() {
 	c.Running = true
 
 	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
+}
+
+/**
+ * Starts a container as a binary file
+ */
+func (c *Container) Run(currentPath string, arguments []string) {
+	c.init()
+
+	fmt.Println("Running", c.Name, strings.Join(arguments, " "), "...")
+
+	out := docker.Run(c.Image, currentPath, arguments)
+	fmt.Println(out)
 }
 
 func (c *Container) GetCustomValue(name string) interface{} {
