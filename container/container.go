@@ -45,14 +45,12 @@ func (c *Container) init() {
 	}
 }
 
-func (c *Container) Remove(done chan bool) {
+func (c *Container) Remove() {
 	docker.Remove(c.Name)
 	c.Running = false
-
-	done <- true
 }
 
-func (c *Container) Kill(done chan bool, silent bool) {
+func (c *Container) Kill(silent bool, done chan bool) {
 	if !silent {
 		fmt.Println("Killing", c.Name, "...")
 	}
@@ -66,11 +64,8 @@ func (c *Container) Kill(done chan bool, silent bool) {
 func (c *Container) Clean(done chan bool) {
 	fmt.Println("Cleaning", c.Name, "...")
 
-	cleaning := make(chan bool, 2)
-	c.Kill(cleaning, true)
-	c.Remove(cleaning)
-
-	<-cleaning
+	c.Kill(true, nil)
+	c.Remove()
 
 	done <- true
 }
@@ -158,6 +153,7 @@ func (c *Container) Run(currentPath string, arguments []string) {
 	fmt.Println("Running", c.Name, strings.Join(arguments, " "), "...")
 
 	out := docker.Run(c.Image, currentPath, arguments)
+
 	fmt.Println(out)
 }
 

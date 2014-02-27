@@ -1,0 +1,3 @@
+binaries:
+    npm:
+        type: npm

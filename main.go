@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/marmelab/gaudi/maestro"
+	"github.com/marmelab/gaudi/gaudi"
 	"github.com/marmelab/gaudi/util"
 	"os"
 	"strings"
@@ -31,21 +31,21 @@ var (
 func main() {
 	flag.Parse()
 
-	m := maestro.Maestro{}
-	m.InitFromFile(retrieveConfigPath(*config))
+	g := gaudi.Gaudi{}
+	g.Init(retrieveConfigPath(*config))
 
 	if len(*run) > 0 {
 		runArgs := strings.Split(*run, " ")
 
 		// Run a specific command
-		m.Run(runArgs[0], runArgs[1:])
+		g.Run(runArgs[0], runArgs[1:])
 	} else {
 		if *check {
-			m.Check()
+			g.Check()
 		} else if *stop {
-			m.Stop()
+			g.StopApplications()
 		} else {
-			m.Start()
+			g.StartApplications()
 		}
 	}
 }

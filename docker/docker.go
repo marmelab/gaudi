@@ -53,6 +53,8 @@ func Build(name, path string) {
 	if err != nil {
 		panic(string(out))
 	}
+
+	time.Sleep(1 * time.Second)
 }
 
 func Pull(name string) {
@@ -110,6 +112,7 @@ func Run(name, currentPath string, arguments []string) string {
 	}
 
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
 		panic(string(out))
