@@ -1,10 +1,10 @@
-package maestro_functional_test
+package gaudi_functional_test
 
 import (
 	. "launchpad.net/gocheck"
 	"testing"
 
-	"github.com/marmelab/gaudi/maestro"
+	"github.com/marmelab/gaudi/gaudi"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,26 +13,26 @@ import (
 
 func Test(t *testing.T) { TestingT(t) }
 
-type MaestroTestSuite struct{}
+type GaudiTestSuite struct{}
 
-var _ = Suite(&MaestroTestSuite{})
+var _ = Suite(&GaudiTestSuite{})
 
 // Apache
-func (s *MaestroTestSuite) TestStartApacheShouldStartedItCorrectly(c *C) {
-	m := maestro.Maestro{}
-	m.InitFromString(`
+func (s *GaudiTestSuite) TestStartApacheShouldStartedItCorrectly(c *C) {
+	g := gaudi.Gaudi{}
+	g.Init(`
 applications:
     front:
         type: apache
         ports:
             80: 80
-`, "")
+`)
 
-	c.Assert(len(m.Applications), Equals, 1)
-	m.Start()
+	c.Assert(len(g.Applications), Equals, 1)
+	g.StartApplications()
 
 	// Test apache is running
-	resp, err := http.Get("http://" + m.GetContainer("front").Ip)
+	resp, err := http.Get("http://" + g.GetApplication("front").Ip)
 	defer resp.Body.Close()
 
 	c.Check(err, Equals, nil)
@@ -40,12 +40,12 @@ applications:
 }
 
 // Apache + php-fpm
-func (s *MaestroTestSuite) TestStartPhpAndApacheShouldStartedThemCorrectly(c *C) {
+func (s *GaudiTestSuite) TestStartPhpAndApacheShouldStartedThemCorrectly(c *C) {
 	err := os.MkdirAll("/tmp/php", 0775)
 	ioutil.WriteFile("/tmp/php/ok.php", []byte("<?php echo 'ok';"), 0775)
 
-	m := maestro.Maestro{}
-	m.InitFromString(`
+	g := gaudi.Gaudi{}
+	g.Init(`
 applications:
     front:
         type: apache
@@ -63,14 +63,14 @@ applications:
             9000: 9000
         volumes:
             /tmp/php: /var/www
-`, "")
+`)
 
-	c.Assert(len(m.Applications), Equals, 2)
-	m.Start()
+	c.Assert(len(g.Applications), Equals, 2)
+	g.StartApplications()
 	time.Sleep(2 * time.Second)
 
 	// Test apache is running
-	resp, err := http.Get("http://" + m.GetContainer("front").Ip + "/ok.php")
+	resp, err := http.Get("http://" + g.GetApplication("front").Ip + "/ok.php")
 	defer resp.Body.Close()
 
 	content, _ := ioutil.ReadAll(resp.Body)

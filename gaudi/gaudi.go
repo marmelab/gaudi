@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"os"
-	"path/filepath"
+	"path"
 	"runtime"
 	"strings"
 	"text/template"
@@ -19,10 +19,10 @@ const DEFAULT_BASE_IMAGE = "stackbrew/debian"
 const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
 
 type Gaudi struct {
-	Applications containerCollection.ContainerCollection
-	Binaries     containerCollection.ContainerCollection
-	All          containerCollection.ContainerCollection
-	Path         string
+	Applications   containerCollection.ContainerCollection
+	Binaries       containerCollection.ContainerCollection
+	All            containerCollection.ContainerCollection
+	ApplicationDir string
 }
 
 type TemplateData struct {
@@ -30,23 +30,30 @@ type TemplateData struct {
 	Container  *container.Container
 }
 
-func (gaudi *Gaudi) Init(file string) {
+func (gaudi *Gaudi) InitFromFile(file string) {
+	gaudi.ApplicationDir = path.Dir(file)
+
 	fileContent, err := ioutil.ReadFile(file)
 	if err != nil {
 		panic(err)
 	}
 
-	content := string(fileContent)
-	gaudi.Path = filepath.Dir(file)
+	gaudi.Init(string(fileContent))
+}
 
-	err = goyaml.Unmarshal([]byte(content), &gaudi)
+func (gaudi *Gaudi) Init(content string) {
+	err := goyaml.Unmarshal([]byte(content), &gaudi)
 	if err != nil {
 		panic(err)
 	}
 
 	// Init all containers
 	gaudi.All = containerCollection.Merge(gaudi.Applications, gaudi.Binaries)
-	hasGaudiManagedContainer := gaudi.All.Init(gaudi.Path)
+	if len(gaudi.All) == 0 {
+		panic("No application or binary to start")
+	}
+
+	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
 	// Check if base image is pulled
 	if hasGaudiManagedContainer && !docker.ImageExists(DEFAULT_BASE_IMAGE) {
@@ -70,7 +77,7 @@ func (gaudi *Gaudi) StopApplications() {
  * Runs a container as a binary
  */
 func (gaudi *Gaudi) Run(name string, arguments []string) {
-	gaudi.Binaries[name].Run(gaudi.Path, arguments)
+	gaudi.Binaries[name].BuildAndRun(gaudi.ApplicationDir, arguments)
 }
 
 /**
@@ -94,10 +101,18 @@ func (gaudi *Gaudi) Check() {
 	}
 }
 
+func (gaudi *Gaudi) GetApplication(name string) *container.Container {
+	if application, ok := gaudi.Applications[name]; ok {
+		return application
+	}
+
+	return nil
+}
+
 func (gaudi *Gaudi) build() {
 	// Retrieve application Path
-	templateDir := getApplicationDir() + "/templates/"
 	parsedTemplateDir := "/tmp/gaudi/"
+	templateDir := getApplicationDir() + "/templates/"
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
 	if err != nil {
@@ -151,10 +166,10 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 		panic(err)
 	}
 
-	// Parse it : we need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}}
-	// which cause an error
-	tmpl, err := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(string(content))
-	if err != nil {
+	// Parse it
+	// We need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}} which cause an error
+	tmpl, templErr := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(string(content))
+	if templErr != nil {
 		panic(err)
 	}
 
@@ -170,6 +185,12 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 }
 
 func getApplicationDir() string {
+	// withmock copy only test and tested file, so we need to retrieve the template from the real app path in test env
+	testPath := os.Getenv("ORIG_GOPATH")
+	if len(testPath) > 0 {
+		return testPath + "/src/github.com/marmelab/gaudi/"
+	}
+
 	_, currentFile, _, _ := runtime.Caller(0)
 	pathParts := strings.Split(currentFile, "/")
 

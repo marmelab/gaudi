@@ -81,6 +81,7 @@ func (collection ContainerCollection) Get(name string) *container.Container {
 func (collection ContainerCollection) Start() {
 	collection.CheckIfNotEmpty()
 	collection.Clean()
+	collection.Build()
 
 	startChans := make(map[string]chan bool, len(collection))
 
@@ -121,21 +122,21 @@ func (collection ContainerCollection) CheckIfNotEmpty() {
 func (collection ContainerCollection) Clean() {
 	nbContainers := len(collection)
 	cleanChans := make(chan bool, nbContainers)
-	buildChans := make(chan bool, nbContainers)
 
 	// Clean all applications
 	for _, currentContainer := range collection {
 		go currentContainer.Clean(cleanChans)
 	}
 	waitForIt(cleanChans)
+}
 
-	// Build all applications & binaries
+func (collection ContainerCollection) Build() {
+	nbContainers := len(collection)
+	buildChans := make(chan bool, nbContainers)
+
+	// Build all
 	for _, currentContainer := range collection {
-		if currentContainer.IsPreBuild() {
-			go currentContainer.Pull(buildChans)
-		} else {
-			go currentContainer.Build(buildChans)
-		}
+		go currentContainer.BuildOrPull(buildChans)
 	}
 	waitForIt(buildChans)
 }

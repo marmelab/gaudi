@@ -21,31 +21,32 @@ func (s *stringSlice) Set(value string) error {
 }
 
 var (
-	runArgs stringSlice
-	config  = flag.String("config", ".gaudi.yml", "File describing the architecture")
-	run     = flag.String("run", "", "Run a container as a binary file")
-	stop    = flag.Bool("stop", false, "Stop all applications ( data not stored in volumes will be lost)")
-	check   = flag.Bool("check", false, "Check if all applications are running")
+	config = flag.String("config", ".gaudi.yml", "File describing the architecture")
 )
 
 func main() {
 	flag.Parse()
 
 	g := gaudi.Gaudi{}
-	g.Init(retrieveConfigPath(*config))
+	g.InitFromFile(retrieveConfigPath(*config))
 
-	if len(*run) > 0 {
-		runArgs := strings.Split(*run, " ")
-
-		// Run a specific command
-		g.Run(runArgs[0], runArgs[1:])
+	if len(os.Args) == 1 {
+		// Start all applications
+		g.StartApplications()
 	} else {
-		if *check {
-			g.Check()
-		} else if *stop {
+		switch os.Args[1] {
+		case "run":
+			// Run a specific command
+			g.Run(os.Args[2], os.Args[3:])
+			break
+		case "stop":
+			// Stop all applications
 			g.StopApplications()
-		} else {
-			g.StartApplications()
+			break
+		case "check":
+			// Check if all applications are running
+			g.Check()
+			break
 		}
 	}
 }

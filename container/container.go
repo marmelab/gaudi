@@ -58,7 +58,9 @@ func (c *Container) Kill(silent bool, done chan bool) {
 	docker.Kill(c.Name)
 	c.Running = false
 
-	done <- true
+	if done != nil {
+		done <- true
+	}
 }
 
 func (c *Container) Clean(done chan bool) {
@@ -68,6 +70,14 @@ func (c *Container) Clean(done chan bool) {
 	c.Remove()
 
 	done <- true
+}
+
+func (c *Container) BuildOrPull(buildChans chan bool) {
+	if c.IsPreBuild() {
+		c.Pull(buildChans)
+	} else {
+		c.Build(buildChans)
+	}
 }
 
 func (c *Container) Build(done chan bool) {
@@ -142,6 +152,14 @@ func (c *Container) Start() {
 	c.Running = true
 
 	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
+}
+
+func (c *Container) BuildAndRun(currentPath string, arguments []string) {
+	buildChans := make(chan bool, 1)
+	go c.BuildOrPull(buildChans)
+	<-buildChans
+
+	c.Run(currentPath, arguments)
 }
 
 /**
@@ -231,6 +249,7 @@ func (c *Container) retrieveInfoFromInspection(inspect []byte) {
 	}
 
 	c.Running = isRunning
+
 	c.Ip = results[0].NetworkSettings["IPAddress"]
 	c.Id = results[0].ID
 }
