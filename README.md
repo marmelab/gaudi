@@ -60,8 +60,9 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 # Options
 
 - `--config=""` Specify the location of the configuration file
-- `--stop` Stop all applications
-- `--check` Check if all applications are running
+- `stop` Stop all applications
+- `check` Check if all applications are running
+- `run binaryName [arguments]` Run a specific binary
 
 # How Does It Work?
 
@@ -281,6 +282,59 @@ applications:
         type: jackrabbit
 ```
 
+## Binaries
+
+Gaudi can also runs binaries in the current folder.
+A binary is not always attached to an application so Gaudi allows to configure them in a different field `binaries`:
+
+```yaml
+binaries:
+    [name]:
+        type: [type]
+
+```
+
+To run a binary with gaudi, simple use (for composer for instance) :
+
+```sh
+gaudi run [name] [arguments]
+```
+
+For `npm`:
+
+```sh
+gaudi run npm install
+```
+
+Or `bower`:
+
+```sh
+gaudi run bower install angularjs --save
+```
+
+### Npm
+
+```yaml
+binaries:
+    npm:
+        type: npm
+```
+
+### Composer
+
+```yaml
+binaries:
+    composer:
+        type: composer
+```
+
+### Bower
+
+```yaml
+binaries:
+    bower:
+        type: bower
+```
 
 ## Contributing
 

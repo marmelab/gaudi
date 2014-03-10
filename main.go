@@ -2,29 +2,52 @@ package main
 
 import (
 	"flag"
-	"github.com/marmelab/gaudi/maestro"
+	"github.com/marmelab/gaudi/gaudi"
 	"github.com/marmelab/gaudi/util"
 	"os"
+	"strings"
 )
+
+type stringSlice []string
+
+func (s *stringSlice) String() string {
+	return strings.Join(*s, " ")
+}
+
+func (s *stringSlice) Set(value string) error {
+	*s = append(*s, value)
+
+	return nil
+}
 
 var (
 	config = flag.String("config", ".gaudi.yml", "File describing the architecture")
-	stop   = flag.Bool("stop", false, "Stop all applications ( data not stored in volumes will be lost)")
-	check  = flag.Bool("check", false, "Check if all applications are running")
 )
 
 func main() {
 	flag.Parse()
 
-	m := maestro.Maestro{}
-	m.InitFromFile(retrieveConfigPath(*config))
+	g := gaudi.Gaudi{}
+	g.InitFromFile(retrieveConfigPath(*config))
 
-	if *check {
-		m.Check()
-	} else if *stop {
-		m.Stop()
+	if len(os.Args) == 1 {
+		// Start all applications
+		g.StartApplications()
 	} else {
-		m.Start()
+		switch os.Args[1] {
+		case "run":
+			// Run a specific command
+			g.Run(os.Args[2], os.Args[3:])
+			break
+		case "stop":
+			// Stop all applications
+			g.StopApplications()
+			break
+		case "check":
+			// Check if all applications are running
+			g.Check()
+			break
+		}
 	}
 }
 

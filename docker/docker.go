@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"fmt"
 )
 
 var docker, _ = exec.LookPath("docker")
@@ -45,14 +47,14 @@ func Kill(name string) {
 }
 
 func Build(name, path string) {
-	var buildCmd *exec.Cmd
-
-	buildCmd = exec.Command(docker, "build", "-rm", "-t", name, path)
+	buildCmd := exec.Command(docker, "build", "-rm", "-t", name, path)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
 		panic(string(out))
 	}
+
+	time.Sleep(1 * time.Second)
 }
 
 func Pull(name string) {
@@ -64,6 +66,9 @@ func Pull(name string) {
 	}
 }
 
+/**
+ * Start a container as a server
+ */
 func Start(name, image string, links []string, ports, volumes map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
 	rawArgs := []string{docker, "run", "-d", "-i", "-t", "-name", name}
@@ -87,6 +92,29 @@ func Start(name, image string, links []string, ports, volumes map[string]string)
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	out, err := runCmd.CombinedOutput()
+	if err != nil {
+		panic(string(out))
+	}
+
+	return string(out)
+}
+
+/**
+ * Start a container as binary
+ */
+func Run(name, currentPath string, arguments []string) string {
+	runFunc := reflect.ValueOf(exec.Command)
+	rawArgs := []string{docker, "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
+
+	for _, argument := range arguments {
+		rawArgs = append(rawArgs, argument)
+	}
+
+	fmt.Println(rawArgs)
+
+	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
 		panic(string(out))

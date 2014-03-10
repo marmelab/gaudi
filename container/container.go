@@ -16,8 +16,8 @@ type Container struct {
 	Running      bool
 	Id           string
 	Ip           string
-	BeforeScript string "before_script"
-	AfterScript  string "after_script"
+	BeforeScript string   "before_script"
+	AfterScript  string   "after_script"
 	AptPackets   []string "apt_get"
 	Links        []string
 	Dependencies []*Container
@@ -42,19 +42,14 @@ func (c *Container) init() {
 	if c.AptPackets == nil {
 		c.AptPackets = make([]string, 0)
 	}
-	if c.Dependencies == nil {
-		c.Dependencies = make([]*Container, 0)
-	}
 }
 
-func (c *Container) Remove(done chan bool) {
+func (c *Container) Remove() {
 	docker.Remove(c.Name)
 	c.Running = false
-
-	done <- true
 }
 
-func (c *Container) Kill(done chan bool, silent bool) {
+func (c *Container) Kill(silent bool, done chan bool) {
 	if !silent {
 		fmt.Println("Killing", c.Name, "...")
 	}
@@ -62,19 +57,26 @@ func (c *Container) Kill(done chan bool, silent bool) {
 	docker.Kill(c.Name)
 	c.Running = false
 
-	done <- true
+	if done != nil {
+		done <- true
+	}
 }
 
 func (c *Container) Clean(done chan bool) {
 	fmt.Println("Cleaning", c.Name, "...")
 
-	cleaning := make(chan bool, 2)
-	c.Kill(cleaning, true)
-	c.Remove(cleaning)
-
-	<-cleaning
+	c.Kill(true, nil)
+	c.Remove()
 
 	done <- true
+}
+
+func (c *Container) BuildOrPull(buildChans chan bool) {
+	if c.IsPreBuild() {
+		c.Pull(buildChans)
+	} else {
+		c.Build(buildChans)
+	}
 }
 
 func (c *Container) Build(done chan bool) {
@@ -128,6 +130,9 @@ func (c *Container) AddDependency(container *Container) {
 	c.Dependencies = append(c.Dependencies, container)
 }
 
+/**
+ * Starts a container as a server
+ */
 func (c *Container) Start() {
 	c.init()
 
@@ -146,6 +151,27 @@ func (c *Container) Start() {
 	c.Running = true
 
 	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
+}
+
+func (c *Container) BuildAndRun(currentPath string, arguments []string) {
+	buildChans := make(chan bool, 1)
+	go c.BuildOrPull(buildChans)
+	<-buildChans
+
+	c.Run(currentPath, arguments)
+}
+
+/**
+ * Starts a container as a binary file
+ */
+func (c *Container) Run(currentPath string, arguments []string) {
+	c.init()
+
+	fmt.Println("Running", c.Name, strings.Join(arguments, " "), "...")
+
+	out := docker.Run(c.Image, currentPath, arguments)
+
+	fmt.Println(out)
 }
 
 func (c *Container) GetCustomValue(name string) interface{} {
@@ -222,6 +248,7 @@ func (c *Container) retrieveInfoFromInspection(inspect []byte) {
 	}
 
 	c.Running = isRunning
+
 	c.Ip = results[0].NetworkSettings["IPAddress"]
 	c.Id = results[0].ID
 }

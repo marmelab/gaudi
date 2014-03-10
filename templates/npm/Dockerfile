@@ -13,6 +13,9 @@ RUN /bin/bash -c '. /.nvm/nvm.sh && nvm install v0.10.20 && nvm use v0.10.20 && 
 # User defined apt packets
 [[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
 
+# Install NPM
+RUN curl https://www.npmjs.org/install.sh | clean=no sh
+
 # Install modules
 [[range (.Container.GetCustomValue "modules")]]
 	RUN npm install -g [[.]]
@@ -20,14 +23,4 @@ RUN /bin/bash -c '. /.nvm/nvm.sh && nvm install v0.10.20 && nvm use v0.10.20 && 
 
 ENV NODE_PATH /usr/local/lib/node_modules
 
-[[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
-[[ else ]]
-	CMD ["/usr/local/bin/node"] && /bin/bash
-[[ end]]
-
-[[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
-[[ else ]]
-	CMD ["/usr/local/bin/node"] && /bin/bash
-[[ end]]
+ENTRYPOINT ["npm"]

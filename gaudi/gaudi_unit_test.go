@@ -1,4 +1,4 @@
-package maestro_test
+package gaudi_test
 
 import (
 	"code.google.com/p/gomock/gomock"
@@ -7,36 +7,44 @@ import (
 
 	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
-	"github.com/marmelab/gaudi/maestro"
+	"github.com/marmelab/gaudi/gaudi"
 )
 
 func Test(t *testing.T) { TestingT(t) }
 
-type MaestroTestSuite struct{}
+type GaudiTestSuite struct{}
 
-var _ = Suite(&MaestroTestSuite{})
+var _ = Suite(&GaudiTestSuite{})
 
-func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnMalformedYmlContent(c *C) {
-	m := maestro.Maestro{}
+func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnMalformedYmlContent(c *C) {
+	g := gaudi.Gaudi{}
 
 	c.Assert(func() {
-		m.InitFromString(`
+		g.Init(`
 		applications:
 			tabulated:
 				type: varnish
-`, "")
+`)
 	}, PanicMatches, "YAML error: line 1: found character that cannot start any token")
 }
 
-func (s *MaestroTestSuite) TestInitFromStringShouldTrowAndErrorOnWrongContent(c *C) {
-	m := maestro.Maestro{}
+func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnWrongContent(c *C) {
+	g := gaudi.Gaudi{}
 
-	c.Assert(func() { m.InitFromString("<oldFormat>Skrew you, i'm not yml</oldFormat>", "") }, PanicMatches, "No application to start")
+	c.Assert(func() { g.Init("<oldFormat>Skrew you, i'm not yml</oldFormat>") }, PanicMatches, "No application or binary to start")
 }
 
-func (s *MaestroTestSuite) TestInitFromStringShouldCreateAMaestro(c *C) {
-	m := maestro.Maestro{}
-	m.InitFromString(`
+func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
+
+	g := gaudi.Gaudi{}
+	g.Init(`
 applications:
     app:
         type: php-fpm
@@ -45,23 +53,17 @@ applications:
         type: mysql
         ports:
             3306: 9000
-`, "")
+`)
 
-	// Create a gomock controller, and arrange for it's finish to be called
-	ctrl := gomock.NewController(c)
-	defer ctrl.Finish()
-	docker.MOCK().SetController(ctrl)
-	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
-
-	c.Assert(len(m.Applications), Equals, 2)
-	c.Assert(m.GetContainer("app").Name, Equals, "app")
-	c.Assert(m.GetContainer("app").Type, Equals, "php-fpm")
-	c.Assert(m.GetContainer("app").Dependencies[0].Name, Equals, "db")
-	c.Assert(m.GetContainer("db").GetFirstPort(), Equals, "3306")
-	c.Assert(m.GetContainer("db").IsRunning(), Equals, false)
+	c.Assert(len(g.Applications), Equals, 2)
+	c.Assert(g.GetApplication("app").Name, Equals, "app")
+	c.Assert(g.GetApplication("app").Type, Equals, "php-fpm")
+	c.Assert(g.GetApplication("app").Dependencies[0].Name, Equals, "db")
+	c.Assert(g.GetApplication("db").GetFirstPort(), Equals, "3306")
+	c.Assert(g.GetApplication("db").IsRunning(), Equals, false)
 }
 
-func (s *MaestroTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
+func (s *GaudiTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -75,8 +77,8 @@ func (s *MaestroTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123").Times(2)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil).Times(4)
 
-	m := maestro.Maestro{}
-	m.InitFromString(`
+	g := gaudi.Gaudi{}
+	g.Init(`
 applications:
     app:
         type: php-fpm
@@ -85,47 +87,22 @@ applications:
         type: mysql
         ports:
             3306: 9000
-`, "")
+`)
 
-	c.Assert(len(m.Applications), Equals, 2)
+	c.Assert(len(g.Applications), Equals, 2)
 
-	m.Start()
-	c.Assert(m.GetContainer("db").IsRunning(), Equals, true)
-	c.Assert(m.GetContainer("app").IsRunning(), Equals, true)
+	g.StartApplications()
+	c.Assert(g.GetApplication("db").IsRunning(), Equals, true)
+	c.Assert(g.GetApplication("app").IsRunning(), Equals, true)
 }
 
-func (s *MaestroTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencies(c *C) {
+func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencies(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
-
-	m := maestro.Maestro{}
-	m.InitFromString(`
-applications:
-    lb:
-        links: [front1, front2]
-        type: varnish
-
-    front1:
-        links: [app]
-        type: apache
-
-    front2:
-        links: [app]
-        type: apache
-
-    app:
-        links: [db]
-        type: php-fpm
-
-    db:
-      type: mysql
-`, "")
-
-	c.Assert(len(m.Applications), Equals, 5)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(5)
@@ -155,10 +132,34 @@ applications:
 		docker.EXPECT().Inspect("104").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 	)
 
-	m.Start()
+	g := gaudi.Gaudi{}
+	g.Init(`
+applications:
+    lb:
+        links: [front1, front2]
+        type: varnish
+
+    front1:
+        links: [app]
+        type: apache
+
+    front2:
+        links: [app]
+        type: apache
+
+    app:
+        links: [db]
+        type: php-fpm
+
+    db:
+      type: mysql
+`)
+
+	g.StartApplications()
+	c.Assert(len(g.Applications), Equals, 5)
 }
 
-func (s *MaestroTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
+func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -174,7 +175,9 @@ func (s *MaestroTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	psResult["gaudi/front1"] = "124"
 	psResult["gaudi/db"] = "125"
 
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().SnapshotProcesses().Return(psResult, nil)
+
 	docker.EXPECT().Inspect("123").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.126\"}}]"), nil)
 	docker.EXPECT().Inspect("124").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.127\"}}]"), nil)
 	docker.EXPECT().Inspect("125").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.128\"}}]"), nil)
@@ -183,8 +186,8 @@ func (s *MaestroTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	mockfmt.EXPECT().Println("Application", "front1", "is running", "(123.124.125.127:)")
 	mockfmt.EXPECT().Println("Application", "db", "is running", "(123.124.125.128:3306)")
 
-	m := maestro.Maestro{}
-	m.InitFromString(`
+	g := gaudi.Gaudi{}
+	g.Init(`
 applications:
     lb:
         links: [front1]
@@ -197,7 +200,32 @@ applications:
         type: mysql
         ports:
             3306: 9000
-`, "")
+`)
 
-	m.Check()
+	g.Check()
+}
+
+func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+
+	// Setup the mockfmt mock package
+	docker.MOCK().SetController(ctrl)
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)
+	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return("").Times(1)
+
+	g := gaudi.Gaudi{}
+	g.Init(`
+binaries:
+    npm:
+        type: npm
+`)
+
+	c.Assert(len(g.Applications), Equals, 0)
+	c.Assert(len(g.Binaries), Equals, 1)
+
+	g.Run("npm", []string{"update"})
 }
