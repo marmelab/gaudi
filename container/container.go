@@ -16,7 +16,6 @@ type Container struct {
 	Running      bool
 	Id           string
 	Ip           string
-	Binary       bool
 	BeforeScript string   "before_script"
 	AfterScript  string   "after_script"
 	AptPackets   []string "apt_get"
