@@ -119,6 +119,9 @@ func (gaudi *Gaudi) build() {
 		panic(err)
 	}
 
+	// Retrieve includes
+	includes := getIncludes()
+
 	for _, currentContainer := range gaudi.All {
 		if !currentContainer.IsGaudiManaged() {
 			continue
@@ -136,12 +139,12 @@ func (gaudi *Gaudi) build() {
 
 		// Parse & copy files
 		for _, file := range files {
-			gaudi.parseFile(templateDir, parsedTemplateDir, file, currentContainer)
+			gaudi.parseFile(templateDir, parsedTemplateDir, file, includes, currentContainer)
 		}
 	}
 }
 
-func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo, currentContainer *container.Container) {
+func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo, includes map[string]string, currentContainer *container.Container) {
 	templateData := TemplateData{gaudi.All, nil}
 	funcMap := template.FuncMap{
 		"ToUpper": strings.ToUpper,
@@ -161,14 +164,20 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 
 	// Read the template
 	filePath := sourceDir + currentContainer.Type + "/" + file.Name()
-	content, err := ioutil.ReadFile(filePath)
+	rawContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
+	}
+	content := string(rawContent)
+
+	// Add includes
+	for name, include := range includes {
+		content = strings.Replace(content, "[[ "+name+" ]]", include, -1)
 	}
 
 	// Parse it
 	// We need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}} which cause an error
-	tmpl, templErr := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(string(content))
+	tmpl, templErr := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(content)
 	if templErr != nil {
 		panic(err)
 	}
@@ -195,4 +204,23 @@ func getApplicationDir() string {
 	pathParts := strings.Split(currentFile, "/")
 
 	return strings.Join(pathParts[0:len(pathParts)-2], "/")
+}
+
+func getIncludes() map[string]string {
+	includesDir := getApplicationDir() + "/templates/_includes/"
+	result := make(map[string]string)
+
+	files, err := ioutil.ReadDir(includesDir)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+		name := strings.Split(file.Name(), ".")[0]
+		content, _ := ioutil.ReadFile(includesDir + file.Name())
+
+		result[name] = string(content)
+	}
+
+	return result
 }

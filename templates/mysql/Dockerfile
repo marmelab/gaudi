@@ -4,6 +4,7 @@ FROM stackbrew/debian:wheezy
 RUN apt-get -y update
 RUN apt-get -y --force-yes install python-software-properties gcc g++ make
 
+# Install mysql
 RUN apt-get -y --force-yes install mysql-server
 
 # User defined apt packets
@@ -19,25 +20,7 @@ ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 
 # Add custom setup script
-[[ if (.Container.HasBeforeScript) ]]
-	[[ if (.Container.HasBeforeScriptFile) ]]
-		ADD [[.Container.BeforeScript]] /root/before-setup.sh
-	[[ else ]]
-		RUN echo '[[.Container.BeforeScript]]' > /root/before-setup.sh
-	[[ end ]]
-
-	RUN chmod +x /root/before-setup.sh
-[[ end ]]
-
-[[ if (.Container.HasAfterScript) ]]
-	[[ if (.Container.HasAfterScriptFile) ]]
-		ADD [[.Container.AfterScript]] /root/after-setup.sh
-	[[ else ]]
-		RUN echo '[[.Container.AfterScript]]' > /root/after-setup.sh
-	[[ end ]]
-
-	RUN chmod +x /root/after-setup.sh
-[[ end ]]
+[[ beforeAfterScripts ]]
 
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
 	&& /etc/init.d/mysql start \

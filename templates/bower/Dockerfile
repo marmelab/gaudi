@@ -8,7 +8,6 @@ RUN apt-get -y install python-software-properties gcc g++ make vim git-core curl
 # User defined apt packets
 [[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
 
-
 # Install nodejs with nvm
 RUN git clone https://github.com/creationix/nvm.git /.nvm
 RUN echo "/.nvm/nvm.sh" >> /etc/bash.bashrc
