@@ -211,6 +211,9 @@ func (c *Container) IsRemote() bool {
 }
 
 func (c *Container) HasBeforeScript() bool {
+
+	fmt.Println(">", c.BeforeScript)
+
 	return len(c.BeforeScript) != 0
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/containerCollection"
 	"github.com/marmelab/gaudi/docker"
+	"github.com/marmelab/gaudi/util"
 	"io/ioutil"
 	"launchpad.net/goyaml"
 	"os"
@@ -112,7 +113,7 @@ func (gaudi *Gaudi) GetApplication(name string) *container.Container {
 func (gaudi *Gaudi) build() {
 	// Retrieve application Path
 	parsedTemplateDir := "/tmp/gaudi/"
-	templateDir := getApplicationDir() + "/templates/"
+	templateDir := getGaudiDirectory() + "/templates/"
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
 	if err != nil {
@@ -125,6 +126,25 @@ func (gaudi *Gaudi) build() {
 	for _, currentContainer := range gaudi.All {
 		if !currentContainer.IsGaudiManaged() {
 			continue
+		}
+
+		// Check if the beforeScript is a file
+		beforeScript := currentContainer.BeforeScript
+		if len(beforeScript) != 0 {
+			copied := gaudi.copyRelativeFile(beforeScript, parsedTemplateDir+currentContainer.Name+"/")
+
+			if copied {
+				currentContainer.BeforeScript = "./" + currentContainer.BeforeScript
+			}
+		}
+
+		// Check if the afterScript is a file
+		afterScript := currentContainer.AfterScript
+		if len(afterScript) != 0 {
+			copied := gaudi.copyRelativeFile(afterScript, parsedTemplateDir+currentContainer.Name+"/")
+			if copied {
+				currentContainer.AfterScript = "./" + currentContainer.AfterScript
+			}
 		}
 
 		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
@@ -193,7 +213,36 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 	ioutil.WriteFile(destination, []byte(result.String()), 0644)
 }
 
-func getApplicationDir() string {
+func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
+	// File cannot be absolute
+	if util.IsFile(filePath) && filePath[0] == '/' {
+		panic("File '" + filePath + "' cannot be an absolute path")
+	}
+
+	// Check if the relative file exists
+	absolutePath := g.ApplicationDir + "/" + filePath
+	if util.IsFile(absolutePath) {
+
+		// Move file to the build context (and keep the same file tree)
+		directories := strings.Split(filePath, "/")
+		if len(directories) > 1 {
+			os.MkdirAll(destination+strings.Join(directories[0:len(directories)-1], "/"), 0755)
+		}
+
+		fmt.Println("copy: ", absolutePath, destination+filePath)
+
+		err := util.Copy(destination+filePath, absolutePath)
+		if err != nil {
+			panic(err)
+		}
+
+		return true
+	}
+
+	return false
+}
+
+func getGaudiDirectory() string {
 	// withmock copy only test and tested file, so we need to retrieve the template from the real app path in test env
 	testPath := os.Getenv("ORIG_GOPATH")
 	if len(testPath) > 0 {
@@ -207,7 +256,7 @@ func getApplicationDir() string {
 }
 
 func getIncludes() map[string]string {
-	includesDir := getApplicationDir() + "/templates/_includes/"
+	includesDir := getGaudiDirectory() + "/templates/_includes/"
 	result := make(map[string]string)
 
 	files, err := ioutil.ReadDir(includesDir)
