@@ -1,8 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN apt-get -y update
-RUN apt-get -y --force-yes install aptitude wget python-software-properties gcc g++ make
+[[ updateApt ]]
 
 # User defined apt packets
 [[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]

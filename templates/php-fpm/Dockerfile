@@ -1,8 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN apt-get -y update
-RUN apt-get -y install aptitude python-software-properties gcc g++ make vim git
+[[ updateApt ]]
 
 # Install PHP FPM
 RUN apt-get -y -f install php5-fpm php5-cli php5-mysql php5-mcrypt php5-curl curl

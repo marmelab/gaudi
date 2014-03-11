@@ -1,8 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN apt-get -y update
-RUN apt-get -y install python-software-properties gcc g++ make vim
+[[ updateApt ]]
 
 RUN apt-get install -y -f nginx
 

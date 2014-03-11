@@ -228,8 +228,6 @@ func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
 			os.MkdirAll(destination+strings.Join(directories[0:len(directories)-1], "/"), 0755)
 		}
 
-		fmt.Println("copy: ", absolutePath, destination+filePath)
-
 		err := util.Copy(destination+filePath, absolutePath)
 		if err != nil {
 			panic(err)

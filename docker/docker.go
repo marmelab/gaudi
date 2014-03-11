@@ -69,7 +69,7 @@ func Pull(name string) {
  */
 func Start(name, image string, links []string, ports, volumes map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "run", "-d", "-i", "-t", "-name", name}
+	rawArgs := []string{docker, "run", "-d", "-i", "-t", "--name=" + name}
 
 	// Add links
 	for _, link := range links {

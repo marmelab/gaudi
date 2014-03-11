@@ -1,8 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN apt-get -y update
-RUN apt-get -y --force-yes install aptitude wget python-software-properties gcc g++ make
+[[ updateApt ]]
 
 # Update apt to install HHVM
 RUN wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | apt-key add -
