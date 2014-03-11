@@ -132,7 +132,6 @@ func (gaudi *Gaudi) build() {
 		beforeScript := currentContainer.BeforeScript
 		if len(beforeScript) != 0 {
 			copied := gaudi.copyRelativeFile(beforeScript, parsedTemplateDir+currentContainer.Name+"/")
-
 			if copied {
 				currentContainer.BeforeScript = "./" + currentContainer.BeforeScript
 			}
