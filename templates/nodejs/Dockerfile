@@ -1,9 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN echo "deb http://ftp.fr.debian.org/debian/ wheezy main" >> /etc/apt/sources.list
-RUN apt-get -y update
-RUN apt-get -y install python-software-properties gcc g++ make vim git-core curl build-essential openssl libssl-dev
+[[ updateApt ]]
 
 # Install nodejs with nvm
 RUN git clone https://github.com/creationix/nvm.git /.nvm

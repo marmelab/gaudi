@@ -1,8 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN apt-get -y update
-RUN apt-get -y --force-yes install python-software-properties gcc g++ make
+[[ updateApt ]]
 
 # Install mysql
 RUN apt-get -y --force-yes install mysql-server

@@ -1,9 +1,6 @@
 FROM stackbrew/debian:wheezy
 
-# Update apt-get
-RUN echo "deb http://ftp.fr.debian.org/debian/ wheezy main" >> /etc/apt/sources.list
-RUN apt-get -y update
-RUN apt-get -y install python-software-properties gcc g++ make vim git-core curl build-essential openssl libssl-dev
+[[ updateApt ]]
 
 # User defined apt packets
 [[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
