@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
-	"fmt"
 )
 
 var docker, _ = exec.LookPath("docker")
@@ -92,6 +90,7 @@ func Start(name, image string, links []string, ports, volumes map[string]string)
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
 		panic(string(out))
@@ -110,8 +109,6 @@ func Run(name, currentPath string, arguments []string) string {
 	for _, argument := range arguments {
 		rawArgs = append(rawArgs, argument)
 	}
-
-	fmt.Println(rawArgs)
 
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 

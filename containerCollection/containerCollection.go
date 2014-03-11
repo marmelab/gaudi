@@ -59,16 +59,6 @@ func (collection ContainerCollection) Init(relativePath string) bool {
 				}
 			}
 		}
-
-		// Check if the beforeScript is a file
-		beforeScript := currentContainer.BeforeScript
-		if len(beforeScript) != 0 {
-			if util.IsFile(beforeScript) {
-				currentContainer.BeforeScript = beforeScript
-			} else if util.IsFile(relativePath + "/" + beforeScript) {
-				currentContainer.BeforeScript = relativePath + "/" + beforeScript
-			}
-		}
 	}
 
 	return hasGaudiManagedContainer
