@@ -3,6 +3,7 @@ package container
 import (
 	"fmt"
 	"github.com/marmelab/gaudi/docker"
+	"github.com/marmelab/gaudi/util"
 	"launchpad.net/goyaml"
 	"strings"
 	"time"
@@ -84,6 +85,11 @@ func (c *Container) Build(done chan bool) {
 	buildPath := "/tmp/gaudi/" + c.Name
 
 	if c.IsRemote() {
+		// remote type is deprecated
+		if c.Type == "remote" {
+			fmt.Println("WARN: 'remote' type is deprecated, use 'github' instead")
+		}
+
 		buildName = c.Image
 		buildPath = c.Path
 	}
@@ -96,6 +102,12 @@ func (c *Container) Build(done chan bool) {
 
 func (c *Container) Pull(done chan bool) {
 	fmt.Println("Pulling", c.Image, "...")
+
+	// prebuild type is deprecated
+	if c.Type == "prebuild" {
+		fmt.Println("WARN: 'prebuild' type is deprecated, use 'index' instead")
+	}
+
 	docker.Pull(c.Image)
 
 	done <- true
@@ -203,11 +215,11 @@ func (c *Container) IsGaudiManaged() bool {
 }
 
 func (c *Container) IsPreBuild() bool {
-	return c.Type == "prebuild"
+	return c.Type == "index" || c.Type == "prebuild"
 }
 
 func (c *Container) IsRemote() bool {
-	return c.Type == "remote"
+	return c.Type == "github" || c.Type == "remote"
 }
 
 func (c *Container) HasBeforeScript() bool {
@@ -229,7 +241,7 @@ func (c *Container) HasAfterScriptFile() bool {
 func (c *Container) RetrieveIp() {
 	inspect, err := docker.Inspect(c.Id)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	c.retrieveInfoFromInspection(inspect)

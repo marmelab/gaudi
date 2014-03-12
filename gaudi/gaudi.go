@@ -36,7 +36,7 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 
 	fileContent, err := ioutil.ReadFile(file)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	gaudi.Init(string(fileContent))
@@ -45,13 +45,13 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 func (gaudi *Gaudi) Init(content string) {
 	err := goyaml.Unmarshal([]byte(content), &gaudi)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	// Init all containers
 	gaudi.All = containerCollection.Merge(gaudi.Applications, gaudi.Binaries)
 	if len(gaudi.All) == 0 {
-		panic("No application or binary to start")
+		util.LogError("No application or binary to start")
 	}
 
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
@@ -87,7 +87,7 @@ func (gaudi *Gaudi) Run(name string, arguments []string) {
 func (gaudi *Gaudi) Check() {
 	images, err := docker.SnapshotProcesses()
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	for _, currentContainer := range gaudi.Applications {
@@ -117,13 +117,18 @@ func (gaudi *Gaudi) build() {
 
 	err := os.MkdirAll(parsedTemplateDir, 0700)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	// Retrieve includes
 	includes := getIncludes()
 
 	for _, currentContainer := range gaudi.All {
+		// Check if the container has a type
+		if currentContainer.Type == "" {
+			util.LogError("Container " + currentContainer.Name + " should have a type")
+		}
+
 		if !currentContainer.IsGaudiManaged() {
 			continue
 		}
@@ -148,12 +153,12 @@ func (gaudi *Gaudi) build() {
 
 		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
 		if err != nil {
-			panic("Template not found for application : " + currentContainer.Type)
+			util.LogError("Template not found for application : " + currentContainer.Type)
 		}
 
 		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
 		if err != nil {
-			panic(err)
+			util.LogError(err)
 		}
 
 		// Parse & copy files
@@ -175,7 +180,7 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 	if file.IsDir() {
 		err := os.MkdirAll(destination, 0755)
 		if err != nil {
-			panic(err)
+			util.LogError(err)
 		}
 
 		return
@@ -185,7 +190,7 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 	filePath := sourceDir + currentContainer.Type + "/" + file.Name()
 	rawContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 	content := string(rawContent)
 
@@ -198,14 +203,14 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 	// We need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}} which cause an error
 	tmpl, templErr := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(content)
 	if templErr != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	templateData.Container = currentContainer
 	var result bytes.Buffer
 	err = tmpl.Execute(&result, templateData)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	// Create the destination file
@@ -215,7 +220,7 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
 	// File cannot be absolute
 	if util.IsFile(filePath) && filePath[0] == '/' {
-		panic("File '" + filePath + "' cannot be an absolute path")
+		util.LogError("File '" + filePath + "' cannot be an absolute path")
 	}
 
 	// Check if the relative file exists
@@ -230,7 +235,7 @@ func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
 
 		err := util.Copy(destination+filePath, absolutePath)
 		if err != nil {
-			panic(err)
+			util.LogError(err)
 		}
 
 		return true
@@ -258,7 +263,7 @@ func getIncludes() map[string]string {
 
 	files, err := ioutil.ReadDir(includesDir)
 	if err != nil {
-		panic(err)
+		util.LogError(err)
 	}
 
 	for _, file := range files {
