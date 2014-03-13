@@ -60,6 +60,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 # Options
 
 - `--config=""` Specify the location of the configuration file
+- `--debug` Display some useful information
 - `stop` Stop all applications
 - `check` Check if all applications are running
 - `run binaryName [arguments]` Run a specific binary
@@ -159,24 +160,28 @@ applications:
 
 ### Remote Containers
 
-If you want to run an application not yet supported by Gaudi, you can use a prebuilt image, or an image from the [Docker index](https://index.docker.io/):
+If you want to run an application not yet supported by Gaudi, you can use a prebuilt image (on Github), or an image from the [Docker index](https://index.docker.io/):
 
+Github images can be pulled via the `github` type:
 ```yaml
 applications:
-    server:
-        type: nodejs
-        links: [redis]
-        ports:
-            80: 80
-        volumes:
-            nodejs-redis: /app
-
     redis:
-        type: remote
+        type: github
         image: gary/redis
         path: github.com/manuquentin/docker-redis
         ports:
             6379: 6379
+```
+
+Images from Docker index uses the `index` type:
+```yaml
+applications:
+    mongodb:
+        type: index
+        image: dockerfile/mongodb
+        ports:
+            27017: 27017
+            28017: 28017
 ```
 
 ## Types

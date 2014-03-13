@@ -2,6 +2,7 @@ package docker
 
 import (
 	"errors"
+	"github.com/marmelab/gaudi/util"
 	"os/exec"
 	"reflect"
 	"strings"
@@ -29,7 +30,7 @@ func Remove(name string) {
 	removeCmd := exec.Command(docker, "rm", name)
 	removeErr := removeCmd.Start()
 	if removeErr != nil {
-		panic(removeErr)
+		util.LogError(removeErr)
 	}
 	time.Sleep(1 * time.Second)
 }
@@ -38,18 +39,19 @@ func Kill(name string) {
 	killCommand := exec.Command(docker, "kill", name)
 	killErr := killCommand.Start()
 	if killErr != nil {
-		panic(killErr)
+		util.LogError(killErr)
 	}
 
 	time.Sleep(1 * time.Second)
 }
 
 func Build(name, path string) {
-	buildCmd := exec.Command(docker, "build", "-rm", "-t", name, path)
+	buildCmd := exec.Command(docker, "build", "-t", name, path)
+	util.Debug(buildCmd.Args)
 
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
-		panic(string(out))
+		util.LogError(string(out))
 	}
 
 	time.Sleep(1 * time.Second)
@@ -57,10 +59,11 @@ func Build(name, path string) {
 
 func Pull(name string) {
 	pullCmd := exec.Command(docker, "pull", name)
+	util.Debug("Pull command:", pullCmd.Args)
 
 	out, err := pullCmd.CombinedOutput()
 	if err != nil {
-		panic(string(out))
+		util.LogError(string(out))
 	}
 }
 
@@ -90,10 +93,11 @@ func Start(name, image string, links []string, ports, volumes map[string]string)
 
 	// Initiate the command with several arguments
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	util.Debug("Start command:", runCmd.Args)
 
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
-		panic(string(out))
+		util.LogError(string(out))
 	}
 
 	return string(out)
@@ -111,10 +115,11 @@ func Run(name, currentPath string, arguments []string) string {
 	}
 
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	util.Debug("Run command:", runCmd.Args)
 
 	out, err := runCmd.CombinedOutput()
 	if err != nil {
-		panic(string(out))
+		util.LogError(string(out))
 	}
 
 	return string(out)

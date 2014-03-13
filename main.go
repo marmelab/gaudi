@@ -30,7 +30,7 @@ func main() {
 	g := gaudi.Gaudi{}
 	g.InitFromFile(retrieveConfigPath(*config))
 
-	if len(os.Args) == 1 {
+	if len(flag.Args()) == 0 {
 		// Start all applications
 		g.StartApplications()
 	} else {
@@ -47,26 +47,29 @@ func main() {
 			// Check if all applications are running
 			g.Check()
 			break
+		default:
+			util.LogError("Argument " + os.Args[1] + " was not found")
+			break
 		}
 	}
 }
 
 func retrieveConfigPath(configFile string) string {
 	if len(configFile) == 0 {
-		panic("Config file name cannot be empty.")
+		util.LogError("Config file name cannot be empty.")
 	}
 
 	if string(configFile[0]) != "/" {
 		currentDir, err := os.Getwd()
 		if err != nil {
-			panic(err)
+			util.LogError(err)
 		}
 
 		configFile = currentDir + "/" + configFile
 	}
 
 	if !util.IsFile(configFile) {
-		panic("Config file must be a file.")
+		util.LogError("Config file must be a file.")
 	}
 
 	return configFile

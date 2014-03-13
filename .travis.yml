@@ -11,5 +11,5 @@ script:
     - export GOPATH=/home/travis/gopath
     - export PATH=$PATH:/home/travis/gopath/bin
 
-    - cd $TRAVIS_BUILD_DIR/container && withmock go test -v
-    - cd $TRAVIS_BUILD_DIR/gaudi && withmock go test -v
+    - cd $TRAVIS_BUILD_DIR/container && withmock go test . -v -debug
+    - cd $TRAVIS_BUILD_DIR/gaudi && withmock go test . -v -debug

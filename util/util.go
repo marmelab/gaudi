@@ -1,9 +1,33 @@
 package util
 
 import (
+	"flag"
 	"io"
+	"log"
 	"os"
 )
+
+var (
+	debug = flag.Bool("debug", false, "Display debug information")
+)
+
+func main() {
+	flag.Parse()
+}
+
+func LogError(err interface{}) {
+	if *debug {
+		panic(err)
+	} else {
+		log.Fatal(err)
+	}
+}
+
+func Debug(notice ...interface{}) {
+	if *debug {
+		log.Println(notice)
+	}
+}
 
 func IsDir(path string) bool {
 	stat := getFileStat(path)

@@ -37,7 +37,7 @@ func (collection ContainerCollection) Init(relativePath string) bool {
 			if depContainer, exists := collection[dependency]; exists {
 				currentContainer.AddDependency(depContainer)
 			} else {
-				panic(name + " references a non existing application : " + dependency)
+				util.LogError(name + " references a non existing application : " + dependency)
 			}
 		}
 
@@ -55,7 +55,7 @@ func (collection ContainerCollection) Init(relativePath string) bool {
 			if !util.IsDir(volumeHost) {
 				err := os.MkdirAll(volumeHost, 0755)
 				if err != nil {
-					panic(err)
+					util.LogError(err)
 				}
 			}
 		}
@@ -105,7 +105,7 @@ func (collection ContainerCollection) Stop() {
 func (collection ContainerCollection) CheckIfNotEmpty() {
 	// Check if there is at least a container
 	if collection == nil || len(collection) == 0 {
-		panic("Gaudi requires at least an application to be defined to start anything")
+		util.LogError("Gaudi requires at least an application to be defined to start anything")
 	}
 }
 
