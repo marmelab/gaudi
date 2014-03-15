@@ -1,0 +1,12 @@
+applications:
+    db:
+        type: index
+        image: paintedfox/postgresql
+        volumes:
+            /tmp/postgresql: /data
+        environments:
+            USER: docker
+            PASS: docker
+            DB: gaudi
+        ports:
+            5432: 5432

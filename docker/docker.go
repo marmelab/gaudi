@@ -70,9 +70,15 @@ func Pull(name string) {
 /**
  * Start a container as a server
  */
-func Start(name, image string, links []string, ports, volumes map[string]string) string {
+func Start(name, image string, links []string, ports, volumes, environments map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
 	rawArgs := []string{docker, "run", "-d", "-i", "-t", "--name=" + name}
+
+	// Add environments
+	util.Debug(environments)
+	for envName, envValue := range environments {
+		rawArgs = append(rawArgs, "-e="+envName+"="+envValue)
+	}
 
 	// Add links
 	for _, link := range links {

@@ -1,0 +1,9 @@
+applications:
+    mongodb:
+        type: index
+        image: dockerfile/mongodb
+        volumes:
+            .gaudi/mongodb: /data/db
+        ports:
+            27017: 27017
+            27018: 27018

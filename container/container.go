@@ -24,6 +24,7 @@ type Container struct {
 	Dependencies []*Container
 	Ports        map[string]string
 	Volumes      map[string]string
+	Environments map[string]string "environments"
 	Custom       map[string]interface{}
 }
 
@@ -42,6 +43,9 @@ func (c *Container) init() {
 	}
 	if c.AptPackets == nil {
 		c.AptPackets = make([]string, 0)
+	}
+	if c.Environments == nil {
+		c.Environments = make(map[string]string)
 	}
 }
 
@@ -155,7 +159,7 @@ func (c *Container) Start() {
 		return
 	}
 
-	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes)
+	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes, c.Environments)
 	c.Id = strings.TrimSpace(startResult)
 
 	time.Sleep(3 * time.Second)
