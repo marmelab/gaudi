@@ -2,3 +2,6 @@
 RUN apt-key update
 RUN apt-get -y update
 RUN apt-get -y install aptitude python-software-properties gcc g++ make vim git-core curl build-essential openssl libssl-dev wget
+
+# User defined apt packets
+[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]

@@ -2,9 +2,6 @@ FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 # Install Java 7
 RUN aptitude install -y -f openjdk-7-jre
 

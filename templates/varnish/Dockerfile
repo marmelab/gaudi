@@ -5,9 +5,6 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 
 [[ updateApt ]]
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 RUN curl http://repo.varnish-cache.org/debian/GPG-key.txt | apt-key add -
 RUN echo "deb http://repo.varnish-cache.org/debian/ wheezy varnish-3.0" >> /etc/apt/sources.list
 RUN apt-get update

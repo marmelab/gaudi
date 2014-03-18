@@ -5,9 +5,6 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 
 [[ updateApt ]]
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 RUN apt-get install -y -f
 RUN apt-get install -y -f apache2-mpm-worker libapache2-mod-fastcgi php5-fpm
 RUN sed -i 's/;pm.start_servers/pm.start_servers/g' /etc/php5/fpm/pool.d/www.conf

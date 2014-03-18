@@ -7,9 +7,6 @@ RUN git clone https://github.com/creationix/nvm.git /.nvm
 RUN echo "/.nvm/nvm.sh" >> /etc/bash.bashrc
 RUN /bin/bash -c '. /.nvm/nvm.sh && nvm install v0.10.20 && nvm use v0.10.20 && nvm alias default v0.10.20 && ln -s /.nvm/v0.10.20/bin/node /usr/bin/node && ln -s /.nvm/v0.10.20/bin/npm /usr/bin/npm'
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 # Install NPM
 RUN curl https://www.npmjs.org/install.sh | clean=no sh
 
