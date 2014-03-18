@@ -56,11 +56,13 @@ func Kill(name string) {
 
 func Build(name, path string) {
 	buildFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "build", "-t", name, path}
+	rawArgs := []string{docker, "build"}
 
 	if *noCache {
 		rawArgs = append(rawArgs, "--no-cache")
 	}
+
+	rawArgs = append(rawArgs, "-t", name, path)
 
 	util.Debug(rawArgs)
 
