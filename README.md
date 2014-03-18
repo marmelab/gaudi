@@ -75,6 +75,8 @@ All templates are listed in [the `templates/` folder](https://github.com/marmela
 
 You can find an example of [how to start a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
 
+Another examples can be found in [the `example` folder](https://github.com/marmelab/gaudi/tree/master/example).
+
 # Configuration
 
 ## Common Configuration
@@ -147,6 +149,23 @@ applications:
 
 The `php/` folder (absolute or relative to the yml file) will be mounted in the `/app/php` folder in the application.
 
+### Environment variables
+
+Environment variables can be injected with the `environments` field:
+
+```yaml
+applications:
+    db:
+        type: index
+        image: paintedfox/postgresql
+        environments:
+            USER: docker
+            PASS: docker
+            DB: gaudi
+```
+
+Environment variable will be set thanks to the docker's `-e` argument.
+
 ### Apt packets
 
 If you want to install other apt packets, use the `apt_get` parameter:
@@ -174,6 +193,7 @@ applications:
 ```
 
 Images from Docker index uses the `index` type:
+
 ```yaml
 applications:
     mongodb:
@@ -182,6 +202,31 @@ applications:
         ports:
             27017: 27017
             28017: 28017
+```
+
+### Before and after scripts
+
+Each type of application listed bellow can be configured with `before_script` and `after_script` field.
+Theses fields can represents a file path or a command. They are executed before or after the main executable of the application.
+
+Example: Start a node server
+```yaml
+applications:
+	front:
+		type: nodejs
+		volumes:
+            .: /app
+        after_script: node /app/server.js
+```
+
+Before scripts can added to run custom script before the application boots:
+```yaml
+applications:
+	db:
+		type: mysql
+		volumes:
+            .: /app
+		before_script: /app/bin/init.sh
 ```
 
 ## Types

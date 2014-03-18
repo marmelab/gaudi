@@ -1,0 +1,6 @@
+applications:
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211

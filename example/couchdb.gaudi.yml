@@ -1,0 +1,8 @@
+applications:
+    couchdb:
+        type: index
+        image: klaemo/couchdb
+        volumes:
+            .gaudi/couchdb: /usr/local/var/lib/couchdb
+        ports:
+            5984: 5984
