@@ -44,6 +44,13 @@ Gaudi will try to find a `.gaudi.yml` file in the current folder, and start each
 
 # Installation
 
+## Requirements
+
+- [Go 1.2](http://golang.org/doc/install)
+- [Docker](https://www.docker.io/gettingstarted/)
+
+## Install Gaudi
+
 ```sh
 go get github.com/marmelab/gaudi
 ```
@@ -322,6 +329,20 @@ applications:
     [name]:
         type: nodejs
         after_script: node /app/server.js
+```
+
+### Cassandra
+
+```yaml
+applications:
+    [name]:
+        type: cassandra
+        ports:
+            9160: 9160
+            7000: 7000
+        custom:
+            maxHeapSize: 512M # Optionnal
+            heapNewSize: 256M # Optionnal
 ```
 
 ### Jackrabbit
