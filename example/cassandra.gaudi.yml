@@ -1,0 +1,22 @@
+applications:
+    db1:
+        type: cassandra
+        volumes:
+            .gaudi/db1: /var/log/cassandra
+        ports:
+            9160: 9160
+            7000: 7000
+        custom:
+            maxHeapSize: 512M
+            heapNewSize: 128M
+    front:
+        type: nodejs
+        links: [db1]
+        ports:
+            8080:8080
+        volumes:
+            .: /app
+
+binaries:
+    npm:
+        type: npm

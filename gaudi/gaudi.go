@@ -203,7 +203,7 @@ func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo
 	// We need to change default delimiters because sometimes we have to parse values like ${{{ .Val }}} which cause an error
 	tmpl, templErr := template.New(filePath).Funcs(funcMap).Delims("[[", "]]").Parse(content)
 	if templErr != nil {
-		util.LogError(err)
+		util.LogError(templErr)
 	}
 
 	templateData.Container = currentContainer
