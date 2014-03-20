@@ -4,9 +4,6 @@ FROM stackbrew/debian:wheezy
 
 RUN apt-get install -y -f nginx
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 ADD default /etc/nginx/sites-enabled/default

@@ -14,9 +14,6 @@ RUN echo deb http://archive.ubuntu.com/ubuntu precise main universe >> /etc/apt/
 RUN apt-get -y update
 RUN apt-get -y -f install hhvm-fastcgi php5-cli curl
 
-# User defined apt packets
-[[ if (.Container.AptPackets) ]]RUN apt-get -y --force-yes install [[range (.Container.AptPackets)]][[.]] [[end]][[end]]
-
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 

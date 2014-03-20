@@ -190,12 +190,28 @@ func (c *Container) Run(currentPath string, arguments []string) {
 	fmt.Println(out)
 }
 
-func (c *Container) GetCustomValue(name string) interface{} {
-	return c.Custom[name]
+func (c *Container) GetCustomValue(params ...string) interface{} {
+	if value, ok := c.Custom[params[0]]; ok {
+		return value
+	}
+
+	if len(params) == 2 {
+		return params[1]
+	}
+
+	return nil
 }
 
-func (c *Container) GetCustomValueAsString(name string) string {
-	return c.Custom[name].(string)
+func (c *Container) GetCustomValueAsString(params ...string) string {
+	if value, ok := c.Custom[params[0]]; ok {
+		return value.(string)
+	}
+
+	if len(params) == 2 {
+		return params[1]
+	}
+
+	return ""
 }
 
 func (c *Container) GetFirstPort() string {

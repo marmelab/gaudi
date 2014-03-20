@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"flag"
 	"errors"
 	"github.com/marmelab/gaudi/util"
 	"os/exec"
@@ -9,7 +10,15 @@ import (
 	"time"
 )
 
-var docker, _ = exec.LookPath("docker")
+
+var (
+	docker, _ = exec.LookPath("docker")
+	noCache  = flag.Bool("no-cache", false, "Disable build cache")
+)
+
+func main() {
+	flag.Parse()
+}
 
 func ImageExists(name string) bool {
 	imagesCmd := exec.Command(docker, "images", name)
@@ -46,9 +55,18 @@ func Kill(name string) {
 }
 
 func Build(name, path string) {
-	buildCmd := exec.Command(docker, "build", "-t", name, path)
-	util.Debug(buildCmd.Args)
+	buildFunc := reflect.ValueOf(exec.Command)
+	rawArgs := []string{docker, "build"}
 
+	if *noCache {
+		rawArgs = append(rawArgs, "--no-cache")
+	}
+
+	rawArgs = append(rawArgs, "-t", name, path)
+
+	util.Debug(rawArgs)
+
+	buildCmd := buildFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
 		util.LogError(string(out))
