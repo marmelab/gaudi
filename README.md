@@ -386,6 +386,14 @@ binaries:
         type: bower
 ```
 
+### Jekyll
+
+```yaml
+binaries:
+    jekyll:
+        type: jekyll
+```
+
 ## Contributing
 
 Your feedback about the usage of gaudi in your specific context is valuable, don't hesitate to [open GitHub Issues](https://github.com/marmelab/gaudi/issues) for any problem or question you may have.
