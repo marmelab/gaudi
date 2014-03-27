@@ -17,21 +17,8 @@ RUN chmod +x /root/setup.sh
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
-# Add master files if needed
-[[ if eq (.Container.GetCustomValue "repl") "master" ]]
-	ADD init-master.sh /root/init-master.sh
-    RUN chmod +x /root/init-master.sh
-[[ end ]]
-
-# Add slave files if needed
-[[ if eq (.Container.GetCustomValue "repl") "slave" ]]
-	ADD init-master.sh /root/init-slave.sh
-    RUN chmod +x /root/init-slave.sh
-[[ end ]]
-
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
     && /etc/init.d/mysql start \
-    [[ if eq (.Container.GetCustomValue "repl") "master" ]] && /bin/bash /root/init-master.sh \ [[ end ]]
-    [[ if eq (.Container.GetCustomValue "repl") "slave" ]] && /bin/bash /root/init-slave.sh \ [[ end ]]
     [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
     && /bin/bash
+
