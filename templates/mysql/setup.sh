@@ -17,8 +17,13 @@ mysql -e "GRANT REPLICATION SLAVE ON *.* TO repl@'%' IDENTIFIED BY 'repl'; FLUSH
 
 [[ if eq (.Container.GetCustomValue "repl") "slave" ]]
 
+# Connect to master & retrieve current log file & position
+MASTER_STATUS=$(mysql -u root -h $[[(.Container.GetCustomValue "master") | ToUpper ]]_PORT_[[ ($.Collection.Get (.Container.GetCustomValue "master") ).GetFirstPort ]]_TCP_ADDR -e "show master status\G")
+MASTER_LOG_FILE=$(echo "$MASTER_STATUS" | grep File | sed 's/File://' | sed 's/^ *//;s/ *$//')
+MASTER_LOG_POS=$(echo "$MASTER_STATUS" | grep Position | sed 's/Position://' | sed 's/^ *//;s/ *$//')
+
 sed -i -e "s/\[mysqld\]/[mysqld]\nlog-bin\nserver-id = 2/" /etc/mysql/my.cnf
-mysql -e "CHANGE MASTER TO MASTER_HOST='$[[(.Container.GetCustomValue "master") | ToUpper ]]_PORT_[[ ($.Collection.Get (.Container.GetCustomValue "master") ).GetFirstPort ]]_TCP_ADDR', MASTER_LOG_POS=245, MASTER_USER='repl', MASTER_PASSWORD='repl', MASTER_LOG_FILE='/var/lib/mysql/master/mysqld-bin.000005', MASTER_LOG_POS=4; START SLAVE;" -uroot
+mysql -e "CHANGE MASTER TO MASTER_HOST='$[[(.Container.GetCustomValue "master") | ToUpper ]]_PORT_[[ ($.Collection.Get (.Container.GetCustomValue "master") ).GetFirstPort ]]_TCP_ADDR', MASTER_LOG_POS=245, MASTER_USER='repl', MASTER_PASSWORD='repl', MASTER_LOG_FILE='$MASTER_LOG_FILE', MASTER_LOG_POS=$MASTER_LOG_POS; START SLAVE;" -uroot
 
 [[ end ]]
 
