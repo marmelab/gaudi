@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 RUN echo "deb http://www.apache.org/dist/cassandra/debian 11x main" > /etc/apt/sources.list.d/cassandra.list
 RUN echo "deb-src http://www.apache.org/dist/cassandra/debian 11x main" >> /etc/apt/sources.list.d/cassandra.list

@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 # Install Java 7
 RUN aptitude install -y -f openjdk-7-jre

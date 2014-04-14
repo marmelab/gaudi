@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 # Install nodejs with nvm
 RUN git clone https://github.com/creationix/nvm.git /.nvm

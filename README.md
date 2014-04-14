@@ -146,7 +146,7 @@ The port 80 in the host machine will be mapped to the 8080 in the container.
 
 ### Volumes
 
-You can add you own files by mounting volumes:
+You can add you own folders by mounting volumes:
 
 ```yaml
 applications:
@@ -185,6 +185,22 @@ applications:
         type: apache
         apt_get: [php5-gd, php5-intl]
 ```
+
+### Add files into container
+
+Files can be added directly into the container with the `add` parameter.
+Contrary to `volumes`, `add` can only be used for files.
+
+```yaml
+applications:
+    app:
+        type: apache
+        add:
+	        conf.ini: /root/conf.ini
+	        dir/conf2.ini: /root/conf2.ini
+```
+
+`add` takes a map of `relative file on the host machine`: `destination path on the container`.
 
 ### Remote Containers
 
