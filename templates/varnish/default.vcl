@@ -1,5 +1,3 @@
-
-
 [[range (.Container.GetCustomValue "backends")]]
 backend [[.]] {
     .host = "${[[ . | ToUpper ]]_PORT_[[ ($.Collection.Get . ).GetFirstPort ]]_TCP_ADDR}";

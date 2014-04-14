@@ -4,6 +4,7 @@ RUN echo "deb http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sour
 RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sources.list
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 RUN apt-get install -y -f
 RUN apt-get install -y -f apache2-mpm-worker libapache2-mod-fastcgi php5-fpm
