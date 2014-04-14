@@ -17,9 +17,10 @@ type Container struct {
 	Running      bool
 	Id           string
 	Ip           string
-	BeforeScript string   "before_script"
-	AfterScript  string   "after_script"
-	AptPackets   []string "apt_get"
+	BeforeScript string            "before_script"
+	AfterScript  string            "after_script"
+	AptPackets   []string          "apt_get"
+	Add          map[string]string "add"
 	Links        []string
 	Dependencies []*Container
 	Ports        map[string]string
@@ -46,6 +47,9 @@ func (c *Container) init() {
 	}
 	if c.Environments == nil {
 		c.Environments = make(map[string]string)
+	}
+	if c.Add == nil {
+		c.Add = make(map[string]string)
 	}
 }
 

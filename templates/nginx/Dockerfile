@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 RUN apt-get install -y -f nginx
 

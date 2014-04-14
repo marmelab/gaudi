@@ -4,6 +4,7 @@ RUN echo "deb http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sour
 RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/sources.list
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 RUN curl http://repo.varnish-cache.org/debian/GPG-key.txt | apt-key add -
 RUN echo "deb http://repo.varnish-cache.org/debian/ wheezy varnish-3.0" >> /etc/apt/sources.list

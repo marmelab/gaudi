@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 # Update apt to install HHVM
 RUN wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | apt-key add -

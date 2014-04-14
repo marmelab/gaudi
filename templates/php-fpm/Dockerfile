@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 # Install PHP FPM
 RUN apt-get -y -f install php5-fpm php5-cli php5-mysql php5-mcrypt php5-curl curl

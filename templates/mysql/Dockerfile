@@ -1,6 +1,7 @@
 FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
+[[ addUserFiles ]]
 
 # Install mysql
 RUN apt-get -y --force-yes install mysql-server

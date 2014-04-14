@@ -18,6 +18,7 @@ import (
 
 const DEFAULT_BASE_IMAGE = "stackbrew/debian"
 const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
+const PARSED_TEMPLATE_DIR = "/tmp/gaudi/"
 
 type Gaudi struct {
 	Applications   containerCollection.ContainerCollection
@@ -112,10 +113,10 @@ func (gaudi *Gaudi) GetApplication(name string) *container.Container {
 
 func (gaudi *Gaudi) build() {
 	// Retrieve application Path
-	parsedTemplateDir := "/tmp/gaudi/"
 	templateDir := getGaudiDirectory() + "/templates/"
+	currentDirctory, _ := os.Getwd()
 
-	err := os.MkdirAll(parsedTemplateDir, 0700)
+	err := os.MkdirAll(PARSED_TEMPLATE_DIR, 0700)
 	if err != nil {
 		util.LogError(err)
 	}
@@ -136,7 +137,7 @@ func (gaudi *Gaudi) build() {
 		// Check if the beforeScript is a file
 		beforeScript := currentContainer.BeforeScript
 		if len(beforeScript) != 0 {
-			copied := gaudi.copyRelativeFile(beforeScript, parsedTemplateDir+currentContainer.Name+"/")
+			copied := gaudi.copyRelativeFile(beforeScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
 			if copied {
 				currentContainer.BeforeScript = "./" + currentContainer.BeforeScript
 			}
@@ -145,7 +146,7 @@ func (gaudi *Gaudi) build() {
 		// Check if the afterScript is a file
 		afterScript := currentContainer.AfterScript
 		if len(afterScript) != 0 {
-			copied := gaudi.copyRelativeFile(afterScript, parsedTemplateDir+currentContainer.Name+"/")
+			copied := gaudi.copyRelativeFile(afterScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
 			if copied {
 				currentContainer.AfterScript = "./" + currentContainer.AfterScript
 			}
@@ -156,14 +157,31 @@ func (gaudi *Gaudi) build() {
 			util.LogError("Template not found for application : " + currentContainer.Type)
 		}
 
-		err = os.MkdirAll(parsedTemplateDir+currentContainer.Name, 0755)
+		err = os.MkdirAll(PARSED_TEMPLATE_DIR+currentContainer.Name, 0755)
 		if err != nil {
 			util.LogError(err)
 		}
 
 		// Parse & copy files
 		for _, file := range files {
-			gaudi.parseFile(templateDir, parsedTemplateDir, file, includes, currentContainer)
+			gaudi.parseFile(templateDir, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
+		}
+
+		// Copy all files marked as Add
+		for fileToAdd := range currentContainer.Add {
+			filePath := currentDirctory + "/" + fileToAdd
+
+			directories := strings.Split(fileToAdd, "/")
+			if len(directories) > 1 {
+				os.MkdirAll(PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+strings.Join(directories[0:len(directories)-1], "/"), 0755)
+			}
+
+			fmt.Println("Copy", PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+fileToAdd, filePath)
+
+			err := util.Copy(PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+fileToAdd, filePath)
+			if err != nil {
+				util.LogError(err)
+			}
 		}
 	}
 }
