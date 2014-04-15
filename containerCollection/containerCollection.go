@@ -68,10 +68,13 @@ func (collection ContainerCollection) Get(name string) *container.Container {
 	return collection[name]
 }
 
-func (collection ContainerCollection) Start() {
+func (collection ContainerCollection) Start(rebuild bool) {
 	collection.CheckIfNotEmpty()
-	collection.Clean()
-	collection.Build()
+
+	if rebuild {
+		collection.Clean()
+		collection.Build()
+	}
 
 	startChans := make(map[string]chan bool, len(collection))
 
@@ -79,7 +82,7 @@ func (collection ContainerCollection) Start() {
 	for name, currentContainer := range collection {
 		startChans[name] = make(chan bool)
 
-		go startOne(currentContainer, startChans)
+		go startOne(currentContainer, rebuild, startChans)
 	}
 
 	// Waiting for all applications to start
@@ -139,13 +142,13 @@ func waitForIt(channels chan bool) {
 	}
 }
 
-func startOne(currentContainer *container.Container, done map[string]chan bool) {
+func startOne(currentContainer *container.Container, rebuild bool, done map[string]chan bool) {
 	// Waiting for dependencies to be started
 	for _, dependency := range currentContainer.Dependencies {
 		<-done[dependency.Name]
 	}
 
-	currentContainer.Start()
+	currentContainer.Start(rebuild)
 
 	close(done[currentContainer.Name])
 }

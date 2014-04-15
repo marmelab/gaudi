@@ -67,8 +67,8 @@ func (gaudi *Gaudi) Init(content string) {
 	gaudi.build()
 }
 
-func (gaudi *Gaudi) StartApplications() {
-	gaudi.Applications.Start()
+func (gaudi *Gaudi) StartApplications(rebuild bool) {
+	gaudi.Applications.Start(rebuild)
 }
 
 func (gaudi *Gaudi) StopApplications() {
@@ -175,8 +175,6 @@ func (gaudi *Gaudi) build() {
 			if len(directories) > 1 {
 				os.MkdirAll(PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+strings.Join(directories[0:len(directories)-1], "/"), 0755)
 			}
-
-			fmt.Println("Copy", PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+fileToAdd, filePath)
 
 			err := util.Copy(PARSED_TEMPLATE_DIR+currentContainer.Name+"/"+fileToAdd, filePath)
 			if err != nil {

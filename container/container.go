@@ -153,15 +153,24 @@ func (c *Container) AddDependency(container *Container) {
 /**
  * Starts a container as a server
  */
-func (c *Container) Start() {
+func (c *Container) Start(rebuild bool) {
 	c.init()
 
-	fmt.Println("Starting", c.Name, "...")
+	// Check if the container is already running
+	c.RetrieveIp()
 
-	if c.IsRunning() {
-		fmt.Println("Application", c.Name, "already running", "("+c.Ip+":"+c.GetFirstPort()+")")
-		return
+	if !rebuild {
+		if c.IsRunning() {
+			fmt.Println("Application", c.Name, "is already running", "("+c.Ip+":"+c.GetFirstPort()+")")
+			return
+		}
+
+		cleanChan := make(chan bool, 1)
+		c.Clean(cleanChan)
+		<-cleanChan
 	}
+
+	fmt.Println("Starting", c.Name, "...")
 
 	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes, c.Environments)
 	c.Id = strings.TrimSpace(startResult)
@@ -275,16 +284,19 @@ func (c *Container) retrieveInfoFromInspection(inspect []byte) {
 	var results []inspection
 	goyaml.Unmarshal(inspect, &results)
 
-	var isRunning bool
-	rawRunning := results[0].State["Running"]
-	if rawRunning != nil {
-		isRunning = rawRunning.(bool)
-	} else {
-		isRunning = false
+	isRunning := false
+
+	if len(results) > 0 {
+		rawRunning := results[0].State["Running"]
+		if rawRunning != nil {
+			isRunning = rawRunning.(bool)
+		}
+
+		if isRunning {
+			c.Ip = results[0].NetworkSettings["IPAddress"]
+			c.Id = results[0].ID
+		}
 	}
 
 	c.Running = isRunning
-
-	c.Ip = results[0].NetworkSettings["IPAddress"]
-	c.Id = results[0].ID
 }

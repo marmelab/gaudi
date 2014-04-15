@@ -27,12 +27,13 @@ var (
 func main() {
 	flag.Parse()
 
+	rebuild := len(flag.Args()) > 0 && flag.Args()[0] == "rebuild"
 	g := gaudi.Gaudi{}
 	g.InitFromFile(retrieveConfigPath(*config))
 
-	if len(flag.Args()) == 0 {
+	if len(flag.Args()) == 0 || rebuild {
 		// Start all applications
-		g.StartApplications()
+		g.StartApplications(rebuild)
 	} else {
 		switch os.Args[1] {
 		case "run":
