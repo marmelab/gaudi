@@ -75,7 +75,7 @@ func (s *GaudiTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(2)
 	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123").Times(2)
-	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil).Times(4)
+	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil).Times(2)
 
 	g := gaudi.Gaudi{}
 	g.Init(`
@@ -91,7 +91,7 @@ applications:
 
 	c.Assert(len(g.Applications), Equals, 2)
 
-	g.StartApplications()
+	g.StartApplications(true)
 	c.Assert(g.GetApplication("db").IsRunning(), Equals, true)
 	c.Assert(g.GetApplication("app").IsRunning(), Equals, true)
 }
@@ -110,24 +110,19 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(5)
 
 	gomock.InOrder(
-		docker.EXPECT().Inspect("db").Return([]byte("[{\"ID\": \"100\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Start("db", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("100"),
 		docker.EXPECT().Inspect("100").Return([]byte("[{\"ID\": \"100\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
-		docker.EXPECT().Inspect("app").Return([]byte("[{\"ID\": \"101\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Start("app", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("101"),
 		docker.EXPECT().Inspect("101").Return([]byte("[{\"ID\": \"101\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
-		docker.EXPECT().Inspect("front1").Return([]byte("[{\"ID\": \"102\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Start("front1", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("102"),
 
-		docker.EXPECT().Inspect("front2").Return([]byte("[{\"ID\": \"103\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Start("front2", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("103"),
 
 		docker.EXPECT().Inspect("102").Return([]byte("[{\"ID\": \"102\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Inspect("103").Return([]byte("[{\"ID\": \"103\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 
-		docker.EXPECT().Inspect("lb").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 		docker.EXPECT().Start("lb", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("104"),
 		docker.EXPECT().Inspect("104").Return([]byte("[{\"ID\": \"104\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil),
 	)
@@ -155,7 +150,7 @@ applications:
       type: mysql
 `)
 
-	g.StartApplications()
+	g.StartApplications(true)
 	c.Assert(len(g.Applications), Equals, 5)
 }
 

@@ -157,8 +157,6 @@ func (c *Container) Start(rebuild bool) {
 	c.init()
 
 	// Check if the container is already running
-	c.RetrieveIp()
-
 	if !rebuild {
 		if c.IsRunning() {
 			fmt.Println("Application", c.Name, "is already running", "("+c.Ip+":"+c.GetFirstPort()+")")
@@ -166,7 +164,7 @@ func (c *Container) Start(rebuild bool) {
 		}
 
 		cleanChan := make(chan bool, 1)
-		c.Clean(cleanChan)
+		go c.Clean(cleanChan)
 		<-cleanChan
 	}
 
