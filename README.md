@@ -71,6 +71,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 - `--config=""` Specify the location of the configuration file
 - `--debug` Display some useful information
 - `--no-cache` Do not use docker's cache when building containers (builds will be slower)
+- `rebuild` Force all containers to rebuild (useful when you change your configuration)
 - `stop` Stop all applications
 - `check` Check if all applications are running
 - `run binaryName [arguments]` Run a specific binary
@@ -88,6 +89,10 @@ You can find an example of [how to start a Symfony application](https://github.c
 Another examples can be found in [the `example` folder](https://github.com/marmelab/gaudi/tree/master/example).
 
 # Configuration
+
+After changing your configuration, you should restart gaudi with the `rebuild` argument:
+
+`gaudi rebuild`
 
 ## Common Configuration
 

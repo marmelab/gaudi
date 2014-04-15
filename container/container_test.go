@@ -24,12 +24,11 @@ func (s *ContainerTestSuite) TestStartedApplicationShouldRetrieveItsIp(c *C) {
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return("123")
-	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"172.17.0.10\"}}]"), nil)
 
 	// @TODO : find a way to mock time.Sleep
 	container := container.Container{Name: "Test"}
-	container.Start()
+	container.Start(true)
 
 	c.Check(container.IsRunning(), Equals, true)
 	c.Check(container.Ip, Equals, "172.17.0.10")
