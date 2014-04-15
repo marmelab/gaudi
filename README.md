@@ -70,6 +70,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 
 - `--config=""` Specify the location of the configuration file
 - `--debug` Display some useful information
+- `--no-cache` Do not use docker's cache when building containers (builds will be slower)
 - `stop` Stop all applications
 - `check` Check if all applications are running
 - `run binaryName [arguments]` Run a specific binary
@@ -317,8 +318,12 @@ applications:
     [name]:
         type: mysql
     custom:
-        fastCgi: app
+        repl: master # Or "slave"
+        master: master # When using "repl: slave": indicate the name of the master
 ```
+
+The `repl` custom value indication if the MySQL instance is declared as `master` or `slave`.
+When a MySQL is defined as slave, you should set it's the master application name in the `master` params.
 
 ### PHP
 

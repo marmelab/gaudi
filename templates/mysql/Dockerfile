@@ -19,6 +19,7 @@ RUN chmod +x /root/setup.sh
 [[ beforeAfterScripts ]]
 
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
-	&& /etc/init.d/mysql start \
-	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
-	&& /bin/bash
+    && /etc/init.d/mysql start \
+    [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
+    && /bin/bash
+

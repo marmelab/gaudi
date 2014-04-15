@@ -1,0 +1,33 @@
+applications:
+    db1:
+        type: mysql
+        ports:
+            3306: 3306
+        volumes:
+            /tmp/master: /var/lib/mysql
+        custom:
+            repl: master
+
+    slave1:
+        type: mysql
+        ports:
+            3307: 3306
+        volumes:
+            /tmp/slave1: /var/lib/mysql
+            /tmp/master: /var/lib/mysql-master
+        links: [db1]
+        custom:
+            repl: slave
+            master: db1
+
+    slave2:
+        type: mysql
+        ports:
+            3308: 3306
+        volumes:
+            /tmp/slave2: /var/lib/mysql
+            /tmp/master: /var/lib/mysql-master
+        links: [db1]
+        custom:
+            repl: slave
+            master: db1
