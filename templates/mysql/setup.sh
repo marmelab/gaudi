@@ -8,14 +8,14 @@ sleep 5s
 echo "GRANT ALL ON *.* TO root@'%';" | mysql
 
 
-[[ if eq (.Container.GetCustomValue "repl") "master" ]]
+[[ if eq (.Container.GetCustomValue "repl" "") "master" ]]
 
 sed -i -e "s/\[mysqld\]/[mysqld]\nlog-bin\nserver-id = 1/" /etc/mysql/my.cnf
 mysql -e "GRANT REPLICATION SLAVE ON *.* TO repl@'%' IDENTIFIED BY 'repl'; FLUSH PRIVILEGES;" -uroot
 
 [[ end ]]
 
-[[ if eq (.Container.GetCustomValue "repl") "slave" ]]
+[[ if eq (.Container.GetCustomValue "repl" "") "slave" ]]
 
 # Connect to master & retrieve current log file & position
 MASTER_STATUS=$(mysql -u root -h $[[(.Container.GetCustomValue "master") | ToUpper ]]_PORT_[[ ($.Collection.Get (.Container.GetCustomValue "master") ).GetFirstPort ]]_TCP_ADDR -e "show master status\G")
