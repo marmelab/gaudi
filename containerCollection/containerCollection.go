@@ -4,6 +4,7 @@ import (
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/util"
 	"os"
+	"strings"
 )
 
 type ContainerCollection map[string]*container.Container
@@ -139,6 +140,29 @@ func waitForIt(channels chan bool) {
 
 	for i := 0; i < nbContainers; i++ {
 		<-channels
+	}
+}
+
+func (collection ContainerCollection) AddAmbassasor() {
+	for name, currentContainer := range collection {
+		if currentContainer.Ambassador.Type == "" {
+			continue
+		}
+
+		// Add the ambassador
+		ambassadorName := "ambassasor-" + name
+		ambassador := &container.Container{Name: ambassadorName, Type: "ambassador"}
+		ambassador.Init()
+
+		ambassador.Links = append(ambassador.Links, name)
+		ambassador.Ports[currentContainer.Ambassador.Port] = currentContainer.Ambassador.Port
+
+		if currentContainer.Ambassador.Type == "local" {
+			remoteAddr := "tcp://" + currentContainer.Ambassador.Remote + ":" + currentContainer.Ambassador.Port
+			ambassador.Environments[strings.ToUpper(name)+"_PORT_"+currentContainer.Ambassador.Port+"_TCP"] = remoteAddr
+		}
+
+		collection[ambassadorName] = ambassador
 	}
 }
 
