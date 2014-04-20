@@ -17,7 +17,11 @@ server {
 server {
     listen [[ .Container.GetFirstLocalPort ]];
 
+    [[ if (.Container.GetCustomValue "documentRoot") ]]
+    root [[ (.Container.GetCustomValue "documentRoot") ]];
+    [[ else ]]
     root /var/www;
+    [[ end ]]
     index index.html index.htm;
 
     # Make site accessible from http://localhost/
