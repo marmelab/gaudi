@@ -4,7 +4,6 @@ import (
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/util"
 	"os"
-	"strings"
 )
 
 type ContainerCollection map[string]*container.Container
@@ -156,11 +155,6 @@ func (collection ContainerCollection) AddAmbassasor() {
 
 		ambassador.Links = append(ambassador.Links, name)
 		ambassador.Ports[currentContainer.Ambassador.Port] = currentContainer.Ambassador.Port
-
-		if currentContainer.Ambassador.Type == "local" {
-			remoteAddr := "tcp://" + currentContainer.Ambassador.Remote + ":" + currentContainer.Ambassador.Port
-			ambassador.Environments[strings.ToUpper(name)+"_PORT_"+currentContainer.Ambassador.Port+"_TCP"] = remoteAddr
-		}
 
 		collection[ambassadorName] = ambassador
 	}
