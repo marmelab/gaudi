@@ -19,6 +19,6 @@ RUN chmod +x /root/setup.sh
 [[ beforeAfterScripts ]]
 
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
-	&& service php5-fpm start \
+	&& php5-fpm -R \
 	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
 	&& /bin/bash
