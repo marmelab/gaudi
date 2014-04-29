@@ -1,6 +1,6 @@
 # gaudi [![Build Status](https://travis-ci.org/marmelab/gaudi.png?branch=master)](https://travis-ci.org/marmelab/gaudi)
 
-Check the [gaudi's webiste](http://gaudi.io) for more informations.
+Check the [gaudi's website](http://gaudi.io) for more informations.
 
 
 gaudi is a generator of architecture written in Go and using [Docker](http://www.docker.io).
