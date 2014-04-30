@@ -48,6 +48,10 @@ func main() {
 			// Check if all applications are running
 			g.Check()
 			break
+		case "clean":
+			// Clean application containers
+			g.Clean()
+			break
 		default:
 			util.LogError("Argument " + os.Args[1] + " was not found")
 			break

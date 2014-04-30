@@ -74,6 +74,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 - `--no-cache` Do not use docker's cache when building containers (builds will be slower)
 - `rebuild` Force all containers to rebuild (useful when you change your configuration)
 - `stop` Stop all applications
+- `clean` Stop & remove all applications
 - `check` Check if all applications are running
 - `run binaryName [arguments]` Run a specific binary
 

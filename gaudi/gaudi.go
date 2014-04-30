@@ -103,6 +103,14 @@ func (gaudi *Gaudi) Check() {
 	}
 }
 
+/**
+ * Kill & Remove all containers
+ */
+func (gaudi *Gaudi) Clean() {
+	// Clean all containers
+	gaudi.Applications.Clean()
+}
+
 func (gaudi *Gaudi) GetApplication(name string) *container.Container {
 	if application, ok := gaudi.Applications[name]; ok {
 		return application
