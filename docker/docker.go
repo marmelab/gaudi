@@ -1,19 +1,20 @@
 package docker
 
 import (
-	"flag"
 	"errors"
+	"flag"
 	"github.com/marmelab/gaudi/util"
+	"os"
 	"os/exec"
 	"reflect"
 	"strings"
 	"time"
 )
 
-
 var (
 	docker, _ = exec.LookPath("docker")
-	noCache  = flag.Bool("no-cache", false, "Disable build cache")
+	noCache   = flag.Bool("no-cache", false, "Disable build cache")
+	quiet     = flag.Bool("quiet", false, "Do not display build output")
 )
 
 func main() {
@@ -41,6 +42,7 @@ func Remove(name string) {
 	if removeErr != nil {
 		util.LogError(removeErr)
 	}
+
 	time.Sleep(1 * time.Second)
 }
 
@@ -67,22 +69,36 @@ func Build(name, path string) {
 	util.Debug(rawArgs)
 
 	buildCmd := buildFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
-	out, err := buildCmd.CombinedOutput()
-	if err != nil {
-		util.LogError(string(out))
+	buildCmd.Stderr = os.Stderr
+
+	if (!*quiet) {
+		buildCmd.Stdout = os.Stdout
 	}
+
+	if err := buildCmd.Run(); err != nil {
+		util.LogError(err)
+	}
+
+	buildCmd.Wait()
 
 	time.Sleep(1 * time.Second)
 }
 
 func Pull(name string) {
 	pullCmd := exec.Command(docker, "pull", name)
+	pullCmd.Stderr = os.Stderr
+
+	if (!*quiet) {
+		pullCmd.Stdout = os.Stdout
+	}
+
 	util.Debug("Pull command:", pullCmd.Args)
 
-	out, err := pullCmd.CombinedOutput()
-	if err != nil {
-		util.LogError(string(out))
+	if err := pullCmd.Run(); err != nil {
+		util.LogError(err)
 	}
+
+	pullCmd.Wait()
 }
 
 /**
@@ -130,7 +146,7 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 /**
  * Start a container as binary
  */
-func Run(name, currentPath string, arguments []string) string {
+func Run(name, currentPath string, arguments []string) {
 	runFunc := reflect.ValueOf(exec.Command)
 	rawArgs := []string{docker, "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
 
@@ -139,14 +155,15 @@ func Run(name, currentPath string, arguments []string) string {
 	}
 
 	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	runCmd.Stdout = os.Stdout
+	runCmd.Stdin = os.Stdin
+	runCmd.Stderr = os.Stderr
+
 	util.Debug("Run command:", runCmd.Args)
 
-	out, err := runCmd.CombinedOutput()
-	if err != nil {
-		util.LogError(string(out))
+	if err := runCmd.Start(); err != nil {
+		util.LogError(err)
 	}
-
-	return string(out)
 }
 
 func Inspect(id string) ([]byte, error) {
