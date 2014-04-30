@@ -41,6 +41,7 @@ func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
 	docker.MOCK().SetController(ctrl)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
 
 	g := gaudi.Gaudi{}
@@ -71,6 +72,7 @@ func (s *GaudiTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(2)
@@ -105,6 +107,7 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 	docker.MOCK().SetController(ctrl)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+    docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(5)
@@ -171,6 +174,7 @@ func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	psResult["gaudi/db"] = "125"
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+  docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().SnapshotProcesses().Return(psResult, nil)
 
 	docker.EXPECT().Inspect("123").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.126\"}}]"), nil)
@@ -209,6 +213,7 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 	docker.MOCK().SetController(ctrl)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+  docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)
 	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return().Times(1)
 
