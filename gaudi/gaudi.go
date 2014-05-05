@@ -25,10 +25,11 @@ const TEMPLATE_REMOTE_PATH = "http://gaudi.io/apt/templates.tar"
 const PARSED_TEMPLATE_DIR = "/tmp/gaudi/"
 
 type Gaudi struct {
-	Applications   containerCollection.ContainerCollection
-	Binaries       containerCollection.ContainerCollection
-	All            containerCollection.ContainerCollection
-	ApplicationDir string
+	Applications      containerCollection.ContainerCollection
+	Binaries          containerCollection.ContainerCollection
+	All               containerCollection.ContainerCollection
+	ApplicationDir    string
+	ConfigurationPath string
 }
 
 type TemplateData struct {
@@ -37,6 +38,7 @@ type TemplateData struct {
 }
 
 func (gaudi *Gaudi) InitFromFile(file string) {
+	gaudi.ConfigurationPath = file
 	gaudi.ApplicationDir = path.Dir(file)
 
 	fileContent, err := ioutil.ReadFile(file)
@@ -86,6 +88,15 @@ func (gaudi *Gaudi) Init(content string) {
 }
 
 func (gaudi *Gaudi) StartApplications(rebuild bool) {
+	// Force rebuild if needed
+	if rebuild == false {
+		rebuild = gaudi.shouldRebuild()
+
+		if rebuild {
+			fmt.Println("Changes detected in configuration file, rebuilding containers ...")
+		}
+	}
+
 	gaudi.Applications.Start(rebuild)
 }
 
@@ -189,7 +200,7 @@ func (gaudi *Gaudi) build() {
 
 		// Parse & copy files
 		for _, file := range files {
-			gaudi.parseFile(TEMPLATE_DIR, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
+			gaudi.parseTemplate(TEMPLATE_DIR, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
 		}
 
 		// Copy all files marked as Add
@@ -209,7 +220,7 @@ func (gaudi *Gaudi) build() {
 	}
 }
 
-func (gaudi *Gaudi) parseFile(sourceDir, destinationDir string, file os.FileInfo, includes map[string]string, currentContainer *container.Container) {
+func (gaudi *Gaudi) parseTemplate(sourceDir, destinationDir string, file os.FileInfo, includes map[string]string, currentContainer *container.Container) {
 	templateData := TemplateData{gaudi.All, nil}
 	funcMap := template.FuncMap{
 		"ToUpper": strings.ToUpper,
@@ -346,6 +357,23 @@ func extractTemplates() {
 	}
 
 	os.Remove(TEMPLATE_DIR + "templates.tar")
+}
+
+func (gaudi *Gaudi) shouldRebuild() bool {
+	shouldRebuild := false
+	checkSumFile := gaudi.ApplicationDir + "/.gaudi/.gaudi.sum"
+	currentCheckSum := util.GetFileCheckSum(gaudi.ConfigurationPath)
+
+	if util.IsFile(checkSumFile) {
+		oldCheckSum, _ := ioutil.ReadFile(checkSumFile)
+
+		shouldRebuild = string(oldCheckSum) != currentCheckSum
+	}
+
+	// Write new checksum
+	ioutil.WriteFile(checkSumFile, []byte(currentCheckSum), 775)
+
+	return shouldRebuild
 }
 
 func getIncludes() map[string]string {

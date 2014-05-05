@@ -1,7 +1,9 @@
 package util
 
 import (
+	"crypto/md5"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -60,6 +62,18 @@ func getFileStat(path string) os.FileInfo {
 	}
 
 	return stat
+}
+
+func GetFileCheckSum(filePath string) string {
+	fileBuffer, err := os.Open(filePath)
+	if err != nil {
+		return ""
+	}
+
+	hash := md5.New()
+	io.Copy(hash, fileBuffer)
+
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }
 
 /**
