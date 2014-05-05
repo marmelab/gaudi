@@ -72,6 +72,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 - `--config=""` Specify the location of the configuration file
 - `--debug` Display some useful information
 - `--no-cache` Do not use docker's cache when building containers (builds will be slower)
+- `--quiet` Do not display build & pull output
 - `rebuild` Force all containers to rebuild (useful when you change your configuration)
 - `stop` Stop all applications
 - `clean` Stop & remove all applications
