@@ -92,6 +92,7 @@ func (gaudi *Gaudi) StartApplications(rebuild bool) {
 	if rebuild == false {
 		rebuild = gaudi.shouldRebuild()
 
+
 		if rebuild {
 			fmt.Println("Changes detected in configuration file, rebuilding containers ...")
 		}
@@ -360,7 +361,7 @@ func extractTemplates() {
 }
 
 func (gaudi *Gaudi) shouldRebuild() bool {
-	shouldRebuild := false
+	shouldRebuild := true
 	checkSumFile := gaudi.ApplicationDir + "/.gaudi/.gaudi.sum"
 	currentCheckSum := util.GetFileCheckSum(gaudi.ConfigurationPath)
 
