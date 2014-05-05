@@ -384,6 +384,22 @@ applications:
         type: jackrabbit
 ```
 
+### PhpMyAdmin
+
+```yaml
+applications:
+    pma:
+        type: phpmyadmin
+        ports:
+            80: 80
+        links: [db]
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306
+```
+
 ## Binaries
 
 Gaudi can also runs binaries in the current folder.
