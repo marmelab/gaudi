@@ -239,6 +239,14 @@ func (c *Container) GetFirstLocalPort() string {
 	return ""
 }
 
+func (c *Container) FirstLinked() *Container {
+	for _, dep := range c.Dependencies {
+		return dep
+	}
+
+	return nil
+}
+
 func (c *Container) IsGaudiManaged() bool {
 	return !c.IsPreBuild() && !c.IsRemote()
 }
