@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/gomock/gomock"
 	. "launchpad.net/gocheck"
 	"testing"
+	"os"
 
 	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
@@ -35,12 +36,20 @@ func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnWrongContent(c *C) {
 }
 
 func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/templates/")
+
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 	docker.MOCK().SetController(ctrl)
 
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Inspect(gomock.Any()).Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": false}, \"NetworkSettings\": {\"IPAddress\": \"\"}}]"), nil)
 
 	g := gaudi.Gaudi{}
@@ -64,13 +73,21 @@ applications:
 }
 
 func (s *GaudiTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/templates/")
+
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(2)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(2)
@@ -97,6 +114,8 @@ applications:
 }
 
 func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencies(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/templates/")
+
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -104,7 +123,13 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Kill(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Remove(gomock.Any()).Return().Times(5)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Return().Times(5)
@@ -155,6 +180,8 @@ applications:
 }
 
 func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/templates/")
+
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -170,7 +197,10 @@ func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	psResult["gaudi/front1"] = "124"
 	psResult["gaudi/db"] = "125"
 
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().SnapshotProcesses().Return(psResult, nil)
 
 	docker.EXPECT().Inspect("123").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.126\"}}]"), nil)
@@ -201,6 +231,8 @@ applications:
 }
 
 func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/templates/")
+
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
@@ -208,7 +240,13 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 	// Setup the mockfmt mock package
 	docker.MOCK().SetController(ctrl)
 
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)
 	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return().Times(1)
 

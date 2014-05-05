@@ -1,23 +1,27 @@
 package gaudi
 
 import (
+	"archive/tar"
 	"bytes"
 	"fmt"
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/containerCollection"
 	"github.com/marmelab/gaudi/docker"
 	"github.com/marmelab/gaudi/util"
+	"io"
 	"io/ioutil"
 	"launchpad.net/goyaml"
+	"net/http"
 	"os"
 	"path"
-	"runtime"
 	"strings"
 	"text/template"
 )
 
 const DEFAULT_BASE_IMAGE = "stackbrew/debian"
 const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
+const TEMPLATE_DIR = "/var/tmp/gaudi/templates/"
+const TEMPLATE_REMOTE_PATH = "http://gaudi.io/apt/templates.tar"
 const PARSED_TEMPLATE_DIR = "/tmp/gaudi/"
 
 type Gaudi struct {
@@ -57,11 +61,25 @@ func (gaudi *Gaudi) Init(content string) {
 
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
+	// Check if docker is installed
+	if !docker.HasDocker() {
+		fmt.Println("Docker should be installed to use Gaudi (check: https://www.docker.io/gettingstarted/)")
+		os.Exit(1)
+	}
+
 	// Check if base image is pulled
 	if hasGaudiManagedContainer && !docker.ImageExists(DEFAULT_BASE_IMAGE) {
-		fmt.Println("Pulling base image (this may take a few minutes)  ...")
+		fmt.Println("Pulling base image (this may take a few minutes) ...")
 
 		docker.Pull(DEFAULT_BASE_IMAGE_WITH_TAG)
+	}
+
+	// Check if templates are present
+	if !util.IsDir(TEMPLATE_DIR) {
+		fmt.Println("Retrieving templates ...")
+
+		retrieveTemplates()
+		extractTemplates()
 	}
 
 	gaudi.build()
@@ -121,7 +139,6 @@ func (gaudi *Gaudi) GetApplication(name string) *container.Container {
 
 func (gaudi *Gaudi) build() {
 	// Retrieve application Path
-	templateDir := getGaudiDirectory() + "/templates/"
 	currentDirctory, _ := os.Getwd()
 
 	err := os.MkdirAll(PARSED_TEMPLATE_DIR, 0700)
@@ -160,7 +177,7 @@ func (gaudi *Gaudi) build() {
 			}
 		}
 
-		files, err := ioutil.ReadDir(templateDir + currentContainer.Type)
+		files, err := ioutil.ReadDir(TEMPLATE_DIR + currentContainer.Type)
 		if err != nil {
 			util.LogError("Template not found for application : " + currentContainer.Type)
 		}
@@ -172,7 +189,7 @@ func (gaudi *Gaudi) build() {
 
 		// Parse & copy files
 		for _, file := range files {
-			gaudi.parseFile(templateDir, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
+			gaudi.parseFile(TEMPLATE_DIR, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
 		}
 
 		// Copy all files marked as Add
@@ -268,21 +285,71 @@ func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
 	return false
 }
 
-func getGaudiDirectory() string {
-	// withmock copy only test and tested file, so we need to retrieve the template from the real app path in test env
-	testPath := os.Getenv("ORIG_GOPATH")
-	if len(testPath) > 0 {
-		return testPath + "/src/github.com/marmelab/gaudi/"
+func retrieveTemplates() {
+	os.MkdirAll(TEMPLATE_DIR, 0755)
+
+	archive, err := os.Create(TEMPLATE_DIR + "templates.tar")
+	if err != nil {
+		util.LogError(err)
+	}
+	defer archive.Close()
+
+	content, err := http.Get(TEMPLATE_REMOTE_PATH)
+	if err != nil {
+		util.LogError(err)
+	}
+	defer content.Body.Close()
+
+	_, err = io.Copy(archive, content.Body)
+	if err != nil {
+		util.LogError(err)
+	}
+}
+
+func extractTemplates() {
+	tarFile, _ := os.Open(TEMPLATE_DIR + "templates.tar")
+	defer tarFile.Close()
+
+	tar := tar.NewReader(tarFile)
+
+	for {
+		header, err := tar.Next()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			util.LogError(err)
+		}
+
+		// Remove first path part
+		filePath := strings.Join(strings.Split(header.Name, "/")[1:], "/")
+
+		// Check if we should create a folder or a file
+		if header.Size == 0 {
+			err := os.MkdirAll(TEMPLATE_DIR+filePath, 0755)
+			if err != nil {
+				util.LogError(err)
+			}
+		} else {
+			f, err := os.Create(TEMPLATE_DIR + filePath)
+			if err != nil {
+				util.LogError(err)
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, tar)
+			if err != nil {
+				util.LogError(err)
+			}
+		}
 	}
 
-	_, currentFile, _, _ := runtime.Caller(0)
-	pathParts := strings.Split(currentFile, "/")
-
-	return strings.Join(pathParts[0:len(pathParts)-2], "/")
+	os.Remove(TEMPLATE_DIR + "templates.tar")
 }
 
 func getIncludes() map[string]string {
-	includesDir := getGaudiDirectory() + "/templates/_includes/"
+	includesDir := TEMPLATE_DIR + "_includes/"
 	result := make(map[string]string)
 
 	files, err := ioutil.ReadDir(includesDir)

@@ -11,6 +11,7 @@ RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/lo
 
 RUN sed -i 's|listen = /var/run/php5-fpm.sock|listen = [[ .Container.GetFirstLocalPort ]]|g' /etc/php5/fpm/pool.d/www.conf
 RUN sed -i 's|;cgi.fix_pathinfo=0|cgi.fix_pathinfo=0|g' /etc/php5/fpm/pool.d/www.conf
+RUN sed -i 's|;date.timezone =|date.timezone = "Europe/Paris"|g' /etc/php5/fpm/php.ini
 
 ADD setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh

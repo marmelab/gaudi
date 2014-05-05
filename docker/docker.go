@@ -21,6 +21,10 @@ func main() {
 	flag.Parse()
 }
 
+func HasDocker() bool {
+	return len(docker) > 0
+}
+
 func ImageExists(name string) bool {
 	imagesCmd := exec.Command(docker, "images", name)
 
@@ -47,6 +51,7 @@ func Remove(name string) {
 }
 
 func Kill(name string) {
+
 	killCommand := exec.Command(docker, "kill", name)
 	killErr := killCommand.Start()
 	if killErr != nil {

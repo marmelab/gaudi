@@ -21,6 +21,7 @@ func (s *stringSlice) Set(value string) error {
 }
 
 var (
+	VERSION = "0.1"
 	config = flag.String("config", ".gaudi.yml", "File describing the architecture")
 )
 
