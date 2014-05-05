@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"flag"
 	"github.com/marmelab/gaudi/gaudi"
 	"github.com/marmelab/gaudi/util"
@@ -21,12 +22,18 @@ func (s *stringSlice) Set(value string) error {
 }
 
 var (
-	VERSION = "0.1"
+	VERSION = "0.1.3"
 	config = flag.String("config", ".gaudi.yml", "File describing the architecture")
+	flagVersion = flag.Bool("v", false, "Display version")
 )
 
 func main() {
 	flag.Parse()
+
+	if *flagVersion {
+		fmt.Println("gaudi version", VERSION)
+		return
+	}
 
 	rebuild := len(flag.Args()) > 0 && flag.Args()[0] == "rebuild"
 	g := gaudi.Gaudi{}
