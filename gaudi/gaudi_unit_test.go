@@ -210,7 +210,7 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)
-	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return("").Times(1)
+	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return().Times(1)
 
 	g := gaudi.Gaudi{}
 	g.Init(`
