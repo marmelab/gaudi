@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	docker, _ = exec.LookPath("docker")
-	noCache   = flag.Bool("no-cache", false, "Disable build cache")
-	quiet     = flag.Bool("quiet", false, "Do not display build output")
+	docker, _   = exec.LookPath("docker")
+	dockerIo, _ = exec.LookPath("docker.io")
+	noCache     = flag.Bool("no-cache", false, "Disable build cache")
+	quiet       = flag.Bool("quiet", false, "Do not display build output")
 )
 
 func main() {
@@ -22,11 +23,11 @@ func main() {
 }
 
 func HasDocker() bool {
-	return len(docker) > 0
+	return len(docker) > 0 || len(dockerIo) > 0
 }
 
 func ImageExists(name string) bool {
-	imagesCmd := exec.Command(docker, "images", name)
+	imagesCmd := exec.Command(getDockerBinaryPath(), "images", name)
 
 	out, err := imagesCmd.CombinedOutput()
 	if err != nil {
@@ -41,7 +42,7 @@ func ImageExists(name string) bool {
 }
 
 func Remove(name string) {
-	removeCmd := exec.Command(docker, "rm", name)
+	removeCmd := exec.Command(getDockerBinaryPath(), "rm", name)
 	removeErr := removeCmd.Start()
 	if removeErr != nil {
 		util.LogError(removeErr)
@@ -52,7 +53,7 @@ func Remove(name string) {
 
 func Kill(name string) {
 
-	killCommand := exec.Command(docker, "kill", name)
+	killCommand := exec.Command(getDockerBinaryPath(), "kill", name)
 	killErr := killCommand.Start()
 	if killErr != nil {
 		util.LogError(killErr)
@@ -63,7 +64,7 @@ func Kill(name string) {
 
 func Build(name, path string) {
 	buildFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "build"}
+	rawArgs := []string{getDockerBinaryPath(), "build"}
 
 	if *noCache {
 		rawArgs = append(rawArgs, "--no-cache")
@@ -76,7 +77,7 @@ func Build(name, path string) {
 	buildCmd := buildFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	buildCmd.Stderr = os.Stderr
 
-	if (!*quiet) {
+	if !*quiet {
 		buildCmd.Stdout = os.Stdout
 	}
 
@@ -90,10 +91,10 @@ func Build(name, path string) {
 }
 
 func Pull(name string) {
-	pullCmd := exec.Command(docker, "pull", name)
+	pullCmd := exec.Command(getDockerBinaryPath(), "pull", name)
 	pullCmd.Stderr = os.Stderr
 
-	if (!*quiet) {
+	if !*quiet {
 		pullCmd.Stdout = os.Stdout
 	}
 
@@ -111,7 +112,7 @@ func Pull(name string) {
  */
 func Start(name, image string, links []string, ports, volumes, environments map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "run", "-d", "-i", "-t", "--name=" + name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-d", "-i", "-t", "--name=" + name}
 
 	// Add environments
 	util.Debug(environments)
@@ -153,7 +154,7 @@ func Start(name, image string, links []string, ports, volumes, environments map[
  */
 func Run(name, currentPath string, arguments []string) {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{docker, "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
 
 	for _, argument := range arguments {
 		rawArgs = append(rawArgs, argument)
@@ -172,7 +173,7 @@ func Run(name, currentPath string, arguments []string) {
 }
 
 func Inspect(id string) ([]byte, error) {
-	inspectCmd := exec.Command(docker, "inspect", id)
+	inspectCmd := exec.Command(getDockerBinaryPath(), "inspect", id)
 
 	out, err := inspectCmd.CombinedOutput()
 	if err != nil {
@@ -185,7 +186,7 @@ func Inspect(id string) ([]byte, error) {
 func SnapshotProcesses() (map[string]string, error) {
 	images := make(map[string]string)
 
-	psCommand := exec.Command(docker, "ps")
+	psCommand := exec.Command(getDockerBinaryPath(), "ps")
 	out, err := psCommand.CombinedOutput()
 	if err != nil {
 		return nil, errors.New(string(out))
@@ -213,4 +214,12 @@ func buildArguments(rawArgs []string) []reflect.Value {
 	}
 
 	return args
+}
+
+func getDockerBinaryPath() string {
+	if len(docker) != 0 {
+		return docker
+	} else {
+		return dockerIo
+	}
 }
