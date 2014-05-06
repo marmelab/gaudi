@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	if *flagVersion {
-		fmt.Println("gaudi version", VERSION)
+		fmt.Println(VERSION)
 		return
 	}
 

@@ -47,12 +47,21 @@ Gaudi will try to find a `.gaudi.yml` file in the current folder, and start each
 
 # Installation
 
-## Requirements
+gaudi requires [Docker](https://www.docker.io/gettingstarted/) to run.
 
-- [Go 1.2](http://golang.org/doc/install)
-- [Docker](https://www.docker.io/gettingstarted/)
+## Install On Debian & Unbutu
 
-## Install Gaudi
+```sh
+wget -O - http://gaudi.io/apt/gaudi.gpg.key | sudo apt-key add -
+echo "deb http://gaudi.io/apt/ precise main" | sudo tee -a /etc/apt/sources.list
+
+sudo apt-get update
+sudo apt-get install gaudi
+```
+
+## Other linux systems
+
+On other system you need to install [Go 1.2](http://golang.org/doc/install) to install gaudi.
 
 ```sh
 go get github.com/marmelab/gaudi
@@ -460,6 +469,22 @@ binaries:
 binaries:
     jekyll:
         type: jekyll
+```
+
+## Build the debian package
+
+### Create a gpg key
+
+```sh
+gpg --gen-key
+ls / -R
+gpg --armor --export your@email.com --output gaudi.gpg.key
+```
+
+### Run makefile
+
+```sh
+make
 ```
 
 ## Contributing
