@@ -17,7 +17,11 @@ server {
 server {
     listen [[ .Container.GetFirstLocalPort ]];
 
+    [[ if (.Container.GetCustomValue "documentRoot") ]]
+    root [[ (.Container.GetCustomValue "documentRoot") ]];
+    [[ else ]]
     root /var/www;
+    [[ end ]]
     index index.html index.htm;
 
     # Make site accessible from http://localhost/
@@ -37,7 +41,7 @@ server {
 
     [[ if (.Container.GetCustomValue "fastCgi")]]
     # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    location ~ \.php$ {
+    location ~ \.php(/|$) {
            fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
            fastcgi_pass ${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT};
