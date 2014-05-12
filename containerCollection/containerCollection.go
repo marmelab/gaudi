@@ -142,14 +142,14 @@ func waitForIt(channels chan bool) {
 	}
 }
 
-func (collection ContainerCollection) AddAmbassasor() {
+func (collection ContainerCollection) AddAmbassadors() {
 	for name, currentContainer := range collection {
 		if currentContainer.Ambassador.Type == "" {
 			continue
 		}
 
 		// Add the ambassador
-		ambassadorName := "ambassasor-" + name
+		ambassadorName := "ambassador-" + name
 		ambassador := &container.Container{Name: ambassadorName, Type: "ambassador"}
 		ambassador.Init()
 

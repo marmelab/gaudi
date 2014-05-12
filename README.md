@@ -260,6 +260,44 @@ applications:
 		before_script: /app/bin/init.sh
 ```
 
+### Ambassadors
+
+Docker doesn't allow remote container communication, to let your containers communicate together you can use ambassadors:
+
+On the distant server:
+
+```yaml
+applications:
+    redis:
+        type: index
+        image: dockerfile/redis
+        ambassador:
+            type: remote
+            port: 6379
+```
+
+```sh
+gaudi
+```
+
+On the local server:
+
+```yaml
+applications:
+    redis-cli:
+        type: index
+        image: vieux/redis-cli
+        environments:
+            REDIS_PORT_6379_TCP_ADDR: [remote IP address]
+        ambassador:
+            type: local
+            port: 6379
+```
+
+```sh
+gaudi
+```
+
 ## Types
 
 Each application uses a `custom` section to define its own custom configuration settings.
