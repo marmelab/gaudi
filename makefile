@@ -14,11 +14,12 @@ GAUDI_VERSION = $(shell go run main.go -v)
 
 export DISTRIBUTION
 
-all:
+apt:
 	goxc -tasks-=go-test -pv=$(GAUDI_VERSION)
 
 	cd templates/ && tar -cvf $(GOPATH)/bin/gaudi-xc/$(GAUDI_VERSION)/templates.tar . && cd -
 
+	mkdir -p $(GOPATH)/bin/gaudi-xc/$(GAUDI_VERSION)/conf/
 	echo "$$DISTRIBUTION" > $(GOPATH)/bin/gaudi-xc/$(GAUDI_VERSION)/conf/distributions
 
 	cp /usr/gaudi/gaudi.gpg.key $(GOPATH)/bin/gaudi-xc/$(GAUDI_VERSION)/gaudi.gpg.key
