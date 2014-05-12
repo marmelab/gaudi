@@ -142,6 +142,24 @@ func waitForIt(channels chan bool) {
 	}
 }
 
+func (collection ContainerCollection) AddAmbassadors() {
+	for name, currentContainer := range collection {
+		if currentContainer.Ambassador.Type == "" {
+			continue
+		}
+
+		// Add the ambassador
+		ambassadorName := "ambassador-" + name
+		ambassador := &container.Container{Name: ambassadorName, Type: "ambassador"}
+		ambassador.Init()
+
+		ambassador.Links = append(ambassador.Links, name)
+		ambassador.Ports[currentContainer.Ambassador.Port] = currentContainer.Ambassador.Port
+
+		collection[ambassadorName] = ambassador
+	}
+}
+
 func startOne(currentContainer *container.Container, rebuild bool, done map[string]chan bool) {
 	// Waiting for dependencies to be started
 	for _, dependency := range currentContainer.Dependencies {

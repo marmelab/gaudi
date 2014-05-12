@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+type Ambassador struct {
+	Type   string
+	Remote string
+	Port   string
+}
+
 type Container struct {
 	Name         string
 	Type         string
@@ -23,6 +29,7 @@ type Container struct {
 	Add          map[string]string "add"
 	Links        []string
 	Dependencies []*Container
+	Ambassador   Ambassador
 	Ports        map[string]string
 	Volumes      map[string]string
 	Environments map[string]string "environments"
@@ -35,7 +42,7 @@ type inspection struct {
 	State           map[string]interface{} "State,omitempty"
 }
 
-func (c *Container) init() {
+func (c *Container) Init() {
 	if c.Ports == nil {
 		c.Ports = make(map[string]string)
 	}
@@ -154,7 +161,7 @@ func (c *Container) AddDependency(container *Container) {
  * Starts a container as a server
  */
 func (c *Container) Start(rebuild bool) {
-	c.init()
+	c.Init()
 
 	// Check if the container is already running
 	if !rebuild {
@@ -192,7 +199,7 @@ func (c *Container) BuildAndRun(currentPath string, arguments []string) {
  * Starts a container as a binary file
  */
 func (c *Container) Run(currentPath string, arguments []string) {
-	c.init()
+	c.Init()
 
 	fmt.Println("Running", c.Name, strings.Join(arguments, " "), "...")
 

@@ -56,6 +56,7 @@ func (gaudi *Gaudi) Init(content string) {
 	}
 
 	// Init all containers
+	gaudi.Applications.AddAmbassadors()
 	gaudi.All = containerCollection.Merge(gaudi.Applications, gaudi.Binaries)
 	if len(gaudi.All) == 0 {
 		util.LogError("No application or binary to start")
