@@ -22,7 +22,7 @@ func (s *stringSlice) Set(value string) error {
 }
 
 var (
-	VERSION = "0.1.4"
+	VERSION = "0.1.5"
 	config = flag.String("config", ".gaudi.yml", "File describing the architecture")
 	flagVersion = flag.Bool("v", false, "Display version")
 )

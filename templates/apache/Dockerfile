@@ -6,7 +6,6 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 [[ updateApt ]]
 [[ addUserFiles ]]
 
-RUN apt-get install -y -f
 RUN apt-get install -y -f apache2-mpm-worker libapache2-mod-fastcgi php5-fpm
 RUN sed -i 's/;pm.start_servers/pm.start_servers/g' /etc/php5/fpm/pool.d/www.conf
 RUN a2enmod actions fastcgi alias
@@ -15,6 +14,10 @@ RUN a2enmod actions fastcgi alias
 	RUN a2enmod [[.]]
 [[end]]
 RUN service apache2 reload
+
+[[ if ]]
+	WSGIScriptAlias / /project-env/project/project/wsgi.py
+[[ endif ]]
 
 # Add setup script
 ADD setup.sh /root/setup.sh
