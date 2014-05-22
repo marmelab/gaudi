@@ -8,7 +8,7 @@ if [ ! -d "/app/[[ .Container.GetCustomValue "project_name" "project" ]]/[[ .Con
 
 	cd /app/[[ .Container.GetCustomValue "project_name" "project" ]]
 	sed -i -e "s/'django.db.backends.sqlite3'/'django.db.backends.mysql'/" ./settings.py
-	sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),/'NAME': 'django',\n\t\t'User': 'root',\n\t\t'HOST': os.environ['DB_PORT_3306_TCP_ADDR']/" ./settings.py
+	sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),/'NAME': 'django',\n\t\t'USER': 'root',\n\t\t'PASSWORD': '',\n\t\t'HOST': os.environ['DB_PORT_3306_TCP_ADDR']/" ./settings.py
 
 	sed -i -e "s/# from django.contrib import admin/from django.contrib import admin/" ./urls.py
 	sed -i -e "s/# admin.autodiscover()/admin.autodiscover()/" ./urls.py

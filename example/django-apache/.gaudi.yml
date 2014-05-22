@@ -1,7 +1,7 @@
 applications:
     front:
         type: apache
-        links: [app]
+        links: [app, db]
         ports:
             8080: 80
         volumes:
@@ -15,12 +15,12 @@ applications:
         volumes:
             .: /app
         after_script:
-            sleep 5 && touch /app/project/settings.py && python /app/manage.py syncdb --noinput && echo "from django.contrib.auth.models import User; User.objects.create_superuser(\"root\", \"root@myapp.com\", \"root\")" | python /app/manage.py shell
+            sleep 5 && python /app/manage.py syncdb --noinput && echo "from django.contrib.auth.models import User; User.objects.create_superuser(\"root\", \"root@myapp.com\", \"root\")" | python /app/manage.py shell
 
     db:
         type: mysql
         ports:
             3306: 3306
-        after_script: mysql -e "DROP DATABASE IF EXISTS django; CREATE DATABASE IF NOT EXISTS django CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
+        after_script: mysql -e "CREATE DATABASE IF NOT EXISTS django CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
         volumes:
             .gaudi/mysql: /var/lib/mysql

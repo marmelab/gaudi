@@ -19,6 +19,7 @@ RUN service apache2 reload
 	RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
 	RUN easy_install pip
 	RUN pip install django==1.6
+	RUN pip install mysql-python
 
 	RUN apt-get install -y -f libapache2-mod-wsgi
 
