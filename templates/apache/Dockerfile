@@ -6,7 +6,6 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 [[ updateApt ]]
 [[ addUserFiles ]]
 
-RUN apt-get install -y -f
 RUN apt-get install -y -f apache2-mpm-worker libapache2-mod-fastcgi php5-fpm
 RUN sed -i 's/;pm.start_servers/pm.start_servers/g' /etc/php5/fpm/pool.d/www.conf
 RUN a2enmod actions fastcgi alias
@@ -15,6 +14,17 @@ RUN a2enmod actions fastcgi alias
 	RUN a2enmod [[.]]
 [[end]]
 RUN service apache2 reload
+
+[[ if(.Container.DependsOf "django" )]]
+	RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
+	RUN easy_install pip
+	RUN pip install django==1.6
+	RUN pip install mysql-python
+
+	RUN apt-get install -y -f libapache2-mod-wsgi
+
+	RUN echo "WSGIPythonPath /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]:/usr/local/lib/python2.7/site-packages" >> /etc/apache2/httpd.conf
+[[ end ]]
 
 # Add setup script
 ADD setup.sh /root/setup.sh
