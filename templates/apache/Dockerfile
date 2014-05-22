@@ -15,9 +15,15 @@ RUN a2enmod actions fastcgi alias
 [[end]]
 RUN service apache2 reload
 
-[[ if ]]
-	WSGIScriptAlias / /project-env/project/project/wsgi.py
-[[ endif ]]
+[[ if(.Container.DependsOf "django" )]]
+	RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
+	RUN easy_install pip
+	RUN pip install django==1.6
+
+	RUN apt-get install -y -f libapache2-mod-wsgi
+
+	RUN echo "WSGIPythonPath /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]:/usr/local/lib/python2.7/site-packages" >> /etc/apache2/httpd.conf
+[[ end ]]
 
 # Add setup script
 ADD setup.sh /root/setup.sh

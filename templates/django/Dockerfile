@@ -8,11 +8,15 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 
 WORKDIR /app
 
-RUN apt-get install -y -f python3 python-dev python-setuptools libmysqlclient-dev
+RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
 RUN easy_install pip
-RUN pip install django==1.3
+RUN pip install django==1.6
 RUN pip install mysql-python
 RUN pip install south
+
+[[range (.Container.GetCustomValue "pip_modules")]]
+	RUN pip install [[.]]
+[[end]]
 
 # Add setup script
 ADD setup.sh /root/setup.sh
@@ -23,5 +27,7 @@ RUN chmod +x /root/setup.sh
 
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
 	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
-	&& python ./project/manage.py runserver 0.0.0.0:8000 \
+	[[ if eq (.Collection.IsComponentDependingOf .Container "apache") false ]]
+	&& python /app/manage.py runserver 0.0.0.0:[[ .Container.GetFirstLocalPort "8000" ]] \
+	[[end]]
 	&& /bin/bash

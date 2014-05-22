@@ -1,0 +1,18 @@
+applications:
+    app:
+        type: django
+        links: [db]
+        ports:
+            8000: 8000
+        volumes:
+            .: /app
+        after_script:
+            sleep 5 && touch /app/project/settings.py && python /app/manage.py syncdb --noinput && echo "from django.contrib.auth.models import User; User.objects.create_superuser(\"root\", \"root@myapp.com\", \"root\")" | python /app/manage.py shell
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306
+        after_script: mysql -e "CREATE DATABASE IF NOT EXISTS django CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
+        volumes:
+            .gaudi/mysql: /var/lib/mysql

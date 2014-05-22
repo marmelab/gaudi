@@ -22,6 +22,14 @@
 		allow from all
 	</Directory>
 
+	[[ if(.Container.DependsOf "django" )]]
+        WSGIScriptAlias / /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]/wsgi.py
+
+        Alias /static/admin /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin
+        Alias /static/ /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]/[[ (.Collection.GetType "django").GetCustomValue "app_name" "myapp" ]]/static/
+        Alias /uploads/ /app/uploads/
+	[[ end ]]
+
 	<Directory "/usr/lib/cgi-bin">
 		AllowOverride None
 		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch

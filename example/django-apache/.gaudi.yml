@@ -1,4 +1,12 @@
 applications:
+    front:
+        type: apache
+        links: [app]
+        ports:
+            8080: 80
+        volumes:
+            .: /app
+
     app:
         type: django
         links: [db]
@@ -7,7 +15,8 @@ applications:
         volumes:
             .: /app
         after_script:
-            sleep 5 && touch /app/project/settings.py && python /app/project/manage.py syncdb --noinput && echo "from django.contrib.auth.models import User; User.objects.create_superuser(\"root\", \"root@myapp.com\", \"root\")" | python /app/project/manage.py shell
+            sleep 5 && touch /app/project/settings.py && python /app/manage.py syncdb --noinput && echo "from django.contrib.auth.models import User; User.objects.create_superuser(\"root\", \"root@myapp.com\", \"root\")" | python /app/manage.py shell
+
     db:
         type: mysql
         ports:

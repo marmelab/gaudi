@@ -68,6 +68,16 @@ func (collection ContainerCollection) Get(name string) *container.Container {
 	return collection[name]
 }
 
+func (collection ContainerCollection) GetType(containerType string) *container.Container {
+	for _, currentContainer := range collection {
+		if currentContainer.Type == containerType {
+			return currentContainer
+		}
+	}
+
+	return nil
+}
+
 func (collection ContainerCollection) Start(rebuild bool) {
 	collection.CheckIfNotEmpty()
 
@@ -132,6 +142,17 @@ func (collection ContainerCollection) Build() {
 		go currentContainer.BuildOrPull(buildChans)
 	}
 	waitForIt(buildChans)
+}
+
+func (collection ContainerCollection) IsComponentDependingOf(container *container.Container, otherComponentType string) bool {
+
+	for _, currentContainer := range collection {
+		if currentContainer.Type == otherComponentType && currentContainer.DependsOf(container.Type) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func waitForIt(channels chan bool) {

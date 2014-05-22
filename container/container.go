@@ -58,6 +58,9 @@ func (c *Container) Init() {
 	if c.Add == nil {
 		c.Add = make(map[string]string)
 	}
+	if c.Custom == nil {
+		c.Custom = make(map[string]interface{})
+	}
 }
 
 func (c *Container) Remove() {
@@ -238,12 +241,16 @@ func (c *Container) GetFirstPort() string {
 	return ""
 }
 
-func (c *Container) GetFirstLocalPort() string {
+func (c *Container) GetFirstLocalPort(args ...string) string {
 	for _, localPort := range c.Ports {
 		return localPort
 	}
 
-	return ""
+	if len(args) == 1 {
+		return args[0]
+	} else {
+		return ""
+	}
 }
 
 func (c *Container) FirstLinked() *Container {
@@ -252,6 +259,16 @@ func (c *Container) FirstLinked() *Container {
 	}
 
 	return nil
+}
+
+func (c *Container) DependsOf(otherComponentType string) bool {
+	for _, dep := range c.Dependencies {
+		if dep.Type == otherComponentType {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *Container) IsGaudiManaged() bool {
