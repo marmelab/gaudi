@@ -22,6 +22,8 @@ applications:
             .: /var/www
         custom:
             fastCgi: app
+        ports:
+            8080: 8080
 
     app:
         type: php-fpm
@@ -49,7 +51,11 @@ Gaudi will try to find a `.gaudi.yml` file in the current folder, and start each
 
 gaudi requires [Docker](https://www.docker.io/gettingstarted/) to run.
 
-## Install On Debian & Ubuntu
+## OSX / Windows: Using Vagrant
+
+The [Cethy/vagrant-gaudi](https://github.com/Cethy/vagrant-gaudi) repository describes how to install gaudi with Vagrant.
+
+## Debian & Ubuntu
 
 ```sh
 wget -O - http://gaudi.io/apt/gaudi.gpg.key | sudo apt-key add -
