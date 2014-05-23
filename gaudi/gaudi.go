@@ -189,7 +189,7 @@ func (gaudi *Gaudi) build() {
 			}
 		}
 
-		templateDir, isCustom := gaudi.getContainerTemplate(currentContainer)
+		templateDir, isCustom := gaudi.GetContainerTemplate(currentContainer)
 
 		files, err := ioutil.ReadDir(templateDir)
 		if err != nil {
@@ -228,7 +228,7 @@ func (gaudi *Gaudi) build() {
 	}
 }
 
-func (gaudi *Gaudi) getContainerTemplate(container *container.Container) (string, bool) {
+func (gaudi *Gaudi) GetContainerTemplate(container *container.Container) (string, bool) {
 	templatePath := TEMPLATE_DIR + container.Type
 	isCustom := container.Type == "custom"
 
