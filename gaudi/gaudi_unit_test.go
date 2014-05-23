@@ -3,11 +3,13 @@ package gaudi_test
 import (
 	"code.google.com/p/gomock/gomock"
 	. "launchpad.net/gocheck"
-	"testing"
 	"os"
+	"testing"
 
 	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
+	"github.com/marmelab/gaudi/util"   // mock
+
 	"github.com/marmelab/gaudi/gaudi"
 )
 
@@ -19,6 +21,9 @@ var _ = Suite(&GaudiTestSuite{})
 
 func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnMalformedYmlContent(c *C) {
 	g := gaudi.Gaudi{}
+
+	// Disable the util package mock
+	util.MOCK().DisableMock("LogError")
 
 	c.Assert(func() {
 		g.Init(`
@@ -32,11 +37,14 @@ func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnMalformedYmlContent(c *C) {
 func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnWrongContent(c *C) {
 	g := gaudi.Gaudi{}
 
+	// Disable the util package mock
+	util.MOCK().DisableMock("LogError")
+
 	c.Assert(func() { g.Init("<oldFormat>Skrew you, i'm not yml</oldFormat>") }, PanicMatches, "No application or binary to start")
 }
 
 func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
-	os.RemoveAll("/var/tmp/gaudi/templates/")
+	os.RemoveAll("/var/tmp/gaudi/")
 
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
@@ -45,6 +53,9 @@ func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
 
 	// Setup the mockfmt mock package
 	mockfmt.MOCK().SetController(ctrl)
+
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
 
 	mockfmt.EXPECT().Println("Retrieving templates ...")
 
@@ -126,6 +137,9 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 	// Setup the mockfmt mock package
 	mockfmt.MOCK().SetController(ctrl)
 
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
+
 	mockfmt.EXPECT().Println("Retrieving templates ...")
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
@@ -192,6 +206,9 @@ func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	// Setup the mockfmt mock package
 	mockfmt.MOCK().SetController(ctrl)
 
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
+
 	psResult := make(map[string]string)
 	psResult["gaudi/lb"] = "123"
 	psResult["gaudi/front1"] = "124"
@@ -231,7 +248,7 @@ applications:
 }
 
 func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
-	os.RemoveAll("/var/tmp/gaudi/templates/")
+	os.RemoveAll("/var/tmp/gaudi/")
 
 	// Create a gomock controller, and arrange for it's finish to be called
 	ctrl := gomock.NewController(c)
@@ -242,6 +259,9 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 
 	// Setup the mockfmt mock package
 	mockfmt.MOCK().SetController(ctrl)
+
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
 
 	mockfmt.EXPECT().Println("Retrieving templates ...")
 
@@ -261,4 +281,48 @@ binaries:
 	c.Assert(len(g.Binaries), Equals, 1)
 
 	g.Run("npm", []string{"update"})
+}
+
+func (s *GaudiTestSuite) TestUseCUstomTemplateShouldUseIt(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	// Setup the mockfmt mock package
+	mockfmt.MOCK().SetController(ctrl)
+
+	// Setup the mockfmt mock package
+	util.MOCK().SetController(ctrl)
+	util.MOCK().EnableMock("IsDir")
+	util.MOCK().EnableMock("LogError")
+
+	g := gaudi.Gaudi{}
+	g.ApplicationDir = "/vagrant"
+
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+
+	util.EXPECT().IsDir("/var/tmp/gaudi/templates/").Return(false)
+	mockfmt.EXPECT().Println("Retrieving templates ...")
+
+	util.EXPECT().IsFile("/vagrant/front/Dockerfile").Return(true).Times(3)
+	util.EXPECT().LogError("Template not found for application : custom").Times(3)
+
+	g.Init(`
+applications:
+    app:
+        type: custom
+        template: ./front/Dockerfile
+
+    app2:
+        type: custom
+        template: front/Dockerfile
+
+    app3:
+        type: custom
+        template: /vagrant/front/Dockerfile
+`)
 }

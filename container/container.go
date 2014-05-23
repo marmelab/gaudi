@@ -20,6 +20,7 @@ type Container struct {
 	Type         string
 	Image        string
 	Path         string
+	Template     string
 	Running      bool
 	Id           string
 	Ip           string

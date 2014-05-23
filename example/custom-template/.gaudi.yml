@@ -1,0 +1,7 @@
+applications:
+    redis:
+        type: custom
+        template: ./redis/Dockerfile
+        ports:
+            6379: 6379
+

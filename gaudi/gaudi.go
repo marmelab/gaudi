@@ -93,7 +93,6 @@ func (gaudi *Gaudi) StartApplications(rebuild bool) {
 	if rebuild == false {
 		rebuild = gaudi.shouldRebuild()
 
-
 		if rebuild {
 			fmt.Println("Changes detected in configuration file, rebuilding containers ...")
 		}
@@ -190,7 +189,9 @@ func (gaudi *Gaudi) build() {
 			}
 		}
 
-		files, err := ioutil.ReadDir(TEMPLATE_DIR + currentContainer.Type)
+		templateDir, isCustom := gaudi.GetContainerTemplate(currentContainer)
+
+		files, err := ioutil.ReadDir(templateDir)
 		if err != nil {
 			util.LogError("Template not found for application : " + currentContainer.Type)
 		}
@@ -200,9 +201,14 @@ func (gaudi *Gaudi) build() {
 			util.LogError(err)
 		}
 
+		sourceTemplateDir := TEMPLATE_DIR + currentContainer.Type
+		if isCustom {
+			sourceTemplateDir = templateDir
+		}
+
 		// Parse & copy files
 		for _, file := range files {
-			gaudi.parseTemplate(TEMPLATE_DIR, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
+			gaudi.parseTemplate(sourceTemplateDir, PARSED_TEMPLATE_DIR, file, includes, currentContainer)
 		}
 
 		// Copy all files marked as Add
@@ -220,6 +226,34 @@ func (gaudi *Gaudi) build() {
 			}
 		}
 	}
+}
+
+func (gaudi *Gaudi) GetContainerTemplate(container *container.Container) (string, bool) {
+	templatePath := TEMPLATE_DIR + container.Type
+	isCustom := container.Type == "custom"
+
+	// Check if the application has a custom template
+	if isCustom {
+		templatePath = container.Template
+
+		// Allows relative path with ./
+		if len(templatePath) > 1 && templatePath[0] == '.' && templatePath[1] == '/' {
+			templatePath = gaudi.ApplicationDir + "/" + strings.Join(strings.Split(templatePath, "/")[1:], "/")
+		}
+
+		// Handle relative patch without ./
+		if templatePath[0] != '/' {
+			templatePath = gaudi.ApplicationDir + "/" + templatePath
+		}
+
+		// Template path should be a directory
+		if util.IsFile(templatePath) {
+			templateParts := strings.Split(templatePath, "/")
+			templatePath = strings.Join(templateParts[0:len(templateParts)-1], "/")
+		}
+	}
+
+	return templatePath, isCustom
 }
 
 func (gaudi *Gaudi) parseTemplate(sourceDir, destinationDir string, file os.FileInfo, includes map[string]string, currentContainer *container.Container) {
@@ -241,7 +275,7 @@ func (gaudi *Gaudi) parseTemplate(sourceDir, destinationDir string, file os.File
 	}
 
 	// Read the template
-	filePath := sourceDir + currentContainer.Type + "/" + file.Name()
+	filePath := sourceDir + "/" + file.Name()
 	rawContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		util.LogError(err)
