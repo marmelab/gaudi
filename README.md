@@ -253,6 +253,19 @@ applications:
             28017: 28017
 ```
 
+### Custom Template
+
+You can run your own Dockerfile thanks to the `custom` type:
+
+```yaml
+applications:
+    redis:
+        type: custom
+        template: ./redis/Dockerfile
+        ports:
+            6379: 6379
+```
+
 ### Before and after scripts
 
 Each type of application listed bellow can be configured with `before_script` and `after_script` field.
