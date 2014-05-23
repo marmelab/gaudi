@@ -79,6 +79,12 @@ Check that your `PATH` includes `$GOPATH/bin`:
 export PATH=$GOPATH/bin:/$PATH
 ```
 
+## Via Puppet
+
+A [puppet module](https://forge.puppetlabs.com/cethy/gaudi) is available to install gaudi.
+
+
+
 The `gaudi` application starts containers with Docker's commands which [requires sudo privileges](http://docs.docker.io/en/latest/use/basics/#dockergroup).
 Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set for the `root` user (or other user with root privileges).
 
