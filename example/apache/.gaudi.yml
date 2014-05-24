@@ -1,0 +1,10 @@
+applications:
+    front:
+        type: apache
+        volumes:
+            .: /var/www
+        ports:
+            8080: 80
+        #custom:
+        #    documentRoot: /app
+        #    fastCgi: cgiContainerName

@@ -17,8 +17,9 @@ server {
 server {
     listen [[ .Container.GetFirstLocalPort ]];
 
-    [[ if (.Container.GetCustomValue "documentRoot") ]]
-    root [[ (.Container.GetCustomValue "documentRoot") ]];
+    [[ $documentRoot := .Container.GetCustomValue "documentRoot" ]]
+    [[ if $documentRoot ]]
+    root [[ $documentRoot ]];
     [[ else ]]
     root /var/www;
     [[ end ]]
@@ -44,14 +45,15 @@ server {
     location ~ \.php(/|$) {
            fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
-           fastcgi_pass ${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValue "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT};
+           [[ $fastCgiName := (.Container.GetCustomValue "fastCgi")]]
+           [[ $fastCgiPort := (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort]]
+           fastcgi_pass ${[[ $fastCgiName | ToUpper ]]_PORT_[[ $fastCgiPort ]]_TCP_ADDR}:${[[ $fastCgiName | ToUpper ]]_PORT_[[ $fastCgiPort ]]_TCP_PORT};
            fastcgi_index index.php;
            include fastcgi_params;
     }
     [[end]]
 
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
+    # deny access to .htaccess files, if Apache's document root concurs with nginx's one
     location ~ /\.ht {
            deny all;
     }

@@ -15,4 +15,8 @@ RUN sed -i -e "s/rpc_address:\slocalhost/rpc_address: 0.0.0.0/" /etc/cassandra/c
 RUN sed -i -e "s/#MAX_HEAP_SIZE=\"4G\"/MAX_HEAP_SIZE=\"[[ (.Container.GetCustomValue "maxHeapSize" "512M") ]]\"/" /etc/cassandra/cassandra-env.sh
 RUN sed -i -e "s/#HEAP_NEWSIZE=\"800M\"/HEAP_NEWSIZE=\"[[ (.Container.GetCustomValue "heapNewSize" "128M") ]]\"/" /etc/cassandra/cassandra-env.sh
 
+[[ if .EmptyCmd]]
+CMD /bin/bash
+[[ else ]]
 CMD /etc/init.d/cassandra start && /bin/bash
+[[ end ]]

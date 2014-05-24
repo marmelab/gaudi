@@ -4,9 +4,11 @@ import (
 	"crypto/md5"
 	"flag"
 	"fmt"
+	"github.com/daviddengcn/go-colortext"
 	"io"
 	"log"
 	"os"
+	"reflect"
 )
 
 var (
@@ -15,6 +17,32 @@ var (
 
 func main() {
 	flag.Parse()
+}
+
+func PrintRed(messages ...interface{}) {
+	PrintWithColor(ct.Red, messages)
+}
+
+func PrintGreen(messages ...interface{}) {
+	PrintWithColor(ct.Green, messages)
+}
+
+func PrintOrange(messages ...interface{}) {
+	PrintWithColor(ct.Cyan, messages)
+}
+
+func PrintWithColor(color ct.Color, messages []interface{}) {
+	ct.ChangeColor(ct.Green, false, ct.None, false)
+
+	args := make([]string, 0)
+	for _, message := range messages {
+		args = append(args, message.(string))
+	}
+
+	printFunc := reflect.ValueOf(fmt.Println)
+	printFunc.Call(BuildReflectArguments(args))
+
+	ct.ChangeColor(ct.Black, false, ct.None, false)
 }
 
 func LogError(err interface{}) {
@@ -62,6 +90,16 @@ func getFileStat(path string) os.FileInfo {
 	}
 
 	return stat
+}
+
+func BuildReflectArguments(rawArgs []string) []reflect.Value {
+	args := make([]reflect.Value, 0)
+
+	for _, arg := range rawArgs {
+		args = append(args, reflect.ValueOf(arg))
+	}
+
+	return args
 }
 
 func GetFileCheckSum(filePath string) string {

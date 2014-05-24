@@ -18,4 +18,8 @@ RUN apt-get -y -f install hhvm-fastcgi php5-cli curl
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
+[[ if .EmptyCmd]]
+CMD /bin/bash
+[[ else ]]
 CMD (hhvm --mode daemon -vServer.Type=fastcgi -vServer.Port=[[ .Container.GetFirstLocalPort ]] &) && /bin/bash
+[[ end ]]

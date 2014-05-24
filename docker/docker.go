@@ -74,7 +74,7 @@ func Build(name, path string) {
 
 	util.Debug(rawArgs)
 
-	buildCmd := buildFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	buildCmd := buildFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	buildCmd.Stderr = os.Stderr
 
 	if !*quiet {
@@ -138,7 +138,7 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 	rawArgs = append(rawArgs, image)
 
 	// Initiate the command with several arguments
-	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	runCmd := runFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	util.Debug("Start command:", runCmd.Args)
 
 	out, err := runCmd.CombinedOutput()
@@ -160,7 +160,7 @@ func Run(name, currentPath string, arguments []string) {
 		rawArgs = append(rawArgs, argument)
 	}
 
-	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	runCmd := runFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	runCmd.Stdout = os.Stdout
 	runCmd.Stdin = os.Stdin
 	runCmd.Stderr = os.Stderr
@@ -204,16 +204,6 @@ func SnapshotProcesses() (map[string]string, error) {
 	}
 
 	return images, nil
-}
-
-func buildArguments(rawArgs []string) []reflect.Value {
-	args := make([]reflect.Value, 0)
-
-	for _, arg := range rawArgs {
-		args = append(args, reflect.ValueOf(arg))
-	}
-
-	return args
 }
 
 func getDockerBinaryPath() string {
