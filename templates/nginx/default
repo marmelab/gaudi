@@ -1,7 +1,8 @@
 [[ if (.Container.GetCustomValue "backends")]]
 upstream loadBalancing {
     [[range (.Container.GetCustomValue "backends")]]
-    server ${[[ . | ToUpper ]]_PORT_[[ ($.Collection.Get . ).GetFirstPort ]]_TCP_ADDR}:${[[ . | ToUpper ]]_PORT_[[ ($.Collection.Get . ).GetFirstPort ]]_TCP_PORT};
+    [[ $port := ($.Collection.Get . ).GetFirstPort ]]
+    server ${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_ADDR}:${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_PORT};
     [[end]]
 }
 

@@ -21,7 +21,7 @@ mysql -e "GRANT REPLICATION SLAVE ON *.* TO repl@'%' IDENTIFIED BY 'repl'; FLUSH
 [[ $master := $.Collection.Get $masterName ]]
 
 # Connect to master & retrieve current log file & position
-MASTER_STATUS=$(mysql -u root -h $[[ $masterName | ToUpper ]]_PORT_[[ ( $master.GetFirstPort ]]_TCP_ADDR -e "show master status\G")
+MASTER_STATUS=$(mysql -u root -h $[[ $masterName | ToUpper ]]_PORT_[[ $master.GetFirstPort ]]_TCP_ADDR -e "show master status\G")
 MASTER_LOG_FILE=$(echo "$MASTER_STATUS" | grep File | sed 's/File://' | sed 's/^ *//;s/ *$//')
 MASTER_LOG_POS=$(echo "$MASTER_STATUS" | grep Position | sed 's/Position://' | sed 's/^ *//;s/ *$//')
 

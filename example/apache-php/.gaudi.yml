@@ -5,7 +5,7 @@ applications:
         ports:
             8080: 80
         volumes:
-            php: /var/www
+            .: /var/www
         custom:
             fastCgi: app
 
@@ -14,4 +14,4 @@ applications:
         ports:
             9000: 9000
         volumes:
-            php: /var/www
+            .: /var/www

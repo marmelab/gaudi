@@ -1,0 +1,26 @@
+applications:
+    front:
+        type: apache
+        links: [app]
+        ports:
+            8081: 8081
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app
+
+    app:
+        type: php-fpm
+        links: [db]
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306
+        volumes:
+            .gaudi/mysql: /var/lib/mysql
+        after_script: mysql -e "CREATE DATABASE IF NOT EXISTS my_db CHARACTER SET utf8 COLLATE utf8_general_ci; USE my_db; CREATE TABLE IF NOT EXISTS user (id int(5) NOT NULL AUTO_INCREMENT, username varchar(80), PRIMARY KEY (id)); INSERT INTO user (username) VALUES (\"Manu\");" -uroot
