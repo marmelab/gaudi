@@ -6,3 +6,12 @@ applications:
             .gaudi/couchdb: /usr/local/var/lib/couchdb
         ports:
             5984: 5984
+
+    app:
+        type: nodejs
+        links: [couchdb]
+        volumes:
+            .: /app
+        after_script: node /app/app.js
+        custom:
+            modules: [cradle]

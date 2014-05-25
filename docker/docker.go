@@ -112,7 +112,7 @@ func Pull(name string) {
  */
 func Start(name, image string, links []string, ports, volumes, environments map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{getDockerBinaryPath(), "run", "-d", "-i", "-t", "--name=" + name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-d", "-i", "-t", "--privileged", "--name=" + name}
 
 	// Add environments
 	util.Debug(environments)

@@ -8,6 +8,7 @@ script:
     - go get code.google.com/p/gomock/gomock
     - go get github.com/qur/withmock
     - go get github.com/qur/withmock/mocktest
+    - go get github.com/daviddengcn/go-colortext
     - export GOPATH=/home/travis/gopath
     - export PATH=$PATH:/home/travis/gopath/bin
 

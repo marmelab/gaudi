@@ -1,0 +1,21 @@
+applications:
+    db:
+        type: cassandra
+        volumes:
+            .gaudi/db: /var/log/cassandra
+        #ports:
+        #    9160: 9160
+        custom:
+            maxHeapSize: 512M
+            heapNewSize: 128M
+    app:
+        type: golang
+        links: [db]
+        volumes:
+            .: /app
+        after_script: go /app/app.go
+        custom:
+            modules: [github.com/gocql/gocql]
+
+# sudo gaudi
+# sudo docker logs app

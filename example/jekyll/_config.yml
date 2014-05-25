@@ -1,0 +1,3 @@
+name: jekyll-test
+markdown: redcarpet
+pygments: true
