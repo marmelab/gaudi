@@ -9,8 +9,4 @@ RUN apt-get -y -f install php5 php5-mysql php5-mcrypt php5-curl curl
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
-[[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
-[[ else ]]
-	CMD /bin/bash
-[[ end]]
+CMD [[ if (.Container.HasAfterScript) ]] /bin/bash /root/after-setup.sh && [[end]] /bin/bash

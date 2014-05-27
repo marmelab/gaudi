@@ -206,7 +206,7 @@ func (c *Container) Run(currentPath string, arguments []string) {
 
 	util.PrintGreen("Running", c.Name, strings.Join(arguments, " "), "...")
 
-	docker.Run(c.Image, currentPath, arguments)
+	docker.Run(c.Image, currentPath, arguments, c.Ports, c.Environments)
 }
 
 func (c *Container) GetCustomValue(params ...string) interface{} {

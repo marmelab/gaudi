@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	emptyCmdFlag          = flag.String("empty-cmd", "", "Use /bin/bash for all")
+	emptyCmdFlag          = flag.String("empty-cmd", "", "Use /bin/bash for specified component (use all to target all components)")
 	emptyCmdForContainers []string
 )
 

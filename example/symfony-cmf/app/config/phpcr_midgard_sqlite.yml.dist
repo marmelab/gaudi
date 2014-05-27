@@ -1,0 +1,15 @@
+parameters:
+    locale: en
+
+    secret: xxxxxxxxxx
+
+    phpcr_backend:
+        type: midgard2
+        db_type: SQLite
+        db_name: cmf
+        db_dir: /tmp
+        db_init: true
+        blobdir: /tmp/cmf-blobs
+    phpcr_workspace: default
+    phpcr_user: admin
+    phpcr_pass: password

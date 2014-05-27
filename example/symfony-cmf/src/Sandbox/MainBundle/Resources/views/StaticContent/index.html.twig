@@ -1,0 +1,15 @@
+{% extends "SandboxMainBundle::skeleton.html.twig" %}
+
+{% block content %}
+
+{% createphp cmfMainContent as="rdf" %}
+{{ rdf|raw }}
+{% endcreatephp %}
+
+<hr/>
+
+{{ sonata_block_render({
+    'name': 'additionalInfoBlock'
+}) }}
+
+{% endblock %}

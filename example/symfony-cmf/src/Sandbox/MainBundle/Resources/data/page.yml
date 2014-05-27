@@ -1,0 +1,167 @@
+static:
+    -
+        name: "home"
+        title:
+            en: "Homepage"
+            fr: "Page principale"
+            de: "Startseite"
+        body:
+            en: |
+                <h2>Welcome to the Symfony CMF Demo</h2>
+                <p>If you see this page, it means that the <a href="http://cmf.symfony.com">Symfony CMF</a> installation ran successfully!</p>
+                <h2>How to proceed</h2>
+                <p>There is a couple of bundles to look into in the vendor/symfony-cmf/ folder. Look at the main README but also at the individual README files of the bundles.</p>
+            fr: |
+                <h2>Bienvenue dans la démo de Symfony CMF</h2>
+                <p>Si vous voyez cette page, c'est que l'installation de <a href="http://cmf.symfony.com">Symfony CMF</a> a fonctionné !</p>
+                <h2>Que faire maintenant ?</h2>
+                <p>Plusieurs bundles se trouvent dans le répertoire vendor/symfony-cmf/. Lisez le README principal ainsi que les README propres à chaque bundle.</p>
+            de: |
+                <h2>Willkommen zur Symfony CMF Demo</h2>
+                <p>Wenn du diese Seite siehst, bedeutet das dass die Installation des <a href="http://cmf.symfony.com">Symfony CMF</a> erfolgreich war!</p>
+                <h2>Was nun?</h2>
+                <p>Es gibt einige Bundles im Verzeichnis vendor/symfony-cmf/. Lies die README Datei im Hauptverzeichnis, und dann die README der einzelnen Bundles.</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+                children:
+                    child1:
+                        class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SimpleBlock
+                        properties:
+                            title: Editable Simpleblock
+                            body: This is a simple block. It is stored on the homepage, but also referenced from the company page.
+                    child2:
+                        class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SimpleBlock
+                        properties:
+                            title: Admin Credentials
+                            body: To log into the <a href="admin/dashboard">backend admin</a>, use the username 'admin' and the password 'admin'.
+                    child3:
+                        class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ActionBlock
+                        actionName: SandboxMainBundle:Default:block
+            rssBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\RssBlock
+                properties:
+                    settings:
+                        title: Symfony2 CMF news
+                        url: http://cmf.symfony.com/news.rss
+                        maxItems: 3
+    -
+        name: "company"
+        title: "The Company"
+        body: |
+            <h2>Who is behind the Symfony CMF project?</h2>
+            <p>The content management framework is a joint effort by various developers and companies</p>
+            <h2>dicta facete eu vis</h2>
+            <p>Sonet affert an has. Nam id odio nisl eruditi. Te quo falli propriae delectus, ut animal meliore est, agam decore in sea. Prima debet fierent id sed. Usu debet paulo argumentum ex, solum homero in sed, modus laboramus et usu. Brute legendos contentiones ex pri.
+
+            Ut suscipit honestatis sed, per id facer euismod probatus. Ne persius posidonium eum, has elaboraret philosophia eu. No eam wisi choro labores. Sit id oratio aperiam electram, quodsi deterruisset no eum, vel modo quaeque ei</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ReferenceBlock
+                referencedBlock: /cms/content/home/additionalInfoBlock/child1
+    -
+        name: "team"
+        title: "The Team"
+        body: |
+            <h2>Our Team</h2>
+            <p>There are some core developers and many other contributors. We need more help, so please contribute.</p>
+            <h2>dicta facete eu vis</h2>
+            <p>Sonet affert an has. Nam id odio nisl eruditi. Te quo falli propriae delectus, ut animal meliore est, agam decore in sea. Prima debet fierent id sed. Usu debet paulo argumentum ex, solum homero in sed, modus laboramus et usu. Brute legendos contentiones ex pri.
+
+            Ut suscipit honestatis sed, per id facer euismod probatus. Ne persius posidonium eum, has elaboraret philosophia eu. No eam wisi choro labores. Sit id oratio aperiam electram, quodsi deterruisset no eum, vel modo quaeque ei</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "more"
+        title: "More Information"
+        body: |
+            <h2>Yet another page</h2>
+            <p>About the companies, though we don't have more to say here. But you want pages to see the navigation in action.</p>
+            <h2>dicta facete eu vis</h2>
+            <p>Sonet affert an has. Nam id odio nisl eruditi. Te quo falli propriae delectus, ut animal meliore est, agam decore in sea. Prima debet fierent id sed. Usu debet paulo argumentum ex, solum homero in sed, modus laboramus et usu. Brute legendos contentiones ex pri.
+
+            Ut suscipit honestatis sed, per id facer euismod probatus. Ne persius posidonium eum, has elaboraret philosophia eu. No eam wisi choro labores. Sit id oratio aperiam electram, quodsi deterruisset no eum, vel modo quaeque ei</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "projects"
+        title: "The projects"
+        body: |
+            <h2>We do a lot of projects</h2>
+            <p>Sed sale modus nusquam ne. At omnesque senserit vel, veritus denique epicuri pri eu, nam illud constituam in. Id sit convenire mediocrem. Erant facilisi pri ea, quo ignota graeci dolores in, idque legere commune nam an. Eros fabulas scripserit mea ea. Mei everti hendrerit et, sit in harum vituperata.</p>
+            <h2>dicta facete eu vis</h2>
+            <p>Sonet affert an has. Nam id odio nisl eruditi. Te quo falli propriae delectus, ut animal meliore est, agam decore in sea.
+            Ut suscipit honestatis sed, per id facer euismod probatus. Ne persius posidonium eum, has elaboraret philosophia eu. No eam wisi choro labores. Sit id oratio aperiam electram, quodsi deterruisset no eum, vel modo quaeque ei</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "cmf"
+        title: "Content Management Framework"
+        body: |
+            <h2>The CMF is what this is all about</h2>
+            <p>Sed sale modus nusquam ne. At omnesque senserit vel, veritus denique epicuri pri eu, nam illud constituam in. Id sit convenire mediocrem. Erant facilisi pri ea, quo ignota graeci dolores in, idque legere commune nam an. Eros fabulas scripserit mea ea. Mei everti hendrerit et, sit in harum vituperata.</p>
+            <h2>dicta facete eu vis</h2>
+            <p>Sonet affert an has. Nam id odio nisl eruditi. Te quo falli propriae delectus, ut animal meliore est, agam decore in sea.
+            Ut suscipit honestatis sed, per id facer euismod probatus. Ne persius posidonium eum, has elaboraret philosophia eu. No eam wisi choro labores. Sit id oratio aperiam electram, quodsi deterruisset no eum, vel modo quaeque ei</p>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "demo"
+        title: "Routing demo"
+        body: |
+            <p>The Children of this page show the various use cases of the cmf menu and the cmf content routing.</p>
+            <p>There are also some routes that have no menu entry:</p>
+            <ul>
+                <li><a href="/app_dev.php/short">A short url that redirects to another doctrine route</a></li>
+                <li><a href="/app_dev.php/short1">A short url that redirects to a standard Symfony route</a></li>
+                <li><a href="/app_dev.php/external">A short url that redirects to an external URL</a></li>
+            </ul>
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "demo_controller"
+        title: "Explicit Controller"
+        body: "<p>This content is routed through an explicit controller that can do additional things.</p>"
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "demo_template"
+        title: "Explicit template"
+        body: "<p>This content is rendered through the generic content controller with an explicitly specified template.</p>"
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "demo_type"
+        title: "Controller by type"
+        body: "<p>This content is routed through a controller found by the route controller type.</p>"
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+    -
+        name: "demo_class"
+        title: "Controller by class"
+        body: "<p>This content is routed through a controller found by the content class.</p>"
+        class: "Sandbox\MainBundle\Document\DemoClassContent"
+        blocks:
+            additionalInfoBlock:
+                class: Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+
+    -
+        name: "singlelocale"
+        title:
+            en: "Single locale"
+            fr: "Single locale"
+        body:
+            en: |
+                <h2>This page is only available in english</h2>
+                <p>The content is actually also translated to french, but there is no route for french.
+            fr: |
+                <h2>This page is only available in english</h2>
+                <p>The content is actually also translated to french, but there is no route for french.

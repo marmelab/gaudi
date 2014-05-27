@@ -1,0 +1,15 @@
+applications:
+    lb:
+        type: varnish
+        links: [apache]
+        ports:
+            8082: 8082
+        custom:
+            backends: [apache]
+
+    apache:
+        type: apache
+        ports:
+            8081: 8081
+        volumes:
+            .: /var/www

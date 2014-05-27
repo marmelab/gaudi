@@ -13,10 +13,10 @@ RUN echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-se
 RUN sed -i 's|DocumentRoot /var/www|DocumentRoot /usr/share/phpmyadmin|g' /etc/apache2/sites-enabled/000-default
 RUN cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
 
-[[ firstLinked := .Container.FirstLinked]]
+[[ $firstLinked := .Container.FirstLinked]]
 
-RUN sed -i "s|if (empty(\$dbserver)) \$dbserver = 'localhost';|if (empty(\$dbserver)) \$dbserver = getenv('[[ firstLinked.Name | ToUpper ]]_PORT_[[ firstLinked.GetFirstPort]]_TCP_ADDR');|g" /etc/phpmyadmin/config.inc.php
-RUN sed -i "s|//\$cfg\['Servers'\]\[\$i\]\['host'\] = 'localhost';|\$cfg\['Servers'\]\[\$i\]\['host'\] = getenv('[[ firstLinked.Name | ToUpper ]]_PORT_[[ firstLinked.GetFirstPort]]_TCP_ADDR');|g" /etc/phpmyadmin/config.inc.php
+RUN sed -i "s|if (empty(\$dbserver)) \$dbserver = 'localhost';|if (empty(\$dbserver)) \$dbserver = getenv('[[ $firstLinked.Name | ToUpper ]]_PORT_[[ $firstLinked.GetFirstPort]]_TCP_ADDR');|g" /etc/phpmyadmin/config.inc.php
+RUN sed -i "s|//\$cfg\['Servers'\]\[\$i\]\['host'\] = 'localhost';|\$cfg\['Servers'\]\[\$i\]\['host'\] = getenv('[[ $firstLinked.Name | ToUpper ]]_PORT_[[ $firstLinked.GetFirstPort]]_TCP_ADDR');|g" /etc/phpmyadmin/config.inc.php
 RUN sed -i "s|// \$cfg\['Servers'\]\[\$i\]\['AllowNoPassword'\] = TRUE;|\$cfg\['Servers'\]\[\$i\]\['AllowNoPassword'\] = TRUE;|g" /etc/phpmyadmin/config.inc.php
 
 # Add setup script

@@ -1,0 +1,37 @@
+{% extends "SandboxMainBundle::skeleton.html.twig" %}
+
+{% block content %}
+    <p><em>We are on the homepage which uses a special template</em></p>
+
+    {% createphp cmfMainContent as="rdf" %}
+    {{ rdf|raw }}
+    {% endcreatephp %}
+
+    <hr/>
+
+    {{ sonata_block_render({ 'name': 'additionalInfoBlock' }, {
+        'divisible_by': 3,
+        'divisible_class': 'row',
+        'child_class': 'span3'
+    }) }}
+
+    <div class="row">
+        <div class="span3">
+            <h2>Some additional links:</h2>
+            <ul>
+                {% for child in cmf_children(cmf_find('/cms/simple')) %}
+                    <li>
+                        <a href="{{ path(child) }}">{{ child.title|striptags }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="span3">
+        {{ sonata_block_render({
+            'name': 'rssBlock'
+        }) }}
+        </div>
+    </div>
+{% endblock %}
+

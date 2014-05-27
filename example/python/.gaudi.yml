@@ -1,0 +1,11 @@
+applications:
+    app:
+        type: python
+        volumes:
+            .: /app
+        after_script: python /app/hello.py
+        custom:
+            version: 3.3.4
+
+# sudo gaudi
+# sudo docker logs app

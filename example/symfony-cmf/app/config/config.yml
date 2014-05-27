@@ -1,0 +1,347 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: phpcr.yml }
+    - { resource: parameters.php }
+    - { resource: security.yml }
+    - { resource: @CmfBlogBundle/Resources/config/routing/autoroute_default.yml }
+
+framework:
+    #esi:             ~
+    translator:      { fallback: en }
+    secret:          %secret%
+    router:          { resource: "%kernel.root_dir%/config/routing.yml" }
+    form:            true
+    csrf_protection: true
+    validation:      { enable_annotations: true }
+    templating:      { engines: ['twig'] } #assets_version: SomeVersionScheme
+    default_locale:  %locale%
+    session:         ~
+    trusted_proxies: ~
+
+# Twig Configuration
+twig:
+    debug:            %kernel.debug%
+    strict_variables: %kernel.debug%
+    form:
+        resources:
+            - 'CmfMediaBundle:Form:fields.html.twig'
+    exception_controller: 'FOS\RestBundle\Controller\ExceptionController::showAction'
+
+# Assetic Configuration
+assetic:
+    debug:          %kernel.debug%
+    use_controller: false
+    # bundles: [ ] # if enabled, every bundle must be added
+    #java: /usr/bin/java
+    filters:
+        cssrewrite: ~
+        coffee:
+           bin: %coffee.bin%
+           node: %coffee.node%
+           apply_to: %coffee.extension%
+        # closure:
+        #     jar: %kernel.root_dir%/java/compiler.jar
+        # yui_css:
+        #     jar: %kernel.root_dir%/java/yuicompressor-2.4.2.jar
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: %mailer_transport%
+    host:      %mailer_host%
+    username:  %mailer_user%
+    password:  %mailer_password%
+    spool:     { type: memory }
+
+# for jackalope-doctrine-dbal
+doctrine:
+    dbal:
+        driver:   %database_driver%
+        host:     %database_host%
+        port:     %database_port%
+        dbname:   %database_name%
+        user:     %database_user%
+        password: %database_password%
+        path:     %database_path%
+        charset:  UTF8
+
+# cmf configuration
+doctrine_phpcr:
+    # configure the PHPCR session
+    session:
+        backend: %phpcr_backend%
+        workspace: %phpcr_workspace%
+        username: %phpcr_user%
+        password: %phpcr_pass%
+    # enable the ODM layer
+    odm:
+        auto_mapping: true
+        auto_generate_proxy_classes: %kernel.debug%
+        locales:
+            en:
+                - de
+                - fr
+            de:
+                - en
+                - fr
+            fr:
+                - en
+                - de
+
+knp_menu:
+    twig: true
+
+cmf_core:
+    multilang:
+        locales: %locales%
+    persistence:
+        phpcr:
+            enabled: true
+            translation_strategy: attribute
+
+cmf_blog:
+    blog_basepath: /cms/content
+
+cmf_routing:
+    chain:
+        routers_by_id:
+            cmf_routing.dynamic_router: 20
+            router.default: 100
+    dynamic:
+        controllers_by_type:
+            demo_type: sandbox_main.controller:typeAction
+        controllers_by_class:
+            Sandbox\MainBundle\Document\DemoClassContent: sandbox_main.controller:classAction
+            Symfony\Cmf\Bundle\RoutingBundle\Doctrine\Phpcr\RedirectRoute:  cmf_routing.redirect_controller:redirectAction
+            Symfony\Cmf\Bundle\BlogBundle\Document\Blog: cmf_blog.blog_controller:listAction
+            Symfony\Cmf\Bundle\BlogBundle\Document\Post: cmf_blog.blog_controller:viewPostAction
+
+        templates_by_class:
+            Symfony\Cmf\Bundle\ContentBundle\Doctrine\Phpcr\StaticContent: SandboxMainBundle:StaticContent:index.html.twig
+
+cmf_simple_cms:
+    routing:
+        templates_by_class:
+            Symfony\Cmf\Bundle\SimpleCmsBundle\Doctrine\Phpcr\Page:  CmfSimpleCmsBundle:Page:index.html.twig
+
+cmf_create:
+    editor_base_path: /bundles/cmfcreate/vendor/ckeditor/
+    # WARNING: REMOVE THIS FOR PRODUCTION SITES
+    # for demo purposes we are allowing anonymous inline editing
+    role: IS_AUTHENTICATED_ANONYMOUSLY
+
+sonata_block:
+    default_contexts: [cms]
+    blocks:
+        sonata.admin.block.admin_list:
+            contexts:   [admin]
+        sonata.admin.block.search_result:
+            contexts:   [admin]
+        sonata_admin_doctrine_phpcr.tree_block:
+            settings:
+                id: '/cms'
+            contexts:   [admin]
+    blocks_by_class:
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\RssBlock:
+            cache: cmf.block.cache.js_async
+
+sonata_admin:
+    extensions:
+        cmf_core.admin_extension.publish_workflow.time_period:
+            implements:
+                - Symfony\Cmf\Bundle\CoreBundle\PublishWorkflow\PublishTimePeriodInterface
+        cmf_core.admin_extension.publish_workflow.publishable:
+            implements:
+                - Symfony\Cmf\Bundle\CoreBundle\PublishWorkflow\PublishableInterface
+        cmf_core.admin_extension.translatable:
+            implements:
+                - Symfony\Cmf\Bundle\CoreBundle\Translatable\TranslatableInterface
+        cmf_menu.admin_extension.menu_node_referrers:
+            implements:
+                - Symfony\Cmf\Bundle\MenuBundle\Model\MenuNodeReferrersInterface
+        cmf_routing.admin_extension.route_referrers:
+            implements:
+                - Symfony\Cmf\Component\Routing\RouteReferrersInterface
+
+    templates:
+        # default global templates
+        ajax:    SonataAdminBundle::ajax_layout.html.twig
+        user_block: SandboxMainBundle:Admin:user_block.html.twig
+    dashboard:
+        blocks:
+            # display a dashboard block
+            - { position: right, type: sonata.admin.block.admin_list }
+            - { position: left, type: sonata_admin_doctrine_phpcr.tree_block }
+        groups:
+            content:
+                label: Content
+                items:
+                    - cmf_content.admin
+                    - cmf_block.simple_admin
+                    - cmf_block.container_admin
+                    - cmf_block.reference_admin
+                    - cmf_block.action_admin
+                    - cmf_block.imagine.slideshow_admin
+                    - cmf_block.imagine.imagine_admin
+            routing:
+                label: URLs
+                items:
+                    - cmf_routing.route_admin
+                    - cmf_routing.redirect_route_admin
+            menu:
+                label: Menu
+                items:
+                    - cmf_menu.menu_admin
+                    - cmf_menu.node_admin
+            blog:
+                label: Blog
+                items:
+                    - cmf_blog.admin
+                    - cmf_post.admin
+            simplecms:
+                label: Simple CMS
+                items:
+                    - cmf_simple_cms.persistence.phpcr.admin.page
+
+sonata_doctrine_phpcr_admin:
+    document_tree_defaults: [locale]
+    document_tree:
+        Doctrine\ODM\PHPCR\Document\Generic:
+            valid_children:
+                - all
+        Symfony\Cmf\Bundle\ContentBundle\Doctrine\Phpcr\StaticContent:
+            valid_children:
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SimpleBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ReferenceBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ActionBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SlideshowBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\RssBlock
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ReferenceBlock:
+            valid_children: []
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ActionBlock:
+            valid_children: []
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SimpleBlock:
+            valid_children: []
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SlideshowBlock:
+            valid_children:
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ImagineBlock
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ImagineBlock:
+            valid_children: []
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\RssBlock:
+            valid_children: []
+        Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock:
+            valid_children:
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SimpleBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ContainerBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ReferenceBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\ActionBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\SlideshowBlock
+                - Symfony\Cmf\Bundle\BlockBundle\Doctrine\Phpcr\RssBlock
+        Symfony\Cmf\Bundle\SimpleCmsBundle\Doctrine\Phpcr\Page:
+            valid_children:
+                - Symfony\Cmf\Bundle\SimpleCmsBundle\Doctrine\Phpcr\Page
+        Symfony\Cmf\Bundle\RoutingBundle\Doctrine\Phpcr\Route:
+            valid_children:
+                - Symfony\Cmf\Bundle\RoutingBundle\Doctrine\Phpcr\Route
+                - Symfony\Cmf\Bundle\RoutingBundle\Doctrine\Phpcr\RedirectRoute
+        Symfony\Cmf\Bundle\RoutingBundle\Doctrine\Phpcr\RedirectRoute:
+            valid_children: []
+        Symfony\Cmf\Bundle\MenuBundle\Doctrine\Phpcr\Menu:
+            valid_children:
+                - Symfony\Cmf\Bundle\MenuBundle\Doctrine\Phpcr\MenuNode
+        Symfony\Cmf\Bundle\MenuBundle\Doctrine\Phpcr\MenuNode:
+            valid_children:
+                - Symfony\Cmf\Bundle\MenuBundle\Doctrine\Phpcr\MenuNode
+        Symfony\Cmf\Bundle\BlogBundle\Document\Blog:
+            valid_children:
+                - Symfony\Cmf\Bundle\BlogBundle\Document\Post
+        Symfony\Cmf\Bundle\BlogBundle\Document\Post:
+            valid_children: []
+
+sensio_framework_extra:
+    view:    { annotations: false }
+    router:  { annotations: true }
+    request: { converters: true }
+
+liip_search:
+    restrict_by_language: true;
+
+cmf_search:
+    persistence:
+        phpcr:
+            search_fields:
+                title: title
+                summary: body
+
+lunetics_locale:
+    strict_mode: true
+    guessing_order:
+        - cookie
+        - router
+        - browser
+    allowed_locales: %locales%
+
+# The LiipImagineBundle can be used if you want to convert on demand an image
+# to a specific format. (ie a controller render the file)
+# more information can be found here : https://github.com/liip/LiipImagineBundle
+liip_imagine:
+    filter_sets:
+        # define the filter to be used with the image preview
+        image_upload_thumbnail:
+            data_loader: cmf_media_doctrine_phpcr
+            filters:
+                thumbnail: { size: [100, 100], mode: outbound }
+
+        # default filter to be used for elfinder thumbnails
+        elfinder_thumbnail:
+            data_loader: cmf_media_doctrine_phpcr
+            quality: 85
+            filters:
+                thumbnail: { size: [48, 48], mode: inset }
+
+        cmf_block:
+            data_loader: cmf_media_doctrine_phpcr
+            quality: 85
+            filters:
+                thumbnail: { size: [50, 50], mode: outbound }
+
+cmf_media:
+    upload_file_role:        ROLE_CAN_UPLOAD_FILE
+    use_jms_serializer:      auto
+    use_elfinder:            auto
+    use_imagine:             auto
+
+fm_elfinder:
+    locale: %locale%
+    editor: ckeditor
+    connector:
+        roots:
+            media:
+                driver: cmf_media.adapter.elfinder.phpcr_driver
+                path: %cmf_media.persistence.phpcr.media_basepath%
+                upload_allow: ['all']
+                upload_max_size: 2M
+
+# jackalope doctrine caching
+#liip_doctrine_cache:
+#    namespaces:
+#        meta:
+#            type: file_system
+#        nodes:
+#            type: file_system
+
+fos_rest:
+    view:
+        force_redirects:
+          html: true
+        formats:
+            json: true
+            xml: true
+        templating_formats:
+            html: true
+    allowed_methods_listener: true
+    access_denied_listener:
+        json: true
+    format_listener:
+        rules:
+            - { path: ^/, priorities: [ html, json, xml, css ], fallback_format: html, prefer_extension: false }

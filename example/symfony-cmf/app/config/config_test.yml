@@ -1,0 +1,17 @@
+imports:
+    - { resource: config_dev.yml }
+
+parameters:
+    phpcr_workspace: sandbox_test
+
+framework:
+    test: ~
+    session:
+        storage_id: session.storage.filesystem
+
+web_profiler:
+    toolbar: false
+    intercept_redirects: false
+
+swiftmailer:
+    disable_delivery: true

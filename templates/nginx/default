@@ -18,12 +18,8 @@ server {
 server {
     listen [[ .Container.GetFirstLocalPort ]];
 
-    [[ $documentRoot := .Container.GetCustomValue "documentRoot" ]]
-    [[ if $documentRoot ]]
+    [[ $documentRoot := .Container.GetCustomValue "documentRoot" "/var/www" ]]
     root [[ $documentRoot ]];
-    [[ else ]]
-    root /var/www;
-    [[ end ]]
     index index.html index.htm;
 
     # Make site accessible from http://localhost/
@@ -38,7 +34,7 @@ server {
     # redirect server error pages to the static page /50x.html
     error_page 500 502 503 504 /50x.html;
     location = /50x.html {
-           root /var/www;
+           root [[ $documentRoot ]];
     }
 
     [[ if (.Container.GetCustomValue "fastCgi")]]

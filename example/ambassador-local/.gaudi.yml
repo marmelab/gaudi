@@ -1,0 +1,9 @@
+applications:
+    redis-cli:
+        type: index
+        image: vieux/redis-cli
+        environments:
+            REDIS_PORT_6379_TCP_ADDR: 54.72.189.100
+        ambassador:
+            type: local
+            port: 6379

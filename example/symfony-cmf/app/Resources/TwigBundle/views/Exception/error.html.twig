@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>An Error Occurred: {{ status_text }}</title>
+</head>
+<body>
+<h1>Oops! An Error Occurred</h1>
+<h2>The server returned a "{{ status_code }} {{ status_text }}".</h2>
+<p>
+    The admin tool currently allows full access to the entire content tree.
+    As a result its possible to break the entire routing configuration. In
+    many cases when you see an error on this site, its caused by someone
+    having done exactly that. You can reload the entire content to the
+    original state by calling
+    <a href="{{ app.request.getSchemeAndHttpHost }}/reload-fixtures.php">reload-fixtures.php</a>
+</p>
+</body>
+</html>

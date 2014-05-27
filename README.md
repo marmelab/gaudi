@@ -45,7 +45,7 @@ Start this environment (with sudo privileges):
 gaudi
 ```
 
-Gaudi will try to find a `.gaudi.yml` file in the current folder, and start each application simultaneously, or sequentially if they depend on each other.
+gaudi will try to find a `.gaudi.yml` file in the current folder, and start each application simultaneously, or sequentially if they depend on each other.
 
 # Installation
 
@@ -102,7 +102,7 @@ Make sure that the `GOPATH` and `GOROOT` environment variables are correctly set
 
 # How Does It Work?
 
-Gaudi uses [Docker](http://www.docker.io) to start all applications in a specific container.
+gaudi uses [Docker](http://www.docker.io) to start all applications in a specific container.
 It builds Docker files and specific configuration files from different templates.
 All templates are listed in [the `templates/` folder](https://github.com/marmelab/gaudi/tree/master/templates), one for each application type.
 
@@ -234,7 +234,7 @@ applications:
 
 ### Remote Containers
 
-If you want to run an application not yet supported by Gaudi, you can use a prebuilt image (on Github), or an image from the [Docker index](https://index.docker.io/):
+If you want to run an application not yet supported by gaudi, you can use a prebuilt image (on Github), or an image from the [Docker index](https://index.docker.io/):
 
 Github images can be pulled via the `github` type:
 ```yaml
@@ -474,8 +474,8 @@ applications:
 
 ## Binaries
 
-Gaudi can also runs binaries in the current folder.
-A binary is not always attached to an application so Gaudi allows to configure them in a different field `binaries`:
+gaudi can also runs binaries in the current folder.
+A binary is not always attached to an application so gaudi allows to configure them in a different field `binaries`:
 
 ```yaml
 binaries:
@@ -558,4 +558,4 @@ All contributions are welcome. New applications or options should be tested  wit
 
 ## License
 
-Gaudi is licensed under the [MIT Licence](LICENSE), courtesy of [marmelab](http://marmelab.com).
+gaudi is licensed under the [MIT Licence](LICENSE), courtesy of [marmelab](http://marmelab.com).

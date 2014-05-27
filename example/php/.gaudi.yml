@@ -1,0 +1,9 @@
+applications:
+    app:
+        type: php
+        volumes:
+            .: /app
+        after_script: php /app/hello.php
+
+# sudo gaudi
+# sudo docker attach app

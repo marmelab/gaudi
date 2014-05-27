@@ -152,10 +152,24 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 /**
  * Start a container as binary
  */
-func Run(name, currentPath string, arguments []string) {
+func Run(name, currentPath string, arguments []string, ports, environments map[string]string) {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{getDockerBinaryPath(), "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath}
 
+	// Add environments
+	util.Debug(environments)
+	for envName, envValue := range environments {
+		rawArgs = append(rawArgs, "-e="+envName+"="+envValue)
+	}
+
+	// Add ports
+	for portIn, portOut := range ports {
+		rawArgs = append(rawArgs, "-p="+string(portIn)+":"+string(portOut))
+	}
+
+	rawArgs = append(rawArgs, name)
+
+	// Add user arguments
 	for _, argument := range arguments {
 		rawArgs = append(rawArgs, argument)
 	}

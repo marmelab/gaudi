@@ -1,0 +1,10 @@
+applications:
+    front:
+        type: nodejs
+        volumes:
+            .: /app
+        ports:
+            8080: 8080
+        after_script: node /app/server.js
+        custom:
+            version: 0.11.0

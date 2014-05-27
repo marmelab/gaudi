@@ -1,0 +1,4 @@
+cmf:
+    action_block:
+        title: Demo block d'action
+        body: Ce contenu est rendu par une action d'un controlleur Symfony2. Il n'a pas le inline editing.

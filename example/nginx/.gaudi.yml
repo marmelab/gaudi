@@ -1,0 +1,7 @@
+applications:
+    front:
+        type: nginx
+        ports:
+            8080: 80
+        volumes:
+            .: /var/www
