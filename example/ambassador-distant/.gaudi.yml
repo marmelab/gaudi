@@ -1,0 +1,7 @@
+applications:
+    redis:
+        type: 'index'
+        image: 'dockerfile/redis'
+        ambassador:
+            type: 'remote'
+            port: '6379'

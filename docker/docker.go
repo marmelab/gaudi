@@ -74,7 +74,7 @@ func Build(name, path string) {
 
 	util.Debug(rawArgs)
 
-	buildCmd := buildFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	buildCmd := buildFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	buildCmd.Stderr = os.Stderr
 
 	if !*quiet {
@@ -112,7 +112,7 @@ func Pull(name string) {
  */
 func Start(name, image string, links []string, ports, volumes, environments map[string]string) string {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{getDockerBinaryPath(), "run", "-d", "-i", "-t", "--name=" + name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-d", "-i", "-t", "--privileged", "--name=" + name}
 
 	// Add environments
 	util.Debug(environments)
@@ -138,7 +138,7 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 	rawArgs = append(rawArgs, image)
 
 	// Initiate the command with several arguments
-	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	runCmd := runFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	util.Debug("Start command:", runCmd.Args)
 
 	out, err := runCmd.CombinedOutput()
@@ -152,15 +152,29 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 /**
  * Start a container as binary
  */
-func Run(name, currentPath string, arguments []string) {
+func Run(name, currentPath string, arguments []string, ports, environments map[string]string) {
 	runFunc := reflect.ValueOf(exec.Command)
-	rawArgs := []string{getDockerBinaryPath(), "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath, name}
+	rawArgs := []string{getDockerBinaryPath(), "run", "-v=" + currentPath + ":" + currentPath, "-w=" + currentPath}
 
+	// Add environments
+	util.Debug(environments)
+	for envName, envValue := range environments {
+		rawArgs = append(rawArgs, "-e="+envName+"="+envValue)
+	}
+
+	// Add ports
+	for portIn, portOut := range ports {
+		rawArgs = append(rawArgs, "-p="+string(portIn)+":"+string(portOut))
+	}
+
+	rawArgs = append(rawArgs, name)
+
+	// Add user arguments
 	for _, argument := range arguments {
 		rawArgs = append(rawArgs, argument)
 	}
 
-	runCmd := runFunc.Call(buildArguments(rawArgs))[0].Interface().(*exec.Cmd)
+	runCmd := runFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	runCmd.Stdout = os.Stdout
 	runCmd.Stdin = os.Stdin
 	runCmd.Stderr = os.Stderr
@@ -204,16 +218,6 @@ func SnapshotProcesses() (map[string]string, error) {
 	}
 
 	return images, nil
-}
-
-func buildArguments(rawArgs []string) []reflect.Value {
-	args := make([]reflect.Value, 0)
-
-	for _, arg := range rawArgs {
-		args = append(args, reflect.ValueOf(arg))
-	}
-
-	return args
 }
 
 func getDockerBinaryPath() string {

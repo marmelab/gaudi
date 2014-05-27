@@ -1,8 +1,9 @@
 <VirtualHost *:[[ .Container.GetFirstLocalPort ]]>
 	ServerAdmin webmaster@localhost
 
-	[[ if (.Container.GetCustomValue "documentRoot") ]]
-		DocumentRoot [[ (.Container.GetCustomValue "documentRoot") ]]
+	[[ $documentRoot := (.Container.GetCustomValue "documentRoot") ]]
+	[[ if $documentRoot ]]
+		DocumentRoot [[ $documentRoot ]]
 	[[ else ]]
 		DocumentRoot /var/www
 	[[ end ]]
@@ -11,8 +12,8 @@
 		AllowOverride None
 	</Directory>
 
-	[[ if (.Container.GetCustomValue "documentRoot") ]]
-        <Directory [[ (.Container.GetCustomValue "documentRoot") ]]>
+	[[ if $documentRoot ]]
+        <Directory [[ $documentRoot ]]>
     [[ else ]]
         <Directory /var/www/>
     [[ end ]]
@@ -23,10 +24,11 @@
 	</Directory>
 
 	[[ if(.Container.DependsOf "django" )]]
+		[[ $django := (.Collection.GetType "django") ]]
         WSGIScriptAlias / /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]/wsgi.py
 
         Alias /static/admin /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin
-        Alias /static/ /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]/[[ (.Collection.GetType "django").GetCustomValue "app_name" "myapp" ]]/static/
+        Alias /static/ /app/[[ $django.GetCustomValue "project_name" "project" ]]/[[ $django.GetCustomValue "app_name" "myapp" ]]/static/
         Alias /uploads/ /app/uploads/
 	[[ end ]]
 
@@ -45,8 +47,9 @@
 
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
-	[[ if (.Container.GetCustomValue "fastCgi")]]
-	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort ]]_TCP_ADDR}:${[[ (.Container.GetCustomValueAsString "fastCgi") | ToUpper ]]_PORT_[[ (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort]]_TCP_PORT}
+	[[ $fastCgi := .Collection.Get (.Container.GetCustomValueAsString "fastCgi") (.Collection.GetType "php-fpm")  ]]
+	[[ if $fastCgi ]]
+	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstPort ]]_TCP_ADDR}:${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstPort]]_TCP_PORT}
 	Alias /cgi-bin/ /var/www/cgi-bin/
 	[[end]]
 </VirtualHost>

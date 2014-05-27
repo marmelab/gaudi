@@ -1,0 +1,77 @@
+{
+    "name": "symfony-cmf/sandbox",
+    "description": "Demo Sandbox for the Symfony Content Management Framework",
+    "homepage": "http://cmf.symfony.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Symfony CMF Community",
+            "homepage": "https://github.com/symfony-cmf/SimpleCmsBundle/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/symfony": "2.3.*",
+        "twig/extensions": "~1.0",
+        "symfony/assetic-bundle": "2.3.*",
+        "symfony/swiftmailer-bundle": "2.3.*",
+        "symfony/monolog-bundle": "2.3.*",
+        "sensio/distribution-bundle": "2.3.*",
+        "sensio/framework-extra-bundle": "2.3.*",
+        "sensio/generator-bundle": "2.3.*",
+        "symfony-cmf/symfony-cmf": "1.0.*",
+        "symfony-cmf/simple-cms-bundle": "1.0.*",
+        "symfony-cmf/search-bundle": "1.0.*",
+        "symfony-cmf/create-bundle": "1.0.*",
+        "symfony-cmf/routing-auto-bundle": "1.0.0-alpha8@dev",
+        "symfony-cmf/blog-bundle": "~1.0.0-beta7@dev",
+        "jackalope/jackalope-doctrine-dbal": "1.0.*",
+        "jackalope/jackalope-jackrabbit": "1.0.*",
+        "doctrine/doctrine-bundle": "1.2.*",
+        "doctrine/data-fixtures": "1.0.*",
+        "sonata-project/cache-bundle": "2.1.*",
+        "sonata-project/doctrine-phpcr-admin-bundle": "1.0.*",
+        "eko/feedbundle": "1.0.*",
+        "lunetics/locale-bundle": "2.2.*",
+        "liip/imagine-bundle": "~0.12",
+        "wjzijderveld/check-bundles": "1.0.*@dev",
+        "helios-ag/fm-elfinder-bundle": "~1.4",
+        "doctrine/phpcr-odm": "~1.0.1"
+    },
+    "require-dev": {
+        "liip/functional-test-bundle": "1.0.*",
+        "symfony-cmf/testing": "1.0.*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "WillemJan\\CheckBundles\\Composer\\CheckBundles::postPackageUpdate",
+            "Symfony\\Cmf\\Bundle\\CreateBundle\\Composer\\ScriptHandler::downloadCreateAndCkeditor",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets"
+        ],
+        "post-update-cmd": [
+            "WillemJan\\CheckBundles\\Composer\\CheckBundles::postPackageUpdate",
+            "Symfony\\Cmf\\Bundle\\CreateBundle\\Composer\\ScriptHandler::downloadCreateAndCkeditor",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets"
+        ]
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "extra": {
+        "checkbundles-ignore": [
+            "Liip\\FunctionalTestBundle\\LiipFunctionalTestBundle",
+            "Sensio\\Bundle\\DistributionBundle\\SensioDistributionBundle"
+        ],
+        "symfony-app-dir": "app",
+        "symfony-web-dir": "web",
+        "symfony-assets-install": "symlink"
+    }
+}

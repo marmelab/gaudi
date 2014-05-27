@@ -1,7 +1,8 @@
 [[range (.Container.GetCustomValue "backends")]]
+[[ $port := ($.Collection.Get . ).GetFirstPort ]]
 backend [[.]] {
-    .host = "${[[ . | ToUpper ]]_PORT_[[ ($.Collection.Get . ).GetFirstPort ]]_TCP_ADDR}";
-    .port = "${[[ . | ToUpper ]]_PORT_[[ ($.Collection.Get . ).GetFirstPort ]]_TCP_PORT}";
+    .host = "${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_ADDR}";
+    .port = "${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_PORT}";
     .probe = {
         .url = "/";
         .interval = 5s;

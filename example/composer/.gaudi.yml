@@ -1,0 +1,5 @@
+binaries:
+    composer:
+        type: composer
+
+# gaudi run composer require "phpunit/phpunit:3.7.*"

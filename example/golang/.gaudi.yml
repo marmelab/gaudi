@@ -1,0 +1,9 @@
+applications:
+    app:
+        type: golang
+        volumes:
+            .: /app
+        after_script: go run /app/app.go
+
+# sudo gaudi
+# sudo docker logs app

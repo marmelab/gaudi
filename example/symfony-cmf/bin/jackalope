@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php
+
+($autoload = @include_once __DIR__ . '/../vendor/autoload.php') || $autoload = @include_once __DIR__ . '/../../../autoload.php';
+if (!$autoload) {
+    die('You must set up the project dependencies, run the following commands:'.PHP_EOL.
+        'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
+        'php composer.phar install'.PHP_EOL);
+}
+
+$configFile = getcwd() . DIRECTORY_SEPARATOR . 'cli-config.php';
+
+$helperSet = null;
+if (file_exists($configFile)) {
+    if (!is_readable($configFile)) {
+        trigger_error(
+            'Configuration file [' . $configFile . '] does not have read permission.', E_USER_ERROR
+        );
+    }
+
+    require $configFile;
+
+    foreach ($GLOBALS as $helperSetCandidate) {
+        if ($helperSetCandidate instanceof \Symfony\Component\Console\Helper\HelperSet) {
+            $helperSet = $helperSetCandidate;
+            break;
+        }
+    }
+} else {
+    trigger_error(
+        'Configuration file [' . $configFile . '] does not exist. Please check the README.md file.', E_USER_ERROR
+    );
+}
+
+$helperSet = ($helperSet) ?: new \Symfony\Component\Console\Helper\HelperSet();
+
+$cli = new \Symfony\Component\Console\Application('Jackalope Command Line Interface', '0.1');
+$cli->setCatchExceptions(true);
+$cli->setHelperSet($helperSet);
+$cli->addCommands(array(
+    new \PHPCR\Util\Console\Command\NodeDumpCommand(),
+    new \PHPCR\Util\Console\Command\NodeMoveCommand(),
+    new \PHPCR\Util\Console\Command\NodeRemoveCommand(),
+    new \PHPCR\Util\Console\Command\NodeTouchCommand(),
+
+    new \PHPCR\Util\Console\Command\NodeTypeListCommand(),
+    new \PHPCR\Util\Console\Command\NodeTypeRegisterCommand(),
+
+    new \PHPCR\Util\Console\Command\WorkspaceCreateCommand(),
+    new \PHPCR\Util\Console\Command\WorkspaceDeleteCommand(),
+    new \PHPCR\Util\Console\Command\WorkspaceExportCommand(),
+    new \PHPCR\Util\Console\Command\WorkspaceImportCommand(),
+    new \PHPCR\Util\Console\Command\WorkspaceListCommand(),
+    new \PHPCR\Util\Console\Command\WorkspacePurgeCommand(),
+    new \PHPCR\Util\Console\Command\WorkspaceQueryCommand(),
+
+    new \Jackalope\Tools\Console\Command\JackrabbitCommand(),
+));
+$cli->run();
+

@@ -1,7 +1,6 @@
 package container
 
 import (
-	"fmt"
 	"github.com/marmelab/gaudi/docker"
 	"github.com/marmelab/gaudi/util"
 	"launchpad.net/goyaml"
@@ -71,7 +70,7 @@ func (c *Container) Remove() {
 
 func (c *Container) Kill(silent bool, done chan bool) {
 	if !silent {
-		fmt.Println("Killing", c.Name, "...")
+		util.PrintGreen("Killing", c.Name, "...")
 	}
 
 	docker.Kill(c.Name)
@@ -83,7 +82,7 @@ func (c *Container) Kill(silent bool, done chan bool) {
 }
 
 func (c *Container) Clean(done chan bool) {
-	fmt.Println("Cleaning", c.Name, "...")
+	util.PrintGreen("Cleaning", c.Name, "...")
 
 	c.Kill(true, nil)
 	c.Remove()
@@ -106,25 +105,25 @@ func (c *Container) Build(done chan bool) {
 	if c.IsRemote() {
 		// remote type is deprecated
 		if c.Type == "remote" {
-			fmt.Println("WARN: 'remote' type is deprecated, use 'github' instead")
+			util.PrintRed("WARN: 'remote' type is deprecated, use 'github' instead")
 		}
 
 		buildName = c.Image
 		buildPath = c.Path
 	}
 
-	fmt.Println("Building", buildName, "...")
+	util.PrintGreen("Building", buildName, "...")
 	docker.Build(buildName, buildPath)
 
 	done <- true
 }
 
 func (c *Container) Pull(done chan bool) {
-	fmt.Println("Pulling", c.Image, "...")
+	util.PrintGreen("Pulling", c.Image, "...")
 
 	// prebuild type is deprecated
 	if c.Type == "prebuild" {
-		fmt.Println("WARN: 'prebuild' type is deprecated, use 'index' instead")
+		util.PrintRed("WARN: 'prebuild' type is deprecated, use 'index' instead")
 	}
 
 	docker.Pull(c.Image)
@@ -170,7 +169,7 @@ func (c *Container) Start(rebuild bool) {
 	// Check if the container is already running
 	if !rebuild {
 		if c.IsRunning() {
-			fmt.Println("Application", c.Name, "is already running", "("+c.Ip+":"+c.GetFirstPort()+")")
+			util.PrintGreen("Application", c.Name, "is already running", "("+c.Ip+":"+c.GetFirstPort()+")")
 			return
 		}
 
@@ -179,7 +178,7 @@ func (c *Container) Start(rebuild bool) {
 		<-cleanChan
 	}
 
-	fmt.Println("Starting", c.Name, "...")
+	util.PrintGreen("Starting", c.Name, "...")
 
 	startResult := docker.Start(c.Name, c.Image, c.Links, c.Ports, c.Volumes, c.Environments)
 	c.Id = strings.TrimSpace(startResult)
@@ -188,7 +187,7 @@ func (c *Container) Start(rebuild bool) {
 	c.RetrieveIp()
 	c.Running = true
 
-	fmt.Println("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
+	util.PrintGreen("Application", c.Name, "started", "("+c.Ip+":"+c.GetFirstPort()+")")
 }
 
 func (c *Container) BuildAndRun(currentPath string, arguments []string) {
@@ -205,9 +204,9 @@ func (c *Container) BuildAndRun(currentPath string, arguments []string) {
 func (c *Container) Run(currentPath string, arguments []string) {
 	c.Init()
 
-	fmt.Println("Running", c.Name, strings.Join(arguments, " "), "...")
+	util.PrintGreen("Running", c.Name, strings.Join(arguments, " "), "...")
 
-	docker.Run(c.Image, currentPath, arguments)
+	docker.Run(c.Image, currentPath, arguments, c.Ports, c.Environments)
 }
 
 func (c *Container) GetCustomValue(params ...string) interface{} {

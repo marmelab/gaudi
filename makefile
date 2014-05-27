@@ -5,7 +5,7 @@ Codename: precise
 Version: $(GAUDI_VERSION)
 Architectures: amd64 i386 source
 Components: main non-free contrib
-Description: Gaudi debian package repository
+Description: gaudi debian package repository
 SignWith: yes
 Pull: precise
 endef

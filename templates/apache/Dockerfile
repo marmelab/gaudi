@@ -37,7 +37,11 @@ ADD ports.conf /etc/apache2/ports.conf
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
+[[ if .EmptyCmd]]
+CMD /bin/bash
+[[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
 	&& /etc/init.d/apache2 start \
 	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
 	&& /bin/bash
+[[ end ]]

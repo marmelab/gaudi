@@ -1,0 +1,83 @@
+applications:
+    lb:
+        type: varnish
+        ports:
+            8080: 80
+        links: [front1, front2]
+        volumes:
+            .: /var/www
+        custom:
+            backends: [front1, front2]
+
+    front1:
+        type: apache
+        links: [app1]
+        ports:
+            8081: 8080
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app1
+
+    front2:
+        type: apache
+        links: [app2]
+        ports:
+            8082: 8080
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app2
+
+    app1:
+        type: hhvm
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www
+
+    app2:
+        type: hhvm
+        ports:
+            9001: 9000
+        volumes:
+            .: /var/www
+
+    master:
+        type: mysql
+        ports:
+            3306: 3306
+        volumes:
+            /var/tmp/data/master: /var/lib/mysql
+        custom:
+            repl: master
+
+    slave1:
+        type: mysql
+        ports:
+            3307: 3306
+        volumes:
+            /var/tmp/data/slave1: /var/lib/mysql
+            /var/tmp/data/master: /var/lib/mysql-master
+        links: [master]
+        custom:
+            repl: slave
+            master: master
+
+    slave2:
+        type: mysql
+        ports:
+            3308: 3306
+        volumes:
+            /var/tmp/data/slave2: /var/lib/mysql
+            /var/tmp/data/master: /var/lib/mysql-master
+        links: [master]
+        custom:
+            repl: slave
+            master: master
+
+    phpmyadmin:
+        type: phpmyadmin
+        ports:
+            80: 80
+        links: [master]

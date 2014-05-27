@@ -1,0 +1,21 @@
+applications:
+    front:
+        type: nginx
+        ports:
+            8080: 80
+        links: [app]
+        volumes:
+            .: /var/www2
+        custom:
+            fastCgi: app
+            documentRoot: /var/www2
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www2
+
+# sudo gaudi
+# wget localhost:8080/index.php

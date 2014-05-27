@@ -1,0 +1,7 @@
+{% extends 'SonataAdminBundle:Core:user_block.html.twig' %}
+
+{% block user_block %}
+    {{ locale_switcher(null, null, 'SandboxMainBundle:Admin:switcher_links.html.twig') }}
+    - Welcome {{ app.user.username }} {# <a href="{{ path('fos_user_security_logout') }}">Logout</a> #}
+    {{ parent() }}
+{% endblock %}

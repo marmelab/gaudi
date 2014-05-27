@@ -1,0 +1,15 @@
+applications:
+    phpmyadmin:
+        type: phpmyadmin
+        ports:
+            80: 80
+        links: [db]
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306
+        after_script: mysql -e "CREATE DATABASE mydb CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
+
+# Login : root
+# Empty password

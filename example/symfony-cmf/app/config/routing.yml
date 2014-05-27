@@ -1,0 +1,79 @@
+# Internal routing configuration to handle ESI
+#_internal:
+#   resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
+#   prefix:   /_internal
+
+home_redirect:
+    pattern: /
+    defaults:
+        _controller: lunetics_locale.switcher_controller:switchAction
+        route: /cms/routes/%locale%
+        statusCode: 301
+        useReferrer: false
+
+admin_wo_locale:
+    pattern: /admin
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: sonata_admin_dashboard
+        permanent: true # this for 301
+
+admin_dashboard_wo_locale:
+    pattern: /admin/dashboard
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: sonata_admin_dashboard
+        permanent: true # this for 301
+
+admin_dashboard:
+    pattern: /{_locale}/admin/
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: sonata_admin_dashboard
+        permanent: true # this for 301
+
+admin:
+    resource: '@SonataAdminBundle/Resources/config/routing/sonata_admin.xml'
+    prefix: /{_locale}/admin
+
+sonata_admin:
+    resource: .
+    type: sonata_admin
+    prefix: /{_locale}/admin
+
+_imagine:
+    resource: .
+    type:     imagine
+
+fos_js_routing:
+    resource: @FOSJsRoutingBundle/Resources/config/routing/routing.xml
+
+cmf_tree:
+    resource: .
+    type: 'cmf_tree'
+
+test:
+    pattern:  /hello
+    defaults: { _controller: SandboxTestBundle:Test:index }
+
+create:
+    resource: "@CmfCreateBundle/Resources/config/routing/rest.xml"
+
+create_image:
+    resource: "@CmfCreateBundle/Resources/config/routing/image.xml"
+
+liip_search:
+    resource: "@CmfSearchBundle/Resources/config/routing/phpcr/search.xml"
+
+block_cache:
+    resource: "@CmfBlockBundle/Resources/config/routing/cache.xml"
+    prefix: /
+
+cmf_media_file:
+    resource: "@CmfMediaBundle/Resources/config/routing/file.xml"
+
+cmf_media_image:
+    resource: "@CmfMediaBundle/Resources/config/routing/image.xml"
+
+elfinder:
+     resource: "@FMElfinderBundle/Resources/config/routing.yml"

@@ -1,0 +1,18 @@
+applications:
+    app:
+        type: python
+        links: [memcached]
+        volumes:
+            .: /app
+        after_script: python /app/app.py
+        custom:
+            pip_modules: [python3-memcached]
+
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211
+
+
+

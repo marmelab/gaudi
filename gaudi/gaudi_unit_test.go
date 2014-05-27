@@ -6,10 +6,8 @@ import (
 	"os"
 	"testing"
 
-	mockfmt "fmt"                      // mock
 	"github.com/marmelab/gaudi/docker" // mock
 	"github.com/marmelab/gaudi/util"   // mock
-
 	"github.com/marmelab/gaudi/gaudi"
 )
 
@@ -51,13 +49,14 @@ func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
 	defer ctrl.Finish()
 	docker.MOCK().SetController(ctrl)
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
 
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	util.EXPECT().PrintGreen("Retrieving templates ...")
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
@@ -90,10 +89,18 @@ func (s *GaudiTestSuite) TestStartApplicationShouldCleanAndBuildThem(c *C) {
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
 
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	util.MOCK().DisableMock("IsFile")
+	util.MOCK().DisableMock("IsDir")
+
+	// Retrieving templates (1)
+	util.EXPECT().PrintGreen(gomock.Any()).Times(1)
+	// Killing, Clearing, Building, Starting (3*2)
+	util.EXPECT().PrintGreen(gomock.Any(), gomock.Any(), gomock.Any()).Times(6)
+	// Started (1*2)
+	util.EXPECT().PrintGreen(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
@@ -134,13 +141,20 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
+    util.MOCK().DisableMock("IsFile")
+    util.MOCK().EnableMock("PrintGreen")
 
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	// Retrieving templates (1)
+	util.EXPECT().PrintGreen(gomock.Any()).Times(1)
+	// Killing, Clearing, Building, Starting (3*5)
+	util.EXPECT().PrintGreen(gomock.Any(), gomock.Any(), gomock.Any()).Times(15)
+	// Started (1*5)
+	util.EXPECT().PrintGreen(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(5)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
@@ -203,18 +217,19 @@ func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
 
 	psResult := make(map[string]string)
 	psResult["gaudi/lb"] = "123"
 	psResult["gaudi/front1"] = "124"
 	psResult["gaudi/db"] = "125"
 
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	util.EXPECT().PrintGreen("Retrieving templates ...").Times(1)
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
@@ -224,9 +239,9 @@ func (s *GaudiTestSuite) TestCheckRunningContainerShouldUseDockerPs(c *C) {
 	docker.EXPECT().Inspect("124").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.127\"}}]"), nil)
 	docker.EXPECT().Inspect("125").Return([]byte("[{\"ID\": \"123\", \"State\":{\"Running\": true}, \"NetworkSettings\": {\"IPAddress\": \"123.124.125.128\"}}]"), nil)
 
-	mockfmt.EXPECT().Println("Application", "lb", "is running", "(123.124.125.126:)")
-	mockfmt.EXPECT().Println("Application", "front1", "is running", "(123.124.125.127:)")
-	mockfmt.EXPECT().Println("Application", "db", "is running", "(123.124.125.128:3306)")
+	util.EXPECT().PrintOrange("Application", "lb", "is running", "(123.124.125.126:)")
+	util.EXPECT().PrintOrange("Application", "front1", "is running", "(123.124.125.127:)")
+	util.EXPECT().PrintOrange("Application", "db", "is running", "(123.124.125.128:3306)")
 
 	g := gaudi.Gaudi{}
 	g.Init(`
@@ -254,21 +269,26 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 	ctrl := gomock.NewController(c)
 	defer ctrl.Finish()
 
-	// Setup the mockfmt mock package
+	// Setup the docker mock package
 	docker.MOCK().SetController(ctrl)
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
+    util.MOCK().DisableMock("IsFile")
 
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	util.EXPECT().PrintGreen("Retrieving templates ...")
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
+
+	util.EXPECT().PrintGreen("Building", "gaudi/npm", "...")
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)
-	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any()).Return().Times(1)
+
+	util.EXPECT().PrintGreen("Running", "npm", "update", "...")
+	docker.EXPECT().Run(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return().Times(1)
 
 	g := gaudi.Gaudi{}
 	g.Init(`
@@ -283,7 +303,7 @@ binaries:
 	g.Run("npm", []string{"update"})
 }
 
-func (s *GaudiTestSuite) TestUseCUstomTemplateShouldUseIt(c *C) {
+func (s *GaudiTestSuite) TestUseCustomTemplateShouldUseIt(c *C) {
 	os.RemoveAll("/var/tmp/gaudi/")
 
 	// Create a gomock controller, and arrange for it's finish to be called
@@ -291,12 +311,11 @@ func (s *GaudiTestSuite) TestUseCUstomTemplateShouldUseIt(c *C) {
 	defer ctrl.Finish()
 	docker.MOCK().SetController(ctrl)
 
-	// Setup the mockfmt mock package
-	mockfmt.MOCK().SetController(ctrl)
-
-	// Setup the mockfmt mock package
+	// Setup the util mock package
 	util.MOCK().SetController(ctrl)
+
 	util.MOCK().EnableMock("IsDir")
+	util.MOCK().EnableMock("IsFile")
 	util.MOCK().EnableMock("LogError")
 
 	g := gaudi.Gaudi{}
@@ -306,7 +325,8 @@ func (s *GaudiTestSuite) TestUseCUstomTemplateShouldUseIt(c *C) {
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 
 	util.EXPECT().IsDir("/var/tmp/gaudi/templates/").Return(false)
-	mockfmt.EXPECT().Println("Retrieving templates ...")
+	util.EXPECT().IsFile("/vagrant/.gaudi/version.txt").Return(false)
+	util.EXPECT().PrintGreen("Retrieving templates ...")
 
 	util.EXPECT().IsFile("/vagrant/front/Dockerfile").Return(true).Times(3)
 	util.EXPECT().LogError("Template not found for application : custom").Times(3)

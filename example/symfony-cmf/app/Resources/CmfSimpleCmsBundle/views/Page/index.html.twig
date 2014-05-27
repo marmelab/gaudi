@@ -1,0 +1,9 @@
+{% extends "SandboxMainBundle::skeleton.html.twig" %}
+
+{% block content %}
+
+    {% createphp cmfMainContent as="rdf" %}
+    {{ rdf|raw }}
+    {% endcreatephp %}
+
+{% endblock %}

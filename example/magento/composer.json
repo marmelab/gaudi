@@ -1,0 +1,16 @@
+{
+    "name": "magento",
+    "minimum-stability":"dev",
+    "require":{
+        "phpunit/phpunit":"3.7.9"
+    },
+    "repositories":[
+        {
+            "type":"composer",
+            "url":"http://packages.firegento.com"
+        }
+    ],
+    "extra":{
+        "magento-root-dir":"./"
+    }
+}

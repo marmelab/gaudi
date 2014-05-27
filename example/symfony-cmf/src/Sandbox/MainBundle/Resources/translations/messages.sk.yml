@@ -1,0 +1,4 @@
+cmf:
+    action_block:
+        title: Demo blok akcie
+        body: Tento obsah bloku je vyrenderovaný vlastnou Symfony2 akciou. Nemá možnosť inline editácie.

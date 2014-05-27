@@ -3,7 +3,7 @@ package gaudi
 import (
 	"archive/tar"
 	"bytes"
-	"fmt"
+	"flag"
 	"github.com/marmelab/gaudi/container"
 	"github.com/marmelab/gaudi/containerCollection"
 	"github.com/marmelab/gaudi/docker"
@@ -18,11 +18,21 @@ import (
 	"text/template"
 )
 
+var (
+	emptyCmdFlag          = flag.String("empty-cmd", "", "Use /bin/bash for specified component (use all to target all components)")
+	emptyCmdForContainers []string
+)
+
+func main() {
+	flag.Parse()
+}
+
 const DEFAULT_BASE_IMAGE = "stackbrew/debian"
 const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
 const TEMPLATE_DIR = "/var/tmp/gaudi/templates/"
 const TEMPLATE_REMOTE_PATH = "http://gaudi.io/apt/templates.tar"
 const PARSED_TEMPLATE_DIR = "/tmp/gaudi/"
+const VERSION = "0.1.6"
 
 type Gaudi struct {
 	Applications      containerCollection.ContainerCollection
@@ -35,6 +45,7 @@ type Gaudi struct {
 type TemplateData struct {
 	Collection containerCollection.ContainerCollection
 	Container  *container.Container
+	EmptyCmd   bool
 }
 
 func (gaudi *Gaudi) InitFromFile(file string) {
@@ -55,6 +66,8 @@ func (gaudi *Gaudi) Init(content string) {
 		util.LogError(err)
 	}
 
+	emptyCmdForContainers = strings.Split(*emptyCmdFlag, ",")
+
 	// Init all containers
 	gaudi.Applications.AddAmbassadors()
 	gaudi.All = containerCollection.Merge(gaudi.Applications, gaudi.Binaries)
@@ -66,20 +79,24 @@ func (gaudi *Gaudi) Init(content string) {
 
 	// Check if docker is installed
 	if !docker.HasDocker() {
-		fmt.Println("Docker should be installed to use Gaudi (check: https://www.docker.io/gettingstarted/)")
+		util.PrintRed("Docker should be installed to use Gaudi (check: https://www.docker.io/gettingstarted/)")
 		os.Exit(1)
 	}
 
 	// Check if base image is pulled
 	if hasGaudiManagedContainer && !docker.ImageExists(DEFAULT_BASE_IMAGE) {
-		fmt.Println("Pulling base image (this may take a few minutes) ...")
+		util.PrintGreen("Pulling base image (this may take a few minutes) ...")
 
 		docker.Pull(DEFAULT_BASE_IMAGE_WITH_TAG)
 	}
 
+	if gaudi.isNewVersion() {
+		//os.RemoveAll(TEMPLATE_DIR)
+	}
+
 	// Check if templates are present
 	if !util.IsDir(TEMPLATE_DIR) {
-		fmt.Println("Retrieving templates ...")
+		util.PrintGreen("Retrieving templates ...")
 
 		retrieveTemplates()
 		extractTemplates()
@@ -94,7 +111,7 @@ func (gaudi *Gaudi) StartApplications(rebuild bool) {
 		rebuild = gaudi.shouldRebuild()
 
 		if rebuild {
-			fmt.Println("Changes detected in configuration file, rebuilding containers ...")
+			util.PrintOrange("Changes detected in configuration file, rebuilding containers ...")
 		}
 	}
 
@@ -126,9 +143,9 @@ func (gaudi *Gaudi) Check() {
 			currentContainer.Id = containerId
 			currentContainer.RetrieveIp()
 
-			fmt.Println("Application", currentContainer.Name, "is running", "("+currentContainer.Ip+":"+currentContainer.GetFirstPort()+")")
+			util.PrintOrange("Application", currentContainer.Name, "is running", "("+currentContainer.Ip+":"+currentContainer.GetFirstPort()+")")
 		} else {
-			fmt.Println("Application", currentContainer.Name, "is not running")
+			util.PrintOrange("Application", currentContainer.Name, "is not running")
 		}
 	}
 }
@@ -257,7 +274,8 @@ func (gaudi *Gaudi) GetContainerTemplate(container *container.Container) (string
 }
 
 func (gaudi *Gaudi) parseTemplate(sourceDir, destinationDir string, file os.FileInfo, includes map[string]string, currentContainer *container.Container) {
-	templateData := TemplateData{gaudi.All, nil}
+	emptyCmd := shouldEmptyCmdForContainer(currentContainer.Name)
+	templateData := TemplateData{gaudi.All, nil, emptyCmd}
 	funcMap := template.FuncMap{
 		"ToUpper": strings.ToUpper,
 		"ToLower": strings.ToLower,
@@ -327,6 +345,20 @@ func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
 		}
 
 		return true
+	}
+
+	return false
+}
+
+func shouldEmptyCmdForContainer(containerName string) bool {
+	if len(emptyCmdForContainers) == 1 && emptyCmdForContainers[0] == "all" {
+		return true
+	}
+
+	for _, name := range emptyCmdForContainers {
+		if name == containerName {
+			return true
+		}
 	}
 
 	return false
@@ -410,6 +442,21 @@ func (gaudi *Gaudi) shouldRebuild() bool {
 	ioutil.WriteFile(checkSumFile, []byte(currentCheckSum), 775)
 
 	return shouldRebuild
+}
+
+func (gaudi *Gaudi) isNewVersion() bool {
+	isNewVersion := true
+	versionFile := gaudi.ApplicationDir + "/.gaudi/version.txt"
+
+	if util.IsFile(versionFile) {
+		oldVersion, _ := ioutil.ReadFile(versionFile)
+		isNewVersion = string(oldVersion) != VERSION
+	}
+
+	// Write new version
+	ioutil.WriteFile(versionFile, []byte(VERSION), 775)
+
+	return isNewVersion
 }
 
 func getIncludes() map[string]string {

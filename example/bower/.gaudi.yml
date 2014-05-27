@@ -1,0 +1,5 @@
+binaries:
+    bower:
+        type: bower
+
+# gaudi run bower install angularjs --save

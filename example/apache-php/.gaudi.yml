@@ -1,0 +1,17 @@
+applications:
+    front:
+        type: apache
+        links: [app]
+        ports:
+            8080: 80
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www

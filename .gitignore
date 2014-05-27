@@ -1,0 +1,5 @@
+.gaudi/
+cgi-bin/
+composer.lock
+vendor/
+bower_components/

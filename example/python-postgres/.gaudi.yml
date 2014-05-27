@@ -1,0 +1,22 @@
+applications:
+    app:
+        type: python
+        links: [db]
+        volumes:
+            .: /app
+        after_script: python /app/app.py
+        apt_get: [libpq-dev]
+        custom:
+            pip_modules: [psycopg2]
+
+    db:
+        type: index
+        image: paintedfox/postgresql
+        volumes:
+            /var/tmp/postgresql/: /data
+        environments:
+            USER: docker
+            PASS: docker
+            DB: project
+        ports:
+            5432: 5432

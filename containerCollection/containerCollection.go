@@ -64,8 +64,14 @@ func (collection ContainerCollection) Init(relativePath string) bool {
 	return hasGaudiManagedContainer
 }
 
-func (collection ContainerCollection) Get(name string) *container.Container {
-	return collection[name]
+func (collection ContainerCollection) Get(args ...interface{}) *container.Container {
+	if c, ok := collection[args[0].(string)]; ok {
+		return c
+	} else if len(args) == 2 {
+		return args[1].(*container.Container)
+	}
+
+	return nil
 }
 
 func (collection ContainerCollection) GetType(containerType string) *container.Container {

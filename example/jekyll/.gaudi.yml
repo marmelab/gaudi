@@ -1,0 +1,7 @@
+binaries:
+    jekyll:
+        type: jekyll
+        ports:
+            4000: 4000
+
+# sudo gaudi run jekyll serve -w
