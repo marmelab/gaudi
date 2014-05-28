@@ -1,7 +1,7 @@
 [[ if (.Container.GetCustomValue "backends")]]
 upstream loadBalancing {
     [[range (.Container.GetCustomValue "backends")]]
-    [[ $port := ($.Collection.Get . ).GetFirstPort ]]
+    [[ $port := ($.Collection.Get . ).GetFirstLocalPort ]]
     server ${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_ADDR}:${[[ . | ToUpper ]]_PORT_[[ $port ]]_TCP_PORT};
     [[end]]
 }
@@ -43,7 +43,7 @@ server {
            fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
            [[ $fastCgiName := (.Container.GetCustomValue "fastCgi")]]
-           [[ $fastCgiPort := (.Collection.Get .Container.Custom.fastCgi ).GetFirstPort]]
+           [[ $fastCgiPort := (.Collection.Get .Container.Custom.fastCgi ).GetFirstLocalPort]]
            fastcgi_pass ${[[ $fastCgiName | ToUpper ]]_PORT_[[ $fastCgiPort ]]_TCP_ADDR}:${[[ $fastCgiName | ToUpper ]]_PORT_[[ $fastCgiPort ]]_TCP_PORT};
            fastcgi_index index.php;
            include fastcgi_params;

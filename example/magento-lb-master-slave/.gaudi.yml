@@ -3,11 +3,12 @@ applications:
         type: varnish
         ports:
             8080: 80
-        links: [front1, front2]
+        links: [front1]
         volumes:
-            .: /var/www
+            .: /app
         custom:
-            backends: [front1, front2]
+            backends: [front1]
+            probe_url: /up.php
 
     front1:
         type: apache
@@ -15,9 +16,11 @@ applications:
         ports:
             8081: 8080
         volumes:
-            .: /var/www
+            .: /app
         custom:
             fastCgi: app1
+            fastCgiIdleTimeout: 300
+            documentRoot: /app/htdocs
 
     front2:
         type: apache
@@ -25,23 +28,27 @@ applications:
         ports:
             8082: 8080
         volumes:
-            .: /var/www
+            .: /app
         custom:
             fastCgi: app2
+            fastCgiIdleTimeout: 300
+            documentRoot: /app/htdocs
 
     app1:
         type: hhvm
         ports:
             9000: 9000
         volumes:
-            .: /var/www
+            .: /app
+        custom:
+            memoryLimit: 512M
 
     app2:
         type: hhvm
         ports:
             9001: 9000
         volumes:
-            .: /var/www
+            .: /app
 
     master:
         type: mysql
@@ -49,6 +56,8 @@ applications:
             3306: 3306
         volumes:
             /var/tmp/data/master: /var/lib/mysql
+        after_script:
+            mysql -e "CREATE DATABASE IF NOT EXISTS magento CHARACTER SET utf8 COLLATE utf8_general_ci;"
         custom:
             repl: master
 
