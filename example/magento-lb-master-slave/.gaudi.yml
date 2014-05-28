@@ -3,11 +3,11 @@ applications:
         type: varnish
         ports:
             8080: 80
-        links: [front1]
+        links: [front1, front2]
         volumes:
             .: /app
         custom:
-            backends: [front1]
+            backends: [front1, front2]
             probe_url: /up.php
 
     front1:
@@ -35,20 +35,24 @@ applications:
             documentRoot: /app/htdocs
 
     app1:
-        type: hhvm
+        type: php-fpm
         ports:
             9000: 9000
         volumes:
             .: /app
+        apt_get: [php5-gd, php5-intl]
         custom:
             memoryLimit: 512M
 
     app2:
-        type: hhvm
+        type: php-fpm
         ports:
             9001: 9000
         volumes:
             .: /app
+        apt_get: [php5-gd, php5-intl]
+        custom:
+            memoryLimit: 512M
 
     master:
         type: mysql
