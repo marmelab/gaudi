@@ -38,7 +38,7 @@ func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnWrongContent(c *C) {
 	// Disable the util package mock
 	util.MOCK().DisableMock("LogError")
 
-	c.Assert(func() { g.Init("<oldFormat>Skrew you, i'm not yml</oldFormat>") }, PanicMatches, "No application or binary to start")
+	c.Assert(func() { g.Init("<oldFormat>Skrew you, i'm not yml</oldFormat>") }, Panics, "No application or binary to start. Are you missing a 'applications' or 'binaries' field in your configuration ?")
 }
 
 func (s *GaudiTestSuite) TestInitShouldCreateApplications(c *C) {
@@ -329,7 +329,7 @@ func (s *GaudiTestSuite) TestUseCustomTemplateShouldUseIt(c *C) {
 	util.EXPECT().PrintGreen("Retrieving templates ...")
 
 	util.EXPECT().IsFile("/vagrant/front/Dockerfile").Return(true).Times(3)
-	util.EXPECT().LogError("Template not found for application : custom").Times(3)
+	util.EXPECT().LogError("Application 'custom' is not supported. Check http://gaudi.io/components.html for a list of supported applications.").Times(3)
 
 	g.Init(`
 applications:

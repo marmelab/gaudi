@@ -3,11 +3,13 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+[[ $version := (.Container.GetCustomValue "version" "1.2") ]]
+
 # Install go
 RUN apt-get -y -f install make git curl mercurial bison bzr
-RUN wget https://go.googlecode.com/files/go1.2.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.2.linux-amd64.tar.gz && \
-    rm go1.2.linux-amd64.tar.gz
+RUN wget https://go.googlecode.com/files/go[[ $version ]].linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go[[ $version ]].linux-amd64.tar.gz && \
+    rm go[[ $version ]].linux-amd64.tar.gz
 
 # Set GOPATH and GOROOT environment variables
 ENV GOPATH /go

@@ -190,6 +190,10 @@ func (collection ContainerCollection) AddAmbassadors() {
 func startOne(currentContainer *container.Container, rebuild bool, done map[string]chan bool) {
 	// Waiting for dependencies to be started
 	for _, dependency := range currentContainer.Dependencies {
+		if dependency.Name == currentContainer.Name {
+			util.LogError("Application " + currentContainer.Name + " can't be linked with itself.")
+		}
+
 		<-done[dependency.Name]
 	}
 

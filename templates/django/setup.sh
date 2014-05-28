@@ -9,9 +9,11 @@ if [ ! -d "/app/[[ .Container.GetCustomValue "project_name" "project" ]]/[[ .Con
 	mkdir ./[[ $projectName ]]/[[ $appName]]
 	python ./manage.py startapp [[ $appName ]] ./[[ $projectName ]]/[[ $appName ]]
 
+	[[ $firstLinked := .Container.FirstLinked]]
+
 	cd /app/[[ $projectName ]]
 	sed -i -e "s/'django.db.backends.sqlite3'/'django.db.backends.mysql'/" ./settings.py
-	sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),/'NAME': 'django',\n\t\t'USER': 'root',\n\t\t'PASSWORD': '',\n\t\t'HOST': os.environ['DB_PORT_3306_TCP_ADDR']/" ./settings.py
+	sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),/'NAME': 'django',\n\t\t'USER': 'root',\n\t\t'PASSWORD': '',\n\t\t'HOST': os.environ['[[ $firstLinked.Name | ToUpper ]]_PORT_[[ $firstLinked.GetFirstPort]]_TCP_ADDR']/" ./settings.py
 
 	sed -i -e "s/# from django.contrib import admin/from django.contrib import admin/" ./urls.py
 	sed -i -e "s/# admin.autodiscover()/admin.autodiscover()/" ./urls.py
