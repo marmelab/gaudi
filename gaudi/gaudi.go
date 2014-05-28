@@ -72,15 +72,14 @@ func (gaudi *Gaudi) Init(content string) {
 	gaudi.Applications.AddAmbassadors()
 	gaudi.All = containerCollection.Merge(gaudi.Applications, gaudi.Binaries)
 	if len(gaudi.All) == 0 {
-		util.LogError("No application or binary to start")
+		util.LogError("No application or binary to start. Are you missing a 'applications' or 'binaries' field in your configuration ?")
 	}
 
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
 	// Check if docker is installed
 	if !docker.HasDocker() {
-		util.PrintRed("Docker should be installed to use Gaudi (check: https://www.docker.io/gettingstarted/)")
-		os.Exit(1)
+		util.LogError("Docker should be installed to use Gaudi (see: https://www.docker.io/gettingstarted/).")
 	}
 
 	// Check if base image is pulled
@@ -91,7 +90,7 @@ func (gaudi *Gaudi) Init(content string) {
 	}
 
 	if gaudi.isNewVersion() {
-		//os.RemoveAll(TEMPLATE_DIR)
+		os.RemoveAll(TEMPLATE_DIR)
 	}
 
 	// Check if templates are present
@@ -181,7 +180,7 @@ func (gaudi *Gaudi) build() {
 	for _, currentContainer := range gaudi.All {
 		// Check if the container has a type
 		if currentContainer.Type == "" {
-			util.LogError("Container " + currentContainer.Name + " should have a type")
+			util.LogError("Container " + currentContainer.Name + " should have a field called 'type'.")
 		}
 
 		if !currentContainer.IsGaudiManaged() {
@@ -210,7 +209,7 @@ func (gaudi *Gaudi) build() {
 
 		files, err := ioutil.ReadDir(templateDir)
 		if err != nil {
-			util.LogError("Template not found for application : " + currentContainer.Type)
+			util.LogError("Application '" + currentContainer.Type + "' is not supported. Check http://gaudi.io/components.html for a list of supported applications.")
 		}
 
 		err = os.MkdirAll(PARSED_TEMPLATE_DIR+currentContainer.Name, 0755)

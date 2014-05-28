@@ -28,11 +28,11 @@ func PrintGreen(messages ...interface{}) {
 }
 
 func PrintOrange(messages ...interface{}) {
-	PrintWithColor(ct.Cyan, messages)
+	PrintWithColor(ct.Yellow, messages)
 }
 
 func PrintWithColor(color ct.Color, messages []interface{}) {
-	ct.ChangeColor(ct.Green, false, ct.None, false)
+	ct.ChangeColor(color, false, ct.None, false)
 
 	args := make([]string, 0)
 	for _, message := range messages {
@@ -48,6 +48,9 @@ func PrintWithColor(color ct.Color, messages []interface{}) {
 func LogError(err interface{}) {
 	if *debug {
 		panic(err)
+	} else if reflect.TypeOf(err).String() == "string" {
+		PrintRed(err)
+		os.Exit(1)
 	} else {
 		log.Fatal(err)
 	}

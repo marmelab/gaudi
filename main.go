@@ -81,7 +81,7 @@ func retrieveConfigPath(configFile string) string {
 	}
 
 	if !util.IsFile(configFile) {
-		util.LogError("Config file must be a file.")
+		util.LogError("Configuration file not found: '" + configFile + "'. Use --config to specify a custom file")
 	}
 
 	return configFile
