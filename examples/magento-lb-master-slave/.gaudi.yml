@@ -43,7 +43,7 @@ applications:
         volumes:
             .: /app
         apt_get: [php5-gd, php5-intl]
-        links: [memcached]
+        links: [memcached, master, slave]
         custom:
             memoryLimit: 512M
             maxExecutionTime: 500
@@ -55,7 +55,7 @@ applications:
         volumes:
             .: /app
         apt_get: [php5-gd, php5-intl]
-        links: [memcached]
+        links: [memcached, master, slave]
         custom:
             memoryLimit: 512M
             maxExecutionTime: 500
@@ -71,24 +71,12 @@ applications:
         custom:
             repl: master
 
-    slave1:
+    slave:
         type: mysql
         ports:
             3307: 3306
         volumes:
             /var/tmp/data/slave1: /var/lib/mysql
-            /var/tmp/data/master: /var/lib/mysql-master
-        links: [master]
-        custom:
-            repl: slave
-            master: master
-
-    slave2:
-        type: mysql
-        ports:
-            3308: 3306
-        volumes:
-            /var/tmp/data/slave2: /var/lib/mysql
             /var/tmp/data/master: /var/lib/mysql-master
         links: [master]
         custom:
