@@ -48,8 +48,9 @@
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
 	[[ $fastCgi := .Collection.Get (.Container.GetCustomValueAsString "fastCgi") (.Collection.GetType "php-fpm")  ]]
+	[[ $fastCgiIdleTimeout := .Container.GetCustomValue "fastCgiIdleTimeout" "30" ]]
 	[[ if $fastCgi ]]
-	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstPort ]]_TCP_ADDR}:${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstPort]]_TCP_PORT}
+	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort ]]_TCP_ADDR}:${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort]]_TCP_PORT}  -idle-timeout [[ $fastCgiIdleTimeout ]]
 	Alias /cgi-bin/ /var/www/cgi-bin/
 	[[end]]
 </VirtualHost>

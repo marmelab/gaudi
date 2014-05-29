@@ -3,3 +3,4 @@ cgi-bin/
 composer.lock
 vendor/
 bower_components/
+examples/magento-lb-master-slave/htdocs/

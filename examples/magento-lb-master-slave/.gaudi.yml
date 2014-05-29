@@ -5,9 +5,10 @@ applications:
             8080: 80
         links: [front1, front2]
         volumes:
-            .: /var/www
+            .: /app
         custom:
             backends: [front1, front2]
+            probe_url: /up.php
 
     front1:
         type: apache
@@ -15,9 +16,12 @@ applications:
         ports:
             8081: 8080
         volumes:
-            .: /var/www
+            .: /app
+        modules: [rewrite]
         custom:
             fastCgi: app1
+            fastCgiIdleTimeout: 500
+            documentRoot: /app/htdocs
 
     front2:
         type: apache
@@ -25,23 +29,36 @@ applications:
         ports:
             8082: 8080
         volumes:
-            .: /var/www
+            .: /app
+        modules: [rewrite]
         custom:
             fastCgi: app2
+            fastCgiIdleTimeout: 500
+            documentRoot: /app/htdocs
 
     app1:
         type: hhvm
         ports:
             9000: 9000
         volumes:
-            .: /var/www
+            .: /app
+        apt_get: [php5-gd, php5-intl]
+        links: [memcached]
+        custom:
+            memoryLimit: 512M
+            maxExecutionTime: 500
 
     app2:
-        type: hhvm
+        type: php-fpm
         ports:
             9001: 9000
         volumes:
-            .: /var/www
+            .: /app
+        apt_get: [php5-gd, php5-intl]
+        links: [memcached]
+        custom:
+            memoryLimit: 512M
+            maxExecutionTime: 500
 
     master:
         type: mysql
@@ -49,6 +66,8 @@ applications:
             3306: 3306
         volumes:
             /var/tmp/data/master: /var/lib/mysql
+        after_script:
+            mysql -e "CREATE DATABASE IF NOT EXISTS magento CHARACTER SET utf8 COLLATE utf8_general_ci;"
         custom:
             repl: master
 
@@ -75,6 +94,12 @@ applications:
         custom:
             repl: slave
             master: master
+
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211
 
     phpmyadmin:
         type: phpmyadmin
