@@ -98,7 +98,7 @@ All templates are listed in [the `templates/` folder](https://github.com/marmela
 
 You can find an example of [how to start a Symfony application](https://github.com/marmelab/gaudi/wiki/HOW-TO:-Run-a-Symfony-Application) in the wiki.
 
-Another examples can be found in [the `example` folder](https://github.com/marmelab/gaudi/tree/master/example).
+Another examples can be found in [the `examples` folder](https://github.com/marmelab/gaudi/tree/master/examples).
 
 # Options
 
