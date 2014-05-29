@@ -17,9 +17,10 @@ applications:
             8081: 8080
         volumes:
             .: /app
+        modules: [rewrite]
         custom:
             fastCgi: app1
-            fastCgiIdleTimeout: 300
+            fastCgiIdleTimeout: 500
             documentRoot: /app/htdocs
 
     front2:
@@ -29,20 +30,23 @@ applications:
             8082: 8080
         volumes:
             .: /app
+        modules: [rewrite]
         custom:
             fastCgi: app2
-            fastCgiIdleTimeout: 300
+            fastCgiIdleTimeout: 500
             documentRoot: /app/htdocs
 
     app1:
-        type: php-fpm
+        type: hhvm
         ports:
             9000: 9000
         volumes:
             .: /app
         apt_get: [php5-gd, php5-intl]
+        links: [memcached]
         custom:
             memoryLimit: 512M
+            maxExecutionTime: 500
 
     app2:
         type: php-fpm
@@ -51,8 +55,10 @@ applications:
         volumes:
             .: /app
         apt_get: [php5-gd, php5-intl]
+        links: [memcached]
         custom:
             memoryLimit: 512M
+            maxExecutionTime: 500
 
     master:
         type: mysql
@@ -88,6 +94,12 @@ applications:
         custom:
             repl: slave
             master: master
+
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211
 
     phpmyadmin:
         type: phpmyadmin
