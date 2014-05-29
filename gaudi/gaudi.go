@@ -32,7 +32,7 @@ const DEFAULT_BASE_IMAGE_WITH_TAG = "stackbrew/debian:wheezy"
 const TEMPLATE_DIR = "/var/tmp/gaudi/templates/"
 const TEMPLATE_REMOTE_PATH = "http://gaudi.io/apt/templates.tar"
 const PARSED_TEMPLATE_DIR = "/tmp/gaudi/"
-const VERSION = "0.1.6"
+const VERSION = "0.2.0"
 
 type Gaudi struct {
 	Applications      containerCollection.ContainerCollection
