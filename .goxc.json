@@ -1,6 +1,7 @@
 {
     "OutPath": "{{.Dest}}{{.PS}}{{.AppName}}{{.PS}}{{.Version}}{{.PS}}{{.AppName}}_{{.Version}}_{{.Os}}_{{.Arch}}{{.Ext}}",
     "BuildConstraints": "linux darwin freebsd netbsd",
+    "MainDirsExclude": "examples/",
     "PackageVersion": "0.1",
     "TaskSettings": {
         "pkg-build": {
