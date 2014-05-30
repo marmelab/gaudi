@@ -1,0 +1,27 @@
+applications:
+    front:
+        type: nginx
+        ports:
+            8080: 80
+        links: [app]
+        volumes:
+            .: /var/www
+        custom:
+            fastCgi: app
+            documentRoot: /var/www/spip
+
+    app:
+        type: php-fpm
+        ports:
+            9000: 9000
+        volumes:
+            .: /var/www
+
+    db:
+        type: mysql
+        ports:
+            3306: 3306
+        volumes:
+            .gaudi/mysql: /var/lib/mysql
+        after_script: mysql -e "CREATE DATABASE IF NOT EXISTS spip CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
+
