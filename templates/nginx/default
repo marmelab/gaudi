@@ -20,13 +20,13 @@ server {
 
     [[ $documentRoot := .Container.GetCustomValue "documentRoot" "/var/www" ]]
     root [[ $documentRoot ]];
-    index index.html index.htm;
+    index index.html index.htm [[ if (.Container.GetCustomValue "fastCgi")]]index.php[[end]];
 
     # Make site accessible from http://localhost/
     server_name localhost;
 
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ [[ if (.Container.GetCustomValue "fastCgi")]]/index.php[[end]] /index.html;
     }
 
     #error_page 404 /404.html;
