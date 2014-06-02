@@ -1,0 +1,7 @@
+applications:
+    app:
+        type: ruby
+        volumes:
+            .: /app
+        custom:
+            gems: [rake, rails]
