@@ -10,7 +10,7 @@ RUN curl https://www.npmjs.org/install.sh | clean=no sh
 
 # Install modules
 [[range (.Container.GetCustomValue "modules")]]
-	RUN npm install -g [[.]]
+    RUN npm install -g [[.]]
 [[end]]
 
 ENV NODE_PATH /usr/local/lib/node_modules

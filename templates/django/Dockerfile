@@ -15,7 +15,7 @@ RUN pip install mysql-python
 RUN pip install south
 
 [[range (.Container.GetCustomValue "pip_modules")]]
-	RUN pip install [[.]]
+    RUN pip install [[.]]
 [[end]]
 
 # Add setup script
@@ -29,9 +29,9 @@ RUN chmod +x /root/setup.sh
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
-	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
-	[[ if eq (.Collection.IsComponentDependingOf .Container "apache") false ]]
-	&& python manage.py runserver 0.0.0.0:[[ .Container.GetFirstLocalPort "8000" ]] \
-	[[end]]
-	&& /bin/bash
+    [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
+    [[ if eq (.Collection.IsComponentDependingOf .Container "apache") false ]]
+    && python manage.py runserver 0.0.0.0:[[ .Container.GetFirstLocalPort "8000" ]] \
+    [[end]]
+    && /bin/bash
 [[ end ]]

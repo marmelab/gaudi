@@ -14,5 +14,5 @@ for env in $envs
 do
     IFS== read name value <<< "$env"
 
-	echo "env[$name] = $value" >> /etc/php5/fpm/php-fpm.conf
+    echo "env[$name] = $value" >> /etc/php5/fpm/php-fpm.conf
 done

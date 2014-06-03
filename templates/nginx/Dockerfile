@@ -20,7 +20,7 @@ RUN chmod +x /root/setup.sh
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
-	&& (/etc/init.d/nginx start &) \
-	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
-	&& /bin/bash
+    && (/etc/init.d/nginx start &) \
+    [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
+    && /bin/bash
 [[ end ]]

@@ -14,23 +14,23 @@ FROM stackbrew/debian:wheezy
 
 # Install custom gems
 [[range (.Container.GetCustomValue "gems")]]
-	RUN gem install [[.]]
+    RUN gem install [[.]]
 [[end]]
 
 [[ if eq $serverType "apache"]]
-	RUN apt-get install -y -f apache2
+    RUN apt-get install -y -f apache2
     RUN a2enmod actions alias
     RUN service apache2 reload
 
     RUN apt-get install -y -f libcurl4-openssl-dev apache2-threaded-dev libapr1-dev libaprutil1-dev
-    	RUN /bin/bash -l -c 'gem install passenger bundler execjs'
-    	RUN /bin/bash -l -c 'passenger-install-apache2-module --auto'
+        RUN /bin/bash -l -c 'gem install passenger bundler execjs'
+        RUN /bin/bash -l -c 'passenger-install-apache2-module --auto'
 
-    	RUN print "LoadModule passenger_module /usr/local/rvm/gems/ruby-[[ $version ]]/gems/passenger-4.0.44/buildout/apache2/mod_passenger.so \n<IfModule mod_passenger.c>\nPassengerRoot /usr/local/rvm/gems/ruby-[[ $version ]]/gems/passenger-4.0.44 \nPassengerDefaultRuby /usr/local/rvm/gems/ruby-[[ $version ]]/wrappers/ruby \n</IfModule>" > /etc/apache2/mods-available/passenger.load
-    	RUN a2enmod passenger
+        RUN print "LoadModule passenger_module /usr/local/rvm/gems/ruby-[[ $version ]]/gems/passenger-4.0.44/buildout/apache2/mod_passenger.so \n<IfModule mod_passenger.c>\nPassengerRoot /usr/local/rvm/gems/ruby-[[ $version ]]/gems/passenger-4.0.44 \nPassengerDefaultRuby /usr/local/rvm/gems/ruby-[[ $version ]]/wrappers/ruby \n</IfModule>" > /etc/apache2/mods-available/passenger.load
+        RUN a2enmod passenger
 
-    	ADD 000-default /etc/apache2/sites-enabled/000-default
-    	ADD ports.conf /etc/apache2/ports.conf
+        ADD 000-default /etc/apache2/sites-enabled/000-default
+        ADD ports.conf /etc/apache2/ports.conf
 [[ end ]]
 
 # Add setup script
@@ -44,7 +44,7 @@ RUN chmod +x /root/setup.sh
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \
-	[[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
-	&& /etc/init.d/apache2 start \
-	&& /bin/bash
+    [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
+    && /etc/init.d/apache2 start \
+    && /bin/bash
 [[ end ]]

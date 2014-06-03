@@ -7,14 +7,14 @@ FROM stackbrew/debian:wheezy
 
 # Install custom gems
 [[range (.Container.GetCustomValue "gems")]]
-	RUN gem install [[.]]
+    RUN gem install [[.]]
 [[end]]
 
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
 [[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
+    CMD [[.Container.AfterScript]] && /bin/bash
 [[ else ]]
-	CMD /bin/bash
+    CMD /bin/bash
 [[ end]]
