@@ -1,0 +1,39 @@
+<VirtualHost *:[[ .Container.GetFirstLocalPort ]]>
+	ServerAdmin webmaster@localhost
+
+	[[ $version := (.Container.GetCustomValue "version" "2.1.2") ]]
+	PassengerRuby /usr/local/rvm/gems/ruby-[[ $version ]]/wrappers/ruby
+    RailsEnv development
+
+	[[ $documentRoot := (.Container.GetCustomValue "documentRoot") ]]
+	[[ if $documentRoot ]]
+		DocumentRoot [[ $documentRoot ]]
+	[[ else ]]
+		DocumentRoot /var/www
+	[[ end ]]
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+
+	[[ if $documentRoot ]]
+        <Directory [[ $documentRoot ]]>
+    [[ else ]]
+        <Directory /var/www/>
+    [[ end ]]
+
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+

@@ -25,7 +25,7 @@
 
 	[[ if(.Container.DependsOf "django" )]]
 		[[ $django := (.Collection.GetType "django") ]]
-        WSGIScriptAlias / /app/[[ (.Collection.GetType "django").GetCustomValue "project_name" "project" ]]/wsgi.py
+        WSGIScriptAlias / /app/[[ $django.GetCustomValue "project_name" "project" ]]/wsgi.py
 
         Alias /static/admin /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin
         Alias /static/ /app/[[ $django.GetCustomValue "project_name" "project" ]]/[[ $django.GetCustomValue "app_name" "myapp" ]]/static/
@@ -48,10 +48,12 @@
 	CustomLog ${APACHE_LOG_DIR}/access.log combined
 
 	[[ $fastCgi := .Collection.Get (.Container.GetCustomValueAsString "fastCgi") (.Collection.GetType "php-fpm")  ]]
-	[[ $fastCgiIdleTimeout := .Container.GetCustomValue "fastCgiIdleTimeout" "30" ]]
 	[[ if $fastCgi ]]
-	FastCgiExternalServer /var/www/cgi-bin/php5.external -host ${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort ]]_TCP_ADDR}:${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort]]_TCP_PORT}  -idle-timeout [[ $fastCgiIdleTimeout ]]
-	Alias /cgi-bin/ /var/www/cgi-bin/
+		[[ $fastCgiIdleTimeout := .Container.GetCustomValue "fastCgiIdleTimeout" "30" ]]
+        [[ $fastCgiPath := "/var/www/cgi-bin/php5.external" ]]
+
+		FastCgiExternalServer [[ $fastCgiPath ]] -host ${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort ]]_TCP_ADDR}:${[[ $fastCgi.Name | ToUpper ]]_PORT_[[ $fastCgi.GetFirstLocalPort]]_TCP_PORT} -idle-timeout [[ $fastCgiIdleTimeout ]]
+		Alias /cgi-bin/ /var/www/cgi-bin/
 	[[end]]
 </VirtualHost>
 

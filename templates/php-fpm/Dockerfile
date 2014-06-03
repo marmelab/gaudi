@@ -27,7 +27,7 @@ RUN chmod +x /root/setup.sh
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
-[[ if .EmptyCmd]]
+[[ if .EmptyCmd ]]
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \

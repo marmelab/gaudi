@@ -20,7 +20,7 @@ ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 	RUN go get [[.]]
 [[end]]
 
-[[ if .EmptyCmd]]
+[[ if .EmptyCmd ]]
 CMD /bin/bash
 [[ else ]]
 	[[ if (.Container.HasAfterScript) ]]

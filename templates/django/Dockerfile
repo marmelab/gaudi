@@ -6,7 +6,7 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 [[ updateApt ]]
 [[ addUserFiles ]]
 
-WORKDIR /app
+WORKDIR [[ .Container.GetFirstMountedDir ]]
 
 RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
 RUN easy_install pip
@@ -25,7 +25,7 @@ RUN chmod +x /root/setup.sh
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
-[[ if .EmptyCmd]]
+[[ if .EmptyCmd ]]
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] /bin/bash /root/setup.sh \

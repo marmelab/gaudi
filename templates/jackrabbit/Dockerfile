@@ -14,7 +14,7 @@ RUN wget http://archive.apache.org/dist/jackrabbit/2.6.5/jackrabbit-standalone-2
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
-[[ if .EmptyCmd]]
+[[ if .EmptyCmd ]]
 CMD /bin/bash
 [[ else ]]
 CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[end]] cd /opt/jackrabbit/ \

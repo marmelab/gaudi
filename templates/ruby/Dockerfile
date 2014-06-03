@@ -3,16 +3,9 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
-[[ $version := (.Container.GetCustomValue "version" "2.1.2") ]]
+[[ installRvm ]]
 
-# Install ruby via RVM
-RUN apt-get install -y --reinstall procps
-RUN \curl -L https://get.rvm.io | bash -s stable
-ENV PATH $PATH:/usr/local/rvm/bin/
-RUN rvm install [[ $version ]] && rvm use [[ $version ]]
-ENV PATH $PATH:/usr/local/rvm/rubies/ruby-[[ $version ]]/bin/
-
-# Install gems
+# Install custom gems
 [[range (.Container.GetCustomValue "gems")]]
 	RUN gem install [[.]]
 [[end]]

@@ -4,3 +4,4 @@ composer.lock
 vendor/
 bower_components/
 examples/magento-lb-master-slave/htdocs/
+examples/ruby-on-rails-mod-passenger/ror/
