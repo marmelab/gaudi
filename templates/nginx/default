@@ -20,7 +20,7 @@ server {
 
     [[ $documentRoot := .Container.GetCustomValue "documentRoot" "/var/www" ]]
     root [[ $documentRoot ]];
-    index index.html index.htm [[ if (.Container.GetCustomValue "fastCgi")]]index.php[[end]];
+    index index.html index.htm [[ if ne (.Container.GetCustomValue "fastCgi") ""]]index.php[[end]];
 
     # Make site accessible from http://localhost/
     server_name localhost;
