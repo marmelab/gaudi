@@ -17,15 +17,15 @@ ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 
 # Install deps
 [[range (.Container.GetCustomValue "modules")]]
-	RUN go get [[.]]
+    RUN go get [[.]]
 [[end]]
 
-[[ if .EmptyCmd]]
+[[ if .EmptyCmd ]]
 CMD /bin/bash
 [[ else ]]
-	[[ if (.Container.HasAfterScript) ]]
-		CMD [[.Container.AfterScript]] && /bin/bash
-	[[ else ]]
-		CMD ["go version"] && /bin/bash
-	[[ end]]
+    [[ if (.Container.HasAfterScript) ]]
+        CMD [[.Container.AfterScript]] && /bin/bash
+    [[ else ]]
+        CMD ["go version"] && /bin/bash
+    [[ end]]
 [[ end ]]

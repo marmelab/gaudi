@@ -1,0 +1,11 @@
+applications:
+    app:
+        type: ruby
+        volumes:
+            .: /app
+        after_script: ruby /app/hello.rb
+        #custom:
+        #    version: 2.1.2
+
+# sudo gaudi
+# sudo docker logs app
