@@ -24,5 +24,5 @@ director loadBalancer round-robin {
 }
 
 sub vcl_recv {
-	set req.backend = loadBalancer;
+    set req.backend = loadBalancer;
 }

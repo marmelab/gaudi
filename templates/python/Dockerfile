@@ -16,14 +16,14 @@ ENV PATH /.pyenv/versions/[[ $version ]]/bin:$PATH
 
 # Install pip modules
 [[range (.Container.GetCustomValue "pip_modules")]]
-	RUN pip install [[.]]
+    RUN pip install [[.]]
 [[end]]
 
 # Add custom setup script
 [[ beforeAfterScripts ]]
 
 [[ if (.Container.HasAfterScript) ]]
-	CMD [[.Container.AfterScript]] && /bin/bash
+    CMD [[.Container.AfterScript]] && /bin/bash
 [[ else ]]
-	CMD /bin/bash
+    CMD /bin/bash
 [[ end]]

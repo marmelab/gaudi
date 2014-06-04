@@ -1,0 +1,14 @@
+# Install ruby via RVM
+[[ $version := (.Container.GetCustomValue "version" "2.1.2") ]]
+
+RUN apt-get install -y --reinstall procps
+RUN curl -L https://get.rvm.io | bash -s stable
+
+ENV PATH /usr/local/rvm/bin/:$PATH
+ENV PATH /usr/local/rvm/rubies/ruby-[[ $version ]]/bin/:$PATH
+ENV PATH /usr/local/rvm/gems/ruby-[[ $version ]]/bin/:$PATH
+
+RUN rvm install [[ $version ]]
+RUN rvm use [[ $version ]] --default
+
+

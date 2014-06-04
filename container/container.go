@@ -221,6 +221,12 @@ func (c *Container) GetCustomValue(params ...string) interface{} {
 	return nil
 }
 
+func (c *Container) SetCustomValue(name, value string) string {
+	c.Custom[name] = value
+
+	return ""
+}
+
 func (c *Container) GetCustomValueAsString(params ...string) string {
 	if value, ok := c.Custom[params[0]]; ok {
 		return value.(string)
@@ -259,6 +265,15 @@ func (c *Container) FirstLinked() *Container {
 	}
 
 	return nil
+}
+
+
+func (c *Container) GetFirstMountedDir() string {
+	for _, volume := range c.Volumes {
+		return volume
+	}
+
+	return ""
 }
 
 func (c *Container) DependsOf(otherComponentType string) bool {
