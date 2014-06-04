@@ -1,0 +1,27 @@
+applications:
+    producer:
+        type: python
+        volumes:
+            .: /app
+        after_script: python /app/app.py
+        custom:
+            pip_modules: [pika==0.9.8]
+            
+    worker1:
+        extends: producer
+        
+    worker2:
+        extends: producer
+
+    rabbitmq:
+        type: rabbitmq
+        volumes:
+            /var/tmp/rabbitmq/: /var/lib/rabbitmq/mnesia
+        environments:
+            USER: docker
+            PASS: docker
+            DB: project
+        ports:
+            5672: 5672
+            15672: 15672
+            4369: 4369

@@ -77,6 +77,15 @@ func (gaudi *Gaudi) Init(content string) {
 
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
+	// Check extends
+	for _, currentContainer := range gaudi.Applications {
+		if currentContainer.Extends == "" {
+			continue
+		}
+
+		currentContainer.ExtendsContainer(gaudi.All[currentContainer.Extends])
+	}
+
 	// Check if docker is installed
 	if !docker.HasDocker() {
 		util.LogError("Docker should be installed to use Gaudi (see: https://www.docker.io/gettingstarted/).")

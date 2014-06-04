@@ -346,3 +346,46 @@ applications:
         template: /vagrant/front/Dockerfile
 `)
 }
+
+func (s *GaudiTestSuite) TestExtendsShouldCopyElements(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+	util.MOCK().DisableMock("LogError")
+	util.MOCK().DisableMock("PrintGreen")
+	util.MOCK().DisableMock("PrintWithColor")
+	util.MOCK().DisableMock("BuildReflectArguments")
+
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+
+	g := gaudi.Gaudi{}
+
+	g.Init(`
+applications:
+    a:
+        type: apache
+        before_script: echo hello
+    b:
+        extends: a
+    c:
+        extends: a
+        before_script: echo ok
+`)
+
+	c.Check(g.Applications["a"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+	
+	c.Check(g.Applications["b"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+	
+	c.Check(g.Applications["c"].Type, Equals, "apache")
+	c.Check(g.Applications["c"].BeforeScript, Equals, "echo ok")
+}
