@@ -1,22 +1,24 @@
-applications:
-    producer:
-        type: python
-        volumes:
-            .: /app
-        after_script: python /app/app.py
-        custom:
-            pip_modules: [pika==0.9.8]
-            
+applications:   
     worker1:
         extends: producer
+        after_script: python /app/worker.py
         
     worker2:
         extends: producer
+        after_script: python /app/worker.py
+        
+    producer:
+        type: python
+        links: [rabbitmq]
+        volumes:
+            .: /app
+        after_script: python /app/producer.py
+        custom:
+            version: 2.7.6
+            pip_modules: [pika==0.9.8]
 
     rabbitmq:
         type: rabbitmq
-        volumes:
-            /var/tmp/rabbitmq/: /var/lib/rabbitmq/mnesia
         environments:
             USER: docker
             PASS: docker
