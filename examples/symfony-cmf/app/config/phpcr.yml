@@ -1,7 +1,0 @@
-parameters:
-    phpcr_backend:
-        type: jackrabbit
-        url:
-    phpcr_workspace: sandbox
-    phpcr_user: admin
-    phpcr_pass: admin

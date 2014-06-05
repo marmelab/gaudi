@@ -27,3 +27,19 @@ applications:
         after_script: mysql -e "CREATE DATABASE IF NOT EXISTS symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
         volumes:
             .gaudi/mysql: /var/lib/mysql
+            
+binaries:
+    composer:
+        type: composer
+
+
+# $ gaudi run composer create-project symfony/framework-standard-edition sf/ 2.4.0
+# $ mv sf/* .
+# Create: app/config/parameters.php
+#<?php
+#$container->setParameter('phpcr_backend', [
+#    "type" => "jackrabbit",
+#    "url" => 'http://'.getenv('JACKRABBIT_PORT_8082_TCP_ADDR').':'.getenv('JACKRABBIT_PORT_8082_TCP_PORT')."/server/"
+#]);
+
+# $ gaudi

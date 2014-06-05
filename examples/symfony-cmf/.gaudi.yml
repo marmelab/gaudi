@@ -29,3 +29,13 @@ applications:
             8082: 8082
         volumes:
             .gaudi/jackrabbit: /opt/jackrabbit/jackrabbit
+            
+binaries:
+    composer:
+        type: composer
+
+
+# gaudi run composer create-project symfony/framework-standard-edition sf/ 2.4.0
+# mv sf/* .
+# echo "<?php $container->setParameter('database_host', getenv('DB_PORT_3306_TCP_ADDR'));" > app/config/parameters.php
+# gaudi

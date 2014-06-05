@@ -1,4 +1,0 @@
-cmf:
-    action_block:
-        title: Demo Aktions-Block
-        body: Dieser Inhalt wurde durch eine Symfony2 Controller Action gerendert. Er kann nicht inline editiert werden.
