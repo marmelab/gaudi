@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/marmelab/gaudi/docker" // mock
-	"github.com/marmelab/gaudi/util"   // mock
 	"github.com/marmelab/gaudi/gaudi"
+	"github.com/marmelab/gaudi/util" // mock
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -16,6 +16,20 @@ func Test(t *testing.T) { TestingT(t) }
 type GaudiTestSuite struct{}
 
 var _ = Suite(&GaudiTestSuite{})
+
+func disableLog() {
+	util.MOCK().DisableMock("LogError")
+	util.MOCK().DisableMock("PrintGreen")
+	util.MOCK().DisableMock("PrintWithColor")
+	util.MOCK().DisableMock("BuildReflectArguments")
+}
+
+func enableLog() {
+	util.MOCK().EnableMock("LogError")
+	util.MOCK().EnableMock("PrintGreen")
+	util.MOCK().EnableMock("PrintWithColor")
+	util.MOCK().EnableMock("BuildReflectArguments")
+}
 
 func (s *GaudiTestSuite) TestInitShouldTrowAndErrorOnMalformedYmlContent(c *C) {
 	g := gaudi.Gaudi{}
@@ -146,8 +160,8 @@ func (s *GaudiTestSuite) TestStartApplicationShouldStartThemByOrderOfDependencie
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
-    util.MOCK().DisableMock("IsFile")
-    util.MOCK().EnableMock("PrintGreen")
+	util.MOCK().DisableMock("IsFile")
+	util.MOCK().EnableMock("PrintGreen")
 
 	// Retrieving templates (1)
 	util.EXPECT().PrintGreen(gomock.Any()).Times(1)
@@ -277,7 +291,7 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 
 	// Disable the util package mock
 	util.MOCK().DisableMock("IsDir")
-    util.MOCK().DisableMock("IsFile")
+	util.MOCK().DisableMock("IsFile")
 
 	util.EXPECT().PrintGreen("Retrieving templates ...")
 
@@ -345,4 +359,123 @@ applications:
         type: custom
         template: /vagrant/front/Dockerfile
 `)
+}
+
+func (s *GaudiTestSuite) TestExtendsShouldCopyElements(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+
+	disableLog()
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+
+	g := gaudi.Gaudi{}
+
+	g.Init(`
+applications:
+    a:
+        type: apache
+        before_script: echo hello
+    b:
+        extends: a
+    c:
+        extends: a
+        before_script: echo ok
+    d:
+        extends: c
+        type: mysql
+`)
+
+	c.Check(g.Applications["a"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+
+	c.Check(g.Applications["b"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+
+	c.Check(g.Applications["c"].Type, Equals, "apache")
+	c.Check(g.Applications["c"].BeforeScript, Equals, "echo ok")
+
+	c.Check(g.Applications["d"].Type, Equals, "mysql")
+	c.Check(g.Applications["d"].BeforeScript, Equals, "echo ok")
+
+	enableLog()
+}
+
+func (s *GaudiTestSuite) TestExtendsShouldThrowAnErrorWhenTheElementDoesNotExists(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+	util.MOCK().DisableMock("LogError")
+
+	disableLog()
+
+	g := gaudi.Gaudi{}
+
+	c.Assert(func() {
+		g.Init(`
+applications:
+    a:
+        type: apache
+    b:
+        extends: c
+`)
+	}, PanicMatches, "b extends a non existing application : c")
+
+	enableLog()
+}
+
+func (s *GaudiTestSuite) TestExtendsShouldCopyElementsOfNonOrderedComponent(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+	docker.MOCK().SetController(ctrl)
+
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+
+	disableLog()
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+
+	g := gaudi.Gaudi{}
+
+	g.Init(`
+applications:
+    c:
+        extends: a
+        before_script: echo ok
+    a:
+        extends: b
+    b:
+        type: apache
+        before_script: echo hello
+`)
+
+	c.Check(g.Applications["a"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+
+	c.Check(g.Applications["b"].Type, Equals, "apache")
+	c.Check(g.Applications["b"].BeforeScript, Equals, "echo hello")
+
+	c.Check(g.Applications["c"].Type, Equals, "apache")
+	c.Check(g.Applications["c"].BeforeScript, Equals, "echo ok")
+
+	enableLog()
 }

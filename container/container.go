@@ -4,6 +4,7 @@ import (
 	"github.com/marmelab/gaudi/docker"
 	"github.com/marmelab/gaudi/util"
 	"launchpad.net/goyaml"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -17,6 +18,7 @@ type Ambassador struct {
 type Container struct {
 	Name         string
 	Type         string
+	Extends      string
 	Image        string
 	Path         string
 	Template     string
@@ -60,6 +62,27 @@ func (c *Container) Init() {
 	}
 	if c.Custom == nil {
 		c.Custom = make(map[string]interface{})
+	}
+}
+
+func (c *Container) ExtendsContainer(parent *Container) {
+	reflectedParent := reflect.ValueOf(parent).Elem()
+	reflectedContainer := reflect.ValueOf(c).Elem()
+	typeOfT := reflectedContainer.Type()
+
+	// Check if fields are empty, take the value of the parent if so
+	for i := 0; i < reflectedContainer.NumField(); i++ {
+		field := reflectedContainer.Field(i)
+		fieldName := typeOfT.Field(i).Name
+		fieldType := field.Type().Name()
+
+		if fieldType == "bool" || fieldType == "Ambassador" {
+			continue
+		}
+
+		if field.Len() == 0 {
+			field.Set(reflectedParent.FieldByName(fieldName))
+		}
 	}
 }
 
@@ -266,7 +289,6 @@ func (c *Container) FirstLinked() *Container {
 
 	return nil
 }
-
 
 func (c *Container) GetFirstMountedDir() string {
 	for _, volume := range c.Volumes {

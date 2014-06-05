@@ -77,6 +77,9 @@ func (gaudi *Gaudi) Init(content string) {
 
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
+	// Apply extends
+	gaudi.applyInheritance()
+
 	// Check if docker is installed
 	if !docker.HasDocker() {
 		util.LogError("Docker should be installed to use Gaudi (see: https://www.docker.io/gettingstarted/).")
@@ -89,7 +92,7 @@ func (gaudi *Gaudi) Init(content string) {
 		docker.Pull(DEFAULT_BASE_IMAGE_WITH_TAG)
 	}
 
-	if gaudi.isNewVersion() {
+	if gaudi.useNewVersion() {
 		os.RemoveAll(TEMPLATE_DIR)
 	}
 
@@ -190,7 +193,7 @@ func (gaudi *Gaudi) build() {
 		// Check if the beforeScript is a file
 		beforeScript := currentContainer.BeforeScript
 		if len(beforeScript) != 0 {
-			copied := gaudi.copyRelativeFile(beforeScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
+			copied := gaudi.copyRelativeFiles(beforeScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
 			if copied {
 				currentContainer.BeforeScript = "./" + currentContainer.BeforeScript
 			}
@@ -199,7 +202,7 @@ func (gaudi *Gaudi) build() {
 		// Check if the afterScript is a file
 		afterScript := currentContainer.AfterScript
 		if len(afterScript) != 0 {
-			copied := gaudi.copyRelativeFile(afterScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
+			copied := gaudi.copyRelativeFiles(afterScript, PARSED_TEMPLATE_DIR+currentContainer.Name+"/")
 			if copied {
 				currentContainer.AfterScript = "./" + currentContainer.AfterScript
 			}
@@ -322,7 +325,7 @@ func (gaudi *Gaudi) parseTemplate(sourceDir, destinationDir string, file os.File
 	ioutil.WriteFile(destination, []byte(result.String()), 0644)
 }
 
-func (g *Gaudi) copyRelativeFile(filePath, destination string) bool {
+func (g *Gaudi) copyRelativeFiles(filePath, destination string) bool {
 	// File cannot be absolute
 	if util.IsFile(filePath) && filePath[0] == '/' {
 		util.LogError("File '" + filePath + "' cannot be an absolute path")
@@ -443,19 +446,52 @@ func (gaudi *Gaudi) shouldRebuild() bool {
 	return shouldRebuild
 }
 
-func (gaudi *Gaudi) isNewVersion() bool {
-	isNewVersion := true
+func (gaudi *Gaudi) useNewVersion() bool {
+	useNewVersion := true
 	versionFile := gaudi.ApplicationDir + "/.gaudi/version.txt"
 
 	if util.IsFile(versionFile) {
 		oldVersion, _ := ioutil.ReadFile(versionFile)
-		isNewVersion = string(oldVersion) != VERSION
+		useNewVersion = string(oldVersion) != VERSION
 	}
 
 	// Write new version
 	ioutil.WriteFile(versionFile, []byte(VERSION), 775)
 
-	return isNewVersion
+	return useNewVersion
+}
+
+func (gaudi *Gaudi) applyInheritance() {
+	extendsChan := make(map[string]chan bool)
+
+	for name, currentContainer := range gaudi.Applications {
+		extendsChan[name] = make(chan bool)
+
+		if currentContainer.Extends == "" {
+			close(extendsChan[name])
+			continue
+		}
+
+		if parentContainer, exists := gaudi.All[currentContainer.Extends]; exists {
+			go extendsOne(currentContainer, parentContainer, extendsChan)
+		} else {
+			util.LogError(currentContainer.Name + " extends a non existing application : " + currentContainer.Extends)
+		}
+	}
+
+	// Waiting for all applications to be extended
+	for name, _ := range extendsChan {
+		<-extendsChan[name]
+	}
+}
+
+func extendsOne(child, parent *container.Container, extendsChan map[string]chan bool) {
+	// Waiting for dependencies to be extended
+	<-extendsChan[parent.Name]
+
+	// Extends the application
+	child.ExtendsContainer(parent)
+	close(extendsChan[child.Name])
 }
 
 func getIncludes() map[string]string {
