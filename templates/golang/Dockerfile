@@ -26,6 +26,6 @@ CMD /bin/bash
     [[ if (.Container.HasAfterScript) ]]
         CMD [[.Container.AfterScript]] && /bin/bash
     [[ else ]]
-        CMD ["go version"] && /bin/bash
+        CMD /bin/bash
     [[ end]]
 [[ end ]]

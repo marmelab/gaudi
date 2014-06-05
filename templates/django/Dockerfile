@@ -8,6 +8,7 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 
 WORKDIR [[ .Container.GetFirstMountedDir ]]
 
+# @TODO: use [[ installPython ]]
 RUN apt-get install -y -f python2.7 python-dev python-setuptools libmysqlclient-dev
 RUN easy_install pip
 RUN pip install django==1.6

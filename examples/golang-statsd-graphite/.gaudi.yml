@@ -1,0 +1,30 @@
+applications:
+    app:
+        type: golang
+        links: [statsd]
+        volumes:
+            .: /app
+        modules: [github.com/cactus/go-statsd-client/statsd]
+        after_script: go run /app/app.go
+        
+    statsd:
+        type: statsd
+        links: [graphite]
+        ports:
+            8125: 8125
+            2003: 2003
+            
+    graphite:
+        type: graphite
+        volumes:
+            .gaudi/graphite: /opt/graphite/storage
+        ports:
+            8080: 8080
+            2003: 2003 # Carbon line receiver port
+            2004: 2004 # Carbon pickle receiver port
+            2023: 2023 # Carbon aggregator ports
+            2024: 2024 # Carbon aggregator ports
+            7002: 7002 # Carbon cache query port
+
+# sudo gaudi
+# sudo docker logs app
