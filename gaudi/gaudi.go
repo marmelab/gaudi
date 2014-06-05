@@ -78,7 +78,7 @@ func (gaudi *Gaudi) Init(content string) {
 	hasGaudiManagedContainer := gaudi.All.Init(gaudi.ApplicationDir)
 
 	// Apply extends
-	gaudi.ApplyInheritance()
+	gaudi.applyInheritance()
 
 	// Check if docker is installed
 	if !docker.HasDocker() {
@@ -92,7 +92,7 @@ func (gaudi *Gaudi) Init(content string) {
 		docker.Pull(DEFAULT_BASE_IMAGE_WITH_TAG)
 	}
 
-	if gaudi.isNewVersion() {
+	if gaudi.useNewVersion() {
 		os.RemoveAll(TEMPLATE_DIR)
 	}
 
@@ -446,22 +446,22 @@ func (gaudi *Gaudi) shouldRebuild() bool {
 	return shouldRebuild
 }
 
-func (gaudi *Gaudi) isNewVersion() bool {
-	isNewVersion := true
+func (gaudi *Gaudi) useNewVersion() bool {
+	useNewVersion := true
 	versionFile := gaudi.ApplicationDir + "/.gaudi/version.txt"
 
 	if util.IsFile(versionFile) {
 		oldVersion, _ := ioutil.ReadFile(versionFile)
-		isNewVersion = string(oldVersion) != VERSION
+		useNewVersion = string(oldVersion) != VERSION
 	}
 
 	// Write new version
 	ioutil.WriteFile(versionFile, []byte(VERSION), 775)
 
-	return isNewVersion
+	return useNewVersion
 }
 
-func (gaudi *Gaudi) ApplyInheritance() {
+func (gaudi *Gaudi) applyInheritance() {
 	extendsChan := make(map[string]chan bool)
 
 	for name, currentContainer := range gaudi.Applications {

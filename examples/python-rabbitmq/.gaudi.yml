@@ -1,12 +1,4 @@
 applications:   
-    worker1:
-        extends: producer
-        after_script: python /app/worker.py
-        
-    worker2:
-        extends: producer
-        after_script: python /app/worker.py
-        
     producer:
         type: python
         links: [rabbitmq]
@@ -16,6 +8,14 @@ applications:
         custom:
             version: 2.7.6
             pip_modules: [pika==0.9.8]
+            
+    worker1:
+        extends: producer
+        after_script: python /app/worker.py
+        
+    worker2:
+        extends: producer
+        after_script: python /app/worker.py
 
     rabbitmq:
         type: rabbitmq
@@ -25,5 +25,11 @@ applications:
             DB: project
         ports:
             5672: 5672
-            15672: 15672
+            15672: 15672 # rabbitmq_management
             4369: 4369
+
+
+# sudo gaudi
+# docker logs -f producer
+# docker logs -f worker1
+# docker logs -f worker2
