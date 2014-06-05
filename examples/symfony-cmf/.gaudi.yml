@@ -35,7 +35,7 @@ binaries:
         type: composer
 
 
-# gaudi run composer create-project symfony/framework-standard-edition sf/ 2.4.0
+# gaudi run composer create-project symfony-cmf/standard-edition sf/ ~1.1
 # mv sf/* .
 # echo "<?php $container->setParameter('database_host', getenv('DB_PORT_3306_TCP_ADDR'));" > app/config/parameters.php
 # gaudi
