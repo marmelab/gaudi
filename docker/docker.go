@@ -220,6 +220,42 @@ func SnapshotProcesses() (map[string]string, error) {
 	return images, nil
 }
 
+func ShouldRebuild(imageName string) bool {
+	images, err := GetImages()
+
+	if err != nil {
+		return false
+	}
+
+	_, ok := images[imageName]
+	return !ok
+}
+
+func GetImages() (map[string]string, error) {
+	images := make(map[string]string)
+
+	imagesCommand := exec.Command(getDockerBinaryPath(), "images")
+	out, err := imagesCommand.CombinedOutput()
+	if err != nil {
+		return nil, errors.New(string(out))
+	}
+
+	// Retrieve lines & remove first and last one
+	lines := strings.Split(string(out), "\n")
+	lines = lines[1 : len(lines)-1]
+
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if fields[0] == "<none>" {
+			continue
+		}
+
+		images[fields[0]] = fields[2]
+	}
+
+	return images, nil
+}
+
 func getDockerBinaryPath() string {
 	if len(docker) != 0 {
 		return docker

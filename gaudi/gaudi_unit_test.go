@@ -297,6 +297,7 @@ func (s *GaudiTestSuite) TestStartBinariesShouldCleanAndBuildThem(c *C) {
 
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
+	docker.EXPECT().ShouldRebuild(gomock.Any()).Return(true).Times(1)
 
 	util.EXPECT().PrintGreen("Building", "gaudi/npm", "...")
 	docker.EXPECT().Build(gomock.Any(), gomock.Any()).Times(1)

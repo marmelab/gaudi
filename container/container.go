@@ -60,7 +60,7 @@ func (c *Container) Init() {
 	if c.Add == nil {
 		c.Add = make(map[string]string)
 	}
-	
+
 	if c.Custom == nil {
 		c.Custom = make(map[string]interface{})
 	}
@@ -213,9 +213,11 @@ func (c *Container) Start(rebuild bool) {
 }
 
 func (c *Container) BuildAndRun(currentPath string, arguments []string) {
-	buildChans := make(chan bool, 1)
-	go c.BuildOrPull(buildChans)
-	<-buildChans
+	if docker.ShouldRebuild(c.Image) {
+		buildChans := make(chan bool, 1)
+		go c.BuildOrPull(buildChans)
+		<-buildChans
+	}
 
 	c.Run(currentPath, arguments)
 }
