@@ -1,0 +1,27 @@
+applications:
+    app:
+        type: golang
+        links: [statsd]
+        volumes:
+            .: /app
+        after_script: go run /app/app.go
+        custom:
+            modules: [github.com/cactus/go-statsd-client/statsd]
+
+    statsd:
+        type: statsd
+        links: [graphite]
+        ports:
+            8125: 8125
+            
+    graphite:
+        type: graphite
+        ports:
+            80: 8080
+            2003: 2003
+            2023: 2023 # Carbon aggregator ports
+            2024: 2024 # Carbon aggregator ports
+            7002: 7002 # Carbon cache query port
+
+# sudo gaudi
+# sudo docker logs -f app

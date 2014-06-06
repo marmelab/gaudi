@@ -60,6 +60,7 @@ func (c *Container) Init() {
 	if c.Add == nil {
 		c.Add = make(map[string]string)
 	}
+	
 	if c.Custom == nil {
 		c.Custom = make(map[string]interface{})
 	}
@@ -187,8 +188,6 @@ func (c *Container) AddDependency(container *Container) {
  * Starts a container as a server
  */
 func (c *Container) Start(rebuild bool) {
-	c.Init()
-
 	// Check if the container is already running
 	if !rebuild {
 		if c.IsRunning() {
@@ -225,8 +224,6 @@ func (c *Container) BuildAndRun(currentPath string, arguments []string) {
  * Starts a container as a binary file
  */
 func (c *Container) Run(currentPath string, arguments []string) {
-	c.Init()
-
 	util.PrintGreen("Running", c.Name, strings.Join(arguments, " "), "...")
 
 	docker.Run(c.Image, currentPath, arguments, c.Ports, c.Environments)

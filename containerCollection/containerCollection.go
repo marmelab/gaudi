@@ -27,6 +27,7 @@ func (collection ContainerCollection) Init(relativePath string) bool {
 	// Fill name & dependencies
 	for name, currentContainer := range collection {
 		currentContainer.Name = name
+		currentContainer.Init()
 
 		if currentContainer.IsGaudiManaged() {
 			hasGaudiManagedContainer = true
