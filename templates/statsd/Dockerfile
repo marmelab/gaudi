@@ -11,7 +11,9 @@ FROM stackbrew/debian:wheezy
 RUN git clone https://github.com/etsy/statsd /.statsd
 WORKDIR /.statsd
 
-RUN cp /.statsd/exampleConfig.js /.statsd/local.js
+[[ $firstLinked := .Container.FirstLinked]]
+
+RUN echo "{\n  graphiteHost: process.env.[[ $firstLinked.Name | ToUpper ]]_PORT_2003_TCP_ADDR, \n  graphitePort: 2003, \n  port: [[ .Container.GetFirstLocalPort ]], \n  flushInterval: 10000 \n }" > /.statsd/local.js
 
 # Add custom setup script
 [[ beforeAfterScripts ]]

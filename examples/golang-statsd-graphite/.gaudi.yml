@@ -4,9 +4,10 @@ applications:
         links: [statsd]
         volumes:
             .: /app
-        modules: [github.com/cactus/go-statsd-client/statsd]
-        after_script: go run /app/app.go
-        
+#       after_script: go run /app/app.go
+        custom:
+            modules: [github.com/cactus/go-statsd-client/statsd]
+
     statsd:
         type: statsd
         links: [graphite]
@@ -15,13 +16,12 @@ applications:
             2003: 2003
             
     graphite:
-        type: graphite
+        type: index
+        image: bryanlarsen/graphite
         volumes:
-            .gaudi/graphite: /opt/graphite/storage
+            /data/graphite:/opt/graphite/storage
         ports:
-            8080: 8080
-            2003: 2003 # Carbon line receiver port
-            2004: 2004 # Carbon pickle receiver port
+            8080: 80
             2023: 2023 # Carbon aggregator ports
             2024: 2024 # Carbon aggregator ports
             7002: 7002 # Carbon cache query port

@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"math/rand"
 	"github.com/cactus/go-statsd-client/statsd"
+	"os"
+	"time"
 )
 
 func main() {
@@ -16,14 +18,20 @@ func main() {
 	
 	// make sure to clean up
 	defer client.Close()
+	
+	for true {
+		rand.Seed(time.Now().Unix())
+		stat := int64(rand.Intn(10))
+		
+		// Send a stat
+		err = client.Inc("stat1", stat, 1.0)
+		// handle any errors
+		if err != nil {
+			panic(err)
+		}
 
-	// Send a stat
-	err = client.Inc("stat1", 42, 1.0)
-	// handle any errors
-	
-	if err != nil {
-		panic(err)
+		fmt.Println("Stat", stat, "sent")
+		
+		time.Sleep(1 * time.Second)
 	}
-	
-	fmt.Println("Stat sent")
 }

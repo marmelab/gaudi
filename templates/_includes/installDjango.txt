@@ -1,0 +1,8 @@
+[[ $djangoVersion := .Container.GetCustomValue "djangoVersion" (.Container.GetCustomValue "version" "1.6")]]
+
+# Install django
+RUN apt-get install -y -f libmysqlclient-dev
+
+RUN pip install django==[[ $djangoVersion ]]
+RUN pip install mysql-python
+RUN pip install south
