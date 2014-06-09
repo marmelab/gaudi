@@ -3,6 +3,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 [[ installRvm ]]
 
 # Install custom gems

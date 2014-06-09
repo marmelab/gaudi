@@ -3,6 +3,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 [[ installNodeJS ]]
 
 # Install modules

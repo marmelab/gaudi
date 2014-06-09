@@ -3,6 +3,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 [[ $version := (.Container.GetCustomValue "version" "2.1.2") ]]
 [[ $serverType := (.Container.GetCustomValue "serverType" "standalone") ]]
 

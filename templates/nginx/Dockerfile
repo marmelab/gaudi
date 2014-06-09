@@ -3,6 +3,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 RUN apt-get install -y -f nginx
 
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf

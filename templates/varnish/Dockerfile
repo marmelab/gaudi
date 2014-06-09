@@ -6,6 +6,8 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 RUN curl http://repo.varnish-cache.org/debian/GPG-key.txt | apt-key add -
 RUN echo "deb http://repo.varnish-cache.org/debian/ wheezy varnish-3.0" >> /etc/apt/sources.list
 RUN apt-get update

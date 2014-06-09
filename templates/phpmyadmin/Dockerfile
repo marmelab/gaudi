@@ -3,6 +3,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 RUN export DEBIAN_FRONTEND=noninteractive
 RUN dpkg --configure -a
 RUN apt-get install -y -f debconf-utils

@@ -294,7 +294,7 @@ func (c *Container) GetFirstMountedDir() string {
 		return volume
 	}
 
-	return ""
+	return "/"
 }
 
 func (c *Container) DependsOf(otherComponentType string) bool {
