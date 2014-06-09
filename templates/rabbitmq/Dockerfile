@@ -4,6 +4,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 # Install RabbitMQ
 RUN echo "deb http://www.rabbitmq.com/debian/ testing main" > /etc/apt/sources.list.d/rabbitmq.list
 RUN wget -O - http://www.rabbitmq.com/rabbitmq-signing-key-public.asc | apt-key add -

@@ -4,6 +4,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 RUN apt-get -y --force-yes install vim  nginx  python-flup expect git memcached sqlite3 libcairo2 libcairo2-dev python-cairo pkg-config build-essential python-dev libsqlite3-dev
 
 RUN wget -P /opt http://python-distribute.org/distribute_setup.py

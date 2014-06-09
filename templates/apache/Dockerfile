@@ -6,6 +6,8 @@ RUN echo "deb-src http://ftp.fr.debian.org/debian/ wheezy non-free" >> /etc/apt/
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 RUN apt-get install -y -f apache2-mpm-worker libapache2-mod-fastcgi
 RUN a2enmod actions fastcgi alias
 

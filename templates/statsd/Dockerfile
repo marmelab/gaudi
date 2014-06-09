@@ -4,6 +4,8 @@ FROM stackbrew/debian:wheezy
 [[ updateApt ]]
 [[ addUserFiles ]]
 
+WORKDIR [[ .Container.GetFirstMountedDir ]]
+
 # Install nodejs
 [[ .Container.SetCustomValue "nodeVersion" "0.10.20"]]
 [[ installNodeJS ]]
