@@ -47,6 +47,10 @@ func main() {
 			// Run a specific command
 			g.Run(os.Args[2], os.Args[3:])
 			break
+		case "enter":
+			// Enter in a specific container
+			g.Enter(os.Args[2])
+			break
 		case "stop":
 			// Stop all applications
 			g.StopApplications()

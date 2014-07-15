@@ -93,7 +93,7 @@ func (gaudi *Gaudi) Init(content string) {
 	}
 
 	if gaudi.useNewVersion() {
-		os.RemoveAll(TEMPLATE_DIR)
+//		os.RemoveAll(TEMPLATE_DIR)
 	}
 
 	// Check if templates are present
@@ -129,6 +129,26 @@ func (gaudi *Gaudi) StopApplications() {
  */
 func (gaudi *Gaudi) Run(name string, arguments []string) {
 	gaudi.Binaries[name].BuildAndRun(gaudi.ApplicationDir, arguments)
+}
+
+
+/**
+ * Enter in a specific container
+ */
+func (gaudi *Gaudi) Enter(name string) {
+	// Check if nsenter exists
+	images, err := docker.GetImages()
+	if err != nil {
+		panic(err)
+	}
+
+	if _, ok := images["jpetazzo/nsenter"]; !ok {
+		// Pull ns-enter image
+		util.PrintGreen("Retrieving ns-enter image ...")
+		docker.Exec([]string{"run", "--rm", "-v", "/usr/local/bin:/target", "jpetazzo/nsenter"})
+	}
+
+	docker.Enter(name)
 }
 
 /**

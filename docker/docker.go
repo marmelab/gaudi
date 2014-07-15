@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"fmt"
 )
 
 var (
@@ -184,6 +186,48 @@ func Run(name, currentPath string, arguments []string, ports, environments map[s
 	if err := runCmd.Start(); err != nil {
 		util.LogError(err)
 	}
+}
+
+func Exec(args []string) {
+	execFunc := reflect.ValueOf(exec.Command)
+	execCmd := execFunc.Call(util.BuildReflectArguments(args))[0].Interface().(*exec.Cmd)
+	execCmd.Stdout = os.Stdout
+	execCmd.Stdin = os.Stdin
+	execCmd.Stderr = os.Stderr
+
+	fmt.Println(execCmd)
+
+	util.Debug("Exec command:", execCmd.Args)
+
+	if err := execCmd.Start(); err != nil {
+		util.LogError(err)
+	}
+}
+
+
+func Enter(name string) ([]byte, error)  {
+	var pid string
+	var imageExists bool
+	nsenter, _ := exec.LookPath("nsenter")
+
+	ps, _ := SnapshotProcesses()
+	fmt.Println(ps)
+
+	if pid, imageExists = ps[name]; !imageExists {
+		return nil, errors.New("Image" + name + "doesn't exists")
+	}
+
+	fmt.Println(pid)
+	enterCmd := exec.Command(nsenter, "--target", pid , "--mount", "--uts", "--ipc", "--net", "--pid")
+
+	util.Debug("Run command:", enterCmd.Args)
+
+	out, err := enterCmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func Inspect(id string) ([]byte, error) {
