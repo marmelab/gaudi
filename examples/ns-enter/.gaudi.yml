@@ -5,3 +5,23 @@ applications:
             8080: 80
         volumes:
             .: /var/www
+
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211
+
+#    redis:
+#        type: remote
+#        image: gary/redis
+#        path: github.com/manuquentin/docker-redis
+#        ports:
+#            6379: 6379
+
+
+#    redis2:
+#        type: custom
+#        template: ./redis/Dockerfile
+#        ports:
+#            6379: 6379
