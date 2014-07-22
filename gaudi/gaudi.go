@@ -60,7 +60,7 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 	gaudi.Init(string(fileContent))
 }
 
-func (gaudi *Gaudi) Init(content string) {
+	func (gaudi *Gaudi) Init(content string) {
 	err := goyaml.Unmarshal([]byte(content), &gaudi)
 	if err != nil {
 		util.LogError(err)
@@ -93,7 +93,7 @@ func (gaudi *Gaudi) Init(content string) {
 	}
 
 	if gaudi.useNewVersion() {
-		os.RemoveAll(TEMPLATE_DIR)
+		//		os.RemoveAll(TEMPLATE_DIR)
 	}
 
 	// Check if templates are present
@@ -131,7 +131,6 @@ func (gaudi *Gaudi) Run(name string, arguments []string) {
 	gaudi.Binaries[name].BuildAndRun(gaudi.ApplicationDir, arguments)
 }
 
-
 /**
  * Enter in a specific container
  */
@@ -145,7 +144,7 @@ func (gaudi *Gaudi) Enter(name string) {
 	if _, ok := images["jpetazzo/nsenter"]; !ok {
 		// Pull ns-enter image
 		util.PrintGreen("Retrieving ns-enter image ...")
-		docker.Exec([]string{"run", "--rm", "-v", "/usr/local/bin:/target", "jpetazzo/nsenter"})
+		docker.Exec([]string{"run", "--rm", "-v", "/usr/local/bin:/target", "jpetazzo/nsenter"}, false)
 	}
 
 	container := gaudi.All[name]

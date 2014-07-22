@@ -19,6 +19,10 @@ func main() {
 	flag.Parse()
 }
 
+func Print(messages ...interface{}) {
+	log.Println(messages)
+}
+
 func PrintRed(messages ...interface{}) {
 	PrintWithColor(ct.Red, messages)
 }

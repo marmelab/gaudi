@@ -1,0 +1,9 @@
+applications:
+#    app:
+#        type: empty
+#        after_script:
+#            printError
+
+    build_err:
+        type: custom
+        template: ./redis/Dockerfile
