@@ -93,7 +93,7 @@ func (gaudi *Gaudi) Init(content string) {
 	}
 
 	if gaudi.useNewVersion() {
-//		os.RemoveAll(TEMPLATE_DIR)
+		os.RemoveAll(TEMPLATE_DIR)
 	}
 
 	// Check if templates are present

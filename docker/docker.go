@@ -221,7 +221,7 @@ func Enter(name string) {
 
 	util.Debug("Run command:", enterCmd.Args)
 
-	if err := enterCmd.Start(); err != nil {
+	if err := enterCmd.Run(); err != nil {
 		util.LogError(err)
 	}
 }

@@ -12,16 +12,10 @@ applications:
         ports:
             11211: 11211
 
-#    redis:
-#        type: remote
-#        image: gary/redis
-#        path: github.com/manuquentin/docker-redis
-#        ports:
-#            6379: 6379
+    redis:
+        type: github
+        image: gary/redis
+        path: github.com/manuquentin/docker-redis
+        ports:
+            6379: 6379
 
-
-#    redis2:
-#        type: custom
-#        template: ./redis/Dockerfile
-#        ports:
-#            6379: 6379
