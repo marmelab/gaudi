@@ -344,6 +344,15 @@ func (c *Container) RetrieveIp() {
 	c.retrieveInfoFromInspection(inspect)
 }
 
+func (c *Container) GetFullName() string {
+	name := "gaudi/" + c.Name
+	if !c.IsGaudiManaged() {
+		name = c.Image
+	}
+
+	return name
+}
+
 func (c *Container) retrieveInfoFromInspection(inspect []byte) {
 	var results []inspection
 	goyaml.Unmarshal(inspect, &results)

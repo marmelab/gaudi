@@ -186,9 +186,61 @@ func Run(name, currentPath string, arguments []string, ports, environments map[s
 	}
 }
 
-func Inspect(id string) ([]byte, error) {
-	inspectCmd := exec.Command(getDockerBinaryPath(), "inspect", id)
+func Exec(args []string) {
+	execFunc := reflect.ValueOf(exec.Command)
+	execCmd := execFunc.Call(util.BuildReflectArguments(args))[0].Interface().(*exec.Cmd)
+	execCmd.Stdout = os.Stdout
+	execCmd.Stdin = os.Stdin
+	execCmd.Stderr = os.Stderr
 
+	util.Debug("Exec command:", execCmd.Args)
+
+	if err := execCmd.Start(); err != nil {
+		util.LogError(err)
+	}
+}
+
+
+func Enter(name string) {
+	var pid string
+	var imageExists bool
+	nsenter, _ := exec.LookPath("nsenter")
+
+	ps, _ := SnapshotProcesses()
+	if pid, imageExists = ps[name]; !imageExists {
+		util.LogError("Image " + name + " doesn't exists")
+	}
+
+	statePidBuff, _ := Inspect(pid, "--format", "{{.State.Pid}}")
+	statePid := strings.TrimSpace(string(statePidBuff))
+
+	enterCmd := exec.Command("sudo", nsenter, "--target", statePid , "--mount", "--uts", "--ipc", "--net", "--pid")
+	enterCmd.Stdout = os.Stdout
+	enterCmd.Stdin = os.Stdin
+	enterCmd.Stderr = os.Stderr
+
+	util.Debug("Run command:", enterCmd.Args)
+
+	if err := enterCmd.Run(); err != nil {
+		util.LogError(err)
+	}
+}
+
+func Inspect(params ...string) ([]byte, error) {
+	inspectFunc := reflect.ValueOf(exec.Command)
+	rawArgs := []string{getDockerBinaryPath(), "inspect"}
+
+	// Add extra arguments
+	if len(params) > 1 {
+		for _, arg := range params[1:] {
+			rawArgs = append(rawArgs, arg)
+		}
+	}
+
+	// Add the id at the end
+	rawArgs = append(rawArgs, params[0])
+
+	inspectCmd := inspectFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
 	out, err := inspectCmd.CombinedOutput()
 	if err != nil {
 		return nil, err

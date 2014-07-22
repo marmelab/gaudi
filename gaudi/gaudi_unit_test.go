@@ -480,3 +480,74 @@ applications:
 
 	enableLog()
 }
+
+func (s *GaudiTestSuite) TestEnterContainerShouldRetrieveAndUseNsEnter(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+
+	// Setup the docker mock package
+	docker.MOCK().SetController(ctrl)
+
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
+
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+
+	util.EXPECT().PrintGreen("Retrieving templates ...")
+	util.EXPECT().PrintGreen("Retrieving ns-enter image ...")
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+	docker.EXPECT().GetImages().Return(make(map[string]string), nil).Times(1)
+	docker.EXPECT().Exec(gomock.Any()).Times(1)
+	docker.EXPECT().Enter(gomock.Any()).Times(1)
+
+	g := gaudi.Gaudi{}
+	g.Init(`
+applications:
+    app:
+        type: apache
+`)
+	g.Enter("app")
+}
+
+func (s *GaudiTestSuite) TestEnterContainerShouldUseNsEnter(c *C) {
+	os.RemoveAll("/var/tmp/gaudi/")
+
+	// Create a gomock controller, and arrange for it's finish to be called
+	ctrl := gomock.NewController(c)
+	defer ctrl.Finish()
+
+	// Setup the docker mock package
+	docker.MOCK().SetController(ctrl)
+
+	// Setup the util mock package
+	util.MOCK().SetController(ctrl)
+
+	// Disable the util package mock
+	util.MOCK().DisableMock("IsDir")
+	util.MOCK().DisableMock("IsFile")
+
+	util.EXPECT().PrintGreen("Retrieving templates ...")
+
+	images := make(map[string]string)
+	images["jpetazzo/nsenter"] = "123"
+
+	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
+	docker.EXPECT().HasDocker().Return(true).Times(1)
+	docker.EXPECT().GetImages().Return(images, nil).Times(1)
+	docker.EXPECT().Enter(gomock.Any()).Times(1)
+
+	g := gaudi.Gaudi{}
+	g.Init(`
+applications:
+    app:
+        type: apache
+`)
+	g.Enter("app")
+}

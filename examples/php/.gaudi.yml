@@ -6,4 +6,4 @@ applications:
         after_script: php /app/hello.php
 
 # sudo gaudi
-# sudo docker attach app
+# sudo gaudi enter app

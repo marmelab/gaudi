@@ -1,0 +1,21 @@
+applications:
+    front:
+        type: nginx
+        ports:
+            8080: 80
+        volumes:
+            .: /var/www
+
+    memcached:
+        type: index
+        image: borja/docker-memcached
+        ports:
+            11211: 11211
+
+    redis:
+        type: github
+        image: gary/redis
+        path: github.com/manuquentin/docker-redis
+        ports:
+            6379: 6379
+

@@ -18,7 +18,6 @@ applications:
             9000: 9000
         volumes:
             .: /var/www
-        before_script: bin/init-gaudi-app.sh
 
     db:
         type: mysql
@@ -27,7 +26,7 @@ applications:
         after_script: mysql -e "CREATE DATABASE IF NOT EXISTS symfony CHARACTER SET utf8 COLLATE utf8_general_ci;" -uroot
         volumes:
             .gaudi/mysql: /var/lib/mysql
-            
+
 binaries:
     composer:
         type: composer

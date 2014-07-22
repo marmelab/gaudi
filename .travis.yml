@@ -1,6 +1,6 @@
 language: go
 go:
-    - 1.2
+    - 1.2.1
 
 script:
     - go get code.google.com/p/go.tools/cmd/goimports
