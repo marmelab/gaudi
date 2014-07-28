@@ -3,4 +3,8 @@ FROM stackbrew/debian:wheezy
 
 [[ updateApt ]]
 
-CMD /bin/bash
+[[ if (.Container.HasAfterScript) ]]
+    CMD [[.Container.AfterScript]] && /bin/bash
+[[ else ]]
+    CMD /bin/bash
+[[ end]]

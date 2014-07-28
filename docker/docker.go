@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -15,7 +16,6 @@ var (
 	docker, _   = exec.LookPath("docker")
 	dockerIo, _ = exec.LookPath("docker.io")
 	noCache     = flag.Bool("no-cache", false, "Disable build cache")
-	quiet       = flag.Bool("quiet", false, "Do not display build output")
 )
 
 func main() {
@@ -75,14 +75,12 @@ func Build(name, path string) {
 	util.Debug(rawArgs)
 
 	buildCmd := buildFunc.Call(util.BuildReflectArguments(rawArgs))[0].Interface().(*exec.Cmd)
-	buildCmd.Stderr = os.Stderr
+	buildCmd.Stdin = os.Stdin
 
-	if !*quiet {
-		buildCmd.Stdout = os.Stdout
-	}
-
-	if err := buildCmd.Run(); err != nil {
-		util.LogError(err)
+	out, err := buildCmd.CombinedOutput()
+	if err != nil {
+		util.Print(string(out))
+		util.LogError("Error while starting container '"+name+"'")
 	}
 
 	buildCmd.Wait()
@@ -93,10 +91,7 @@ func Build(name, path string) {
 func Pull(name string) {
 	pullCmd := exec.Command(getDockerBinaryPath(), "pull", name)
 	pullCmd.Stderr = os.Stderr
-
-	if !*quiet {
-		pullCmd.Stdout = os.Stdout
-	}
+	pullCmd.Stdin = os.Stdin
 
 	util.Debug("Pull command:", pullCmd.Args)
 
@@ -146,6 +141,15 @@ func Start(name, image string, links []string, ports, volumes, environments map[
 		util.LogError(string(out))
 	}
 
+	// Inspect container to check status code
+	exitCodeBuff, _ := Inspect(name, "--format", "{{.State.ExitCode}}")
+	exitCode, _ := strconv.Atoi(strings.TrimSpace(string(exitCodeBuff)))
+
+	if exitCode != 0 {
+		error, _ := Logs(name)
+		util.LogError("Error while starting container '" + name + "' : " + error)
+	}
+
 	return string(out)
 }
 
@@ -181,15 +185,19 @@ func Run(name, currentPath string, arguments []string, ports, environments map[s
 
 	util.Debug("Run command:", runCmd.Args)
 
-	if err := runCmd.Start(); err != nil {
+	if err := runCmd.Run(); err != nil {
 		util.LogError(err)
 	}
 }
 
-func Exec(args []string) {
+func Exec(args []string, hasStdout bool) {
 	execFunc := reflect.ValueOf(exec.Command)
 	execCmd := execFunc.Call(util.BuildReflectArguments(args))[0].Interface().(*exec.Cmd)
-	execCmd.Stdout = os.Stdout
+
+	if hasStdout {
+		execCmd.Stdout = os.Stdout
+	}
+
 	execCmd.Stdin = os.Stdin
 	execCmd.Stderr = os.Stderr
 
@@ -199,7 +207,6 @@ func Exec(args []string) {
 		util.LogError(err)
 	}
 }
-
 
 func Enter(name string) {
 	var pid string
@@ -214,7 +221,7 @@ func Enter(name string) {
 	statePidBuff, _ := Inspect(pid, "--format", "{{.State.Pid}}")
 	statePid := strings.TrimSpace(string(statePidBuff))
 
-	enterCmd := exec.Command("sudo", nsenter, "--target", statePid , "--mount", "--uts", "--ipc", "--net", "--pid")
+	enterCmd := exec.Command("sudo", nsenter, "--target", statePid, "--mount", "--uts", "--ipc", "--net", "--pid")
 	enterCmd.Stdout = os.Stdout
 	enterCmd.Stdin = os.Stdin
 	enterCmd.Stderr = os.Stderr
@@ -247,6 +254,17 @@ func Inspect(params ...string) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+func Logs(name string) (string, error) {
+	logsCmd := exec.Command(getDockerBinaryPath(), "logs", name)
+
+	out, err := logsCmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+
+	return string(out), nil
 }
 
 func SnapshotProcesses() (map[string]string, error) {
