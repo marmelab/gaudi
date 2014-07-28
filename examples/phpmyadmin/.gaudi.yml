@@ -2,7 +2,7 @@ applications:
     phpmyadmin:
         type: phpmyadmin
         ports:
-            80: 80
+            8082: 8080
         links: [db]
 
     db:

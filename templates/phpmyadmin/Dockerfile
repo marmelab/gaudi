@@ -13,6 +13,11 @@ RUN echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | deb
 RUN echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
 
 RUN sed -i 's|DocumentRoot /var/www|DocumentRoot /usr/share/phpmyadmin|g' /etc/apache2/sites-enabled/000-default
+RUN sed -i 's|VirtualHost \*:80|VirtualHost \*:[[ .Container.GetFirstLocalPort ]]|g' /etc/apache2/sites-enabled/000-default
+
+RUN sed -i 's|NameVirtualHost \*:80|NameVirtualHost \*:[[ .Container.GetFirstLocalPort ]]|g' /etc/apache2/ports.conf
+RUN sed -i 's|Listen 80|Listen [[ .Container.GetFirstLocalPort ]]|g' /etc/apache2/ports.conf
+
 RUN cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
 
 [[ $firstLinked := .Container.FirstLinked]]

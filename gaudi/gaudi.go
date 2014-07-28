@@ -60,7 +60,7 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 	gaudi.Init(string(fileContent))
 }
 
-	func (gaudi *Gaudi) Init(content string) {
+func (gaudi *Gaudi) Init(content string) {
 	err := goyaml.Unmarshal([]byte(content), &gaudi)
 	if err != nil {
 		util.LogError(err)
@@ -93,7 +93,7 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 	}
 
 	if gaudi.useNewVersion() {
-		//		os.RemoveAll(TEMPLATE_DIR)
+		os.RemoveAll(TEMPLATE_DIR)
 	}
 
 	// Check if templates are present
