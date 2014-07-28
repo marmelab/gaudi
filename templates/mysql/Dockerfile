@@ -27,3 +27,5 @@ CMD [[ if (.Container.HasBeforeScript) ]] /bin/bash /root/before-setup.sh && [[e
     [[ if (.Container.HasAfterScript) ]] && /bin/bash /root/after-setup.sh \[[end]]
     && /bin/bash
 [[ end ]]
+
+ENTRYPOINT mysqld
