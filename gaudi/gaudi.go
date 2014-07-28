@@ -108,13 +108,9 @@ func (gaudi *Gaudi) InitFromFile(file string) {
 }
 
 func (gaudi *Gaudi) StartApplications(rebuild bool) {
-	// Force rebuild if needed
-	if rebuild == false {
-		rebuild = gaudi.shouldRebuild()
-
-		if rebuild {
-			util.PrintOrange("Changes detected in configuration file, rebuilding containers ...")
-		}
+	// Notify user to rebuild
+	if rebuild == false && gaudi.shouldRebuild() {
+		util.PrintOrange("Changes detected in the configuration file, please consider to rebuild containers with `gaudi rebuild`.")
 	}
 
 	gaudi.Applications.Start(rebuild)
