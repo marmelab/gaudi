@@ -504,7 +504,7 @@ func (s *GaudiTestSuite) TestEnterContainerShouldRetrieveAndUseNsEnter(c *C) {
 	docker.EXPECT().ImageExists(gomock.Any()).Return(true).Times(1)
 	docker.EXPECT().HasDocker().Return(true).Times(1)
 	docker.EXPECT().GetImages().Return(make(map[string]string), nil).Times(1)
-	docker.EXPECT().Exec(gomock.Any()).Times(1)
+	docker.EXPECT().Exec(gomock.Any(), gomock.Any()).Times(1)
 	docker.EXPECT().Enter(gomock.Any()).Times(1)
 
 	g := gaudi.Gaudi{}
