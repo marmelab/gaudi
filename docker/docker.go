@@ -80,7 +80,7 @@ func Build(name, path string) {
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
 		util.Print(string(out))
-		util.LogError("Error while starting container '"+name+"'")
+		util.LogError("Error while starting container '" + name + "'")
 	}
 
 	buildCmd.Wait()
