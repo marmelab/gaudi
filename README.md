@@ -102,7 +102,7 @@ Another examples can be found in [the `examples` folder](https://github.com/marm
 
 # Options
 
-See [gaudi options](gaudi.io/installation.html#options).
+See [gaudi options](http://gaudi.io/installation.html#options).
 
 # Configuration
 
