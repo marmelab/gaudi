@@ -1,6 +1,8 @@
 # gaudi [![Build Status](https://travis-ci.org/marmelab/gaudi.png?branch=master)](https://travis-ci.org/marmelab/gaudi)
 
 
+**This project is discontinued. Read about why [here](http://marmelab.com/blog/2014/11/06/retiring-gaudi.html)**.
+
 gaudi is a generator of architecture written in Go and using [Docker](http://www.docker.io).
 You can use it to start any type of application, and link them together without knowledge of Docker or system configuration.
 Using Go, gaudi can build and start your applications in parallel depending on their dependencies.
